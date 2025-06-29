@@ -1,0 +1,44 @@
+# AI Tools Workspace - Core Requirements
+# 基本フレームワーク
+streamlit>=1.28.0
+openai>=1.0.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# 画像・ファイル処理
+pillow>=10.0.0
+opencv-python>=4.8.0
+pdf2image>=1.16.0
+pytesseract>=0.3.10
+
+# 可視化・グラフ
+matplotlib>=3.7.0
+
+# CAD・3D処理
+ezdxf>=1.1.0
+trimesh>=4.0.0
+
+# テキスト処理・自然言語
+nltk>=3.9.1
+sentence-transformers>=4.1.0
+rank-bm25>=0.2.2
+
+# AI・機械学習
+torch>=2.7.0
+transformers>=4.51.3
+scikit-learn>=1.6.1
+
+# Web・API
+requests>=2.32.3
+beautifulsoup4>=4.13.4
+fastapi>=0.115.12
+
+# ユーティリティ
+python-dotenv>=1.1.0
+python-docx>=1.1.2
+PyPDF2>=3.0.1
+openpyxl>=3.1.5
+
+# 高度なCAD処理（オプション - 大容量のため別途インストール推奨）
+# cadquery>=2.4.0
+# open3d>=0.18.0

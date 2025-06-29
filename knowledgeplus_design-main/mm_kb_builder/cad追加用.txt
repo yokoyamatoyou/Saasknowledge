@@ -1,0 +1,2 @@
+pip install cadquery
+pip install open3d

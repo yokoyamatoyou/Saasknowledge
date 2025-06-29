@@ -1,0 +1,10 @@
+{
+  "kb_name": "multimodal_knowledge_base",
+  "created_at": "2025-06-01T15:31:19.970228",
+  "total_items": 10,
+  "item_types": {
+    "image": 10,
+    "text_chunk": 0
+  },
+  "last_updated": "2025-06-05T16:52:16.048978"
+}
