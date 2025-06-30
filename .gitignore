@@ -1,0 +1,15 @@
+# Byte-compiled Python files
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log
+
+# Test and build artifacts
+.pytest_cache/
+dist/
+build/
+*.egg-info/
+*.so
+*.db
+*.sqlite3
