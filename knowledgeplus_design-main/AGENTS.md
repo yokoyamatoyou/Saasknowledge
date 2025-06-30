@@ -1,5 +1,11 @@
 # KnowledgePlus
 
+この指示書（AGENT.md）の機能は実装完了、リポジトリ内のリ「ファクタリングデザイン.md」に沿ったミニマムデザインへのリファクタリングを行う。
+インターネット接続は許可済み、できるだけ自律的に動作し、シンプルなデザインでサイドメニューは＜＜、＞＞で出し入れできること。
+これはMVP開発であり、Pocが完了すると、Googleクラウドへの移行を行うため、ファイル構成を確認して移行コストをできるだけ少なくすること。
+geminiへの指示はcodexへの指示でもあるので、同一と考えてください。
+
+以下は完成済み
 This repository contains two related Streamlit applications:
 
 - **knowledge_gpt_app** – a knowledge retrieval chatbot powered by GPT.
@@ -138,3 +144,10 @@ exported so the calls succeed.  These API tests can be disabled with
 ## Repository Guidelines
 
 For current development tips and repository consistency checks, see [docs/integration_plan.md](docs/integration_plan.md#additional-repository-guidance). Key points include avoiding NumPy array truth checks, preventing nested Streamlit expanders, centralizing configuration and file utilities, and increasing automated tests and linting.
+
+
+
+
+
+
+
