@@ -20,6 +20,10 @@ export OPENAI_API_KEY=your_api_key_here
 set OPENAI_API_KEY=your_api_key_here
 ```
 
+### IPAexGothicフォント
+
+PDFエクスポートには日本語フォント `ipaexg.ttf` が必要です。<https://moji.or.jp/ipafont/> からダウンロードし、リポジトリのルートに配置してください。フォントが無い場合、エクスポートは失敗します。
+
 ### アプリケーションの起動
 
 ```bash
