@@ -1,6 +1,6 @@
 # Byte-compiled Python files
 __pycache__/
-*.py[cod]
+*.pyc
 
 # Logs
 *.log
@@ -16,3 +16,6 @@ build/
 
 # Chat history directory
 chat_history/
+
+# Knowledge base directory
+knowledge_base/
