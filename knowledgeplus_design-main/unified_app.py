@@ -8,6 +8,7 @@ from shared.chat_controller import ChatController, get_persona_list
 from shared.search_engine import HybridSearchEngine
 from shared.file_processor import FileProcessor
 from shared.upload_utils import ensure_openai_key, BASE_KNOWLEDGE_DIR
+from ui_modules.theme import apply_intel_theme
 from shared.chat_history_utils import (
     load_chat_histories,
     create_history,
@@ -43,6 +44,8 @@ except Exception as e:
 st.set_page_config(
     layout="wide", page_title="KNOWLEDGE+", initial_sidebar_state="collapsed"
 )
+
+apply_intel_theme(st)
 
 st.markdown("""
 <style>

@@ -22,3 +22,8 @@ def test_mm_kb_theme_call_uses_arg():
 def test_gpt_app_theme_call_uses_arg():
     app_path = PROJECT_ROOT / 'knowledge_gpt_app' / 'app.py'
     assert _get_theme_call_args(str(app_path)) == 1
+
+
+def test_unified_app_theme_call_uses_arg():
+    app_path = PROJECT_ROOT / 'unified_app.py'
+    assert _get_theme_call_args(str(app_path)) == 1
