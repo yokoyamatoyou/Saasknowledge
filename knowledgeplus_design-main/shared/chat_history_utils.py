@@ -6,7 +6,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-CHAT_HISTORY_DIR = Path(__file__).resolve().parent.parent / "chat_history"
+# Store histories at the repository root so they are shared across all apps
+CHAT_HISTORY_DIR = Path(__file__).resolve().parents[2] / "chat_history"
 CHAT_HISTORY_DIR.mkdir(parents=True, exist_ok=True)
 
 
