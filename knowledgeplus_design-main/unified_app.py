@@ -37,6 +37,13 @@ from config import DEFAULT_KB_NAME, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS
 
 logger = logging.getLogger(__name__)
 
+# Early check for OpenAI API key
+try:
+    ensure_openai_key()
+except Exception as e:
+    st.error(f"OpenAI API key error: {e}")
+    st.stop()
+
 # Global page config and styling
 st.set_page_config(
     layout="wide", page_title="KNOWLEDGE+", initial_sidebar_state="collapsed"
