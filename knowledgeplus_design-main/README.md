@@ -29,6 +29,8 @@ pip install rank-bm25==0.2.2
 
 環境変数 `OPENAI_API_KEY` にAPIキーを設定してください。
 
+まずはサンプルの `.env.example` を `.env` にコピーし、値を書き換えても構いません。
+
 ```bash
 export OPENAI_API_KEY=your_api_key_here
 # またはWindowsの場合
