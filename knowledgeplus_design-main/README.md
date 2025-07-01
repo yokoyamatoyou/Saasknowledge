@@ -18,6 +18,13 @@ pip install -r requirements.txt
 pip install -r requirements-light.txt -r requirements-extra.txt
 ```
 
+If `rank-bm25` fails to install during the above step, upgrade `pip` and install it manually:
+
+```bash
+pip install --upgrade pip
+pip install rank-bm25==0.2.2
+```
+
 ### OpenAI APIキーの設定
 
 環境変数 `OPENAI_API_KEY` にAPIキーを設定してください。

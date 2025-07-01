@@ -30,6 +30,13 @@ Create a virtual environment and install the packages:
 pip install -r requirements.txt
 ```
 
+If the BM25 library fails to install, upgrade `pip` and install `rank-bm25` separately:
+
+```bash
+pip install --upgrade pip
+pip install rank-bm25==0.2.2
+```
+
 Alternatively, install dependencies for each component separately:
 
 ```bash
