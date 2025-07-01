@@ -320,8 +320,11 @@ with st.sidebar.expander("チャット設定", expanded=False):
     st.session_state.temperature = st.slider(
         "温度", 0.0, 1.0, float(st.session_state.get("temperature", 0.7)), 0.05
     )
+
+with st.sidebar.expander("プロンプトアドバイス", expanded=False):
     st.session_state.prompt_advice = st.checkbox(
-        "アドバイスを有効化", value=st.session_state.get("prompt_advice", False)
+        "アドバイスを有効化",
+        value=st.session_state.get("prompt_advice", False),
     )
 
 # --- Main Content Area based on Mode ---
