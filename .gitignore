@@ -13,3 +13,6 @@ build/
 *.so
 *.db
 *.sqlite3
+
+# Chat history directory
+chat_history/
