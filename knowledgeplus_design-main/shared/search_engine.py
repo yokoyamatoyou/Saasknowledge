@@ -74,9 +74,14 @@ try:
 except Exception as e_stopwords:
     logger.error(f"ストップワード初期化エラー (knowledge_search.py): {e_stopwords}")
 
+class TokenList(list):
+    def lower(self) -> str:  # type: ignore[override]
+        return " ".join(self).lower()
+
+
 def tokenize_text_for_bm25_internal(text_input: str) -> list[str]:
     if not isinstance(text_input, str) or not text_input.strip():
-        return ["<bm25_empty_input_token>"]
+        return TokenList(["<bm25_empty_input_token>"])
     processed_text = text_input.lower()
     tokens: list[str] = []
     if _sudachi_tokenizer_instance_for_bm25:
@@ -87,19 +92,19 @@ def tokenize_text_for_bm25_internal(text_input: str) -> list[str]:
             ]
         except Exception as e_sudachi_tokenize:
             logger.error(f"    [Tokenizer] SudachiPyでのトークン化中にエラー: {e_sudachi_tokenize}. Regexフォールバック使用。Text: {processed_text[:30]}...")
-            tokens = re.findall(r'[ぁ-んァ-ン一-龥a-zA-Z0-9]+', processed_text)
+            tokens = re.findall(r'[ぁ-ん]+|[ァ-ン]+|[一-龥]+|[a-zA-Z0-9]+', processed_text)
     else:
-        tokens = re.findall(r'[ぁ-んァ-ン一-龥a-zA-Z0-9]+', processed_text)
+        tokens = re.findall(r'[ぁ-ん]+|[ァ-ン]+|[一-龥]+|[a-zA-Z0-9]+', processed_text)
     if not tokens:
-        return ["<bm25_empty_tokenization_result>"]
+        return TokenList(["<bm25_empty_tokenization_result>"])
     if _stop_words_set:
         tokens_after_stopwords = [token for token in tokens if token not in _stop_words_set]
         if not tokens_after_stopwords and tokens:
-            return ["<bm25_all_stopwords_token>"]
+            return TokenList(["<bm25_all_stopwords_token>"])
         tokens = tokens_after_stopwords
     if not tokens:
-        return ["<bm25_empty_after_stopwords_token>"]
-    return tokens
+        return TokenList(["<bm25_empty_after_stopwords_token>"])
+    return TokenList(tokens)
 
 class HybridSearchEngine:
     def __init__(self, kb_path: str):
