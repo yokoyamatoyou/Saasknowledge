@@ -167,6 +167,26 @@ h1 {
 </style>
 """, unsafe_allow_html=True)
 
+if "sidebar_visible" not in st.session_state:
+    st.session_state["sidebar_visible"] = False
+
+toggle_label = ">>" if not st.session_state.sidebar_visible else "<<"
+if st.button(toggle_label, key="toggle_sidebar", help="サイドバーの表示切替"):
+    st.session_state.sidebar_visible = not st.session_state.sidebar_visible
+    st.rerun()
+
+st.markdown(
+    f"""
+    <style>
+    [data-testid="stSidebar"] {{
+        transition: margin-left 0.3s ease;
+        margin-left: {'0' if st.session_state.sidebar_visible else '-18rem'};
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 def safe_generate_gpt_response(user_input, conversation_history=None, persona="default", temperature=None, response_length=None, client=None):
     """Wrapper around ChatController.generate_gpt_response with error handling."""
     try:
