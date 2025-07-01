@@ -242,6 +242,8 @@ if "rag_enabled" not in st.session_state:
     st.session_state["rag_enabled"] = True # Default to RAG enabled
 if "prompt_advice" not in st.session_state:
     st.session_state["prompt_advice"] = False
+if "title_generated" not in st.session_state:
+    st.session_state["title_generated"] = False
 if "chat_histories" not in st.session_state:
     st.session_state["chat_histories"] = load_chat_histories()
 if "current_chat_id" not in st.session_state:
@@ -282,6 +284,7 @@ if st.sidebar.button("＋ 新しいチャット", key="new_chat_btn"):
     st.session_state.current_chat_id = new_id
     st.session_state.chat_history = []
     st.session_state.gpt_conversation_title = "新しい会話"
+    st.session_state.title_generated = False
     st.session_state.chat_histories.insert(0, {
         "id": new_id,
         "title": "新しい会話",
@@ -297,6 +300,7 @@ if st.session_state.chat_histories:
                 st.session_state.current_chat_id = hist["id"]
                 st.session_state.chat_history = hist["messages"]
                 st.session_state.gpt_conversation_title = hist["title"]
+                st.session_state.title_generated = True
                 st.rerun()
 
 with st.sidebar.expander("チャット設定", expanded=False):
@@ -427,7 +431,7 @@ if st.session_state["current_mode"] == "アップロード":
             st.toast("アップロード完了")
 
         if index_mode == "手動":
-            if st.button("検索インデックス更新", help="手動で検索インデックスを更新します。新しいナレッジが検索可能になります。"):
+            if st.button("検索インデックス更新"):
                 with st.spinner("検索エンジン更新中..."):
                     refresh_search_engine(DEFAULT_KB_NAME)
                 st.toast("検索インデックスを更新しました")
@@ -494,7 +498,13 @@ if st.session_state["current_mode"] == "チャット":
 
         client = get_openai_client()
         if client:
-            prompt = f"次の情報を参考にユーザーの質問に答えてください:\n{context}\n\n質問:{user_msg}" if use_kb and context else user_msg
+            prompt = (
+                f"次の情報を参考にユーザーの質問に答えてください:\n{context}\n\n質問:{user_msg}"
+                if use_kb and context
+                else user_msg
+            )
+            chat_temp = 0.2 if use_kb else float(st.session_state.get("temperature", 0.7))
+            chat_persona = st.session_state.get("persona", "default")
             
             with st.chat_message("assistant"):
                 message_placeholder = st.empty()
@@ -509,8 +519,8 @@ if st.session_state["current_mode"] == "チャット":
                             for m in st.session_state["chat_history"][:-1]
                             if m["role"] in ("user", "assistant")
                         ],
-                        persona="default",
-                        temperature=0.3,
+                        persona=chat_persona,
+                        temperature=chat_temp,
                         response_length="普通",
                         client=client,
                     )
@@ -526,8 +536,8 @@ if st.session_state["current_mode"] == "チャット":
                             for m in st.session_state["chat_history"][:-1]
                             if m["role"] in ("user", "assistant")
                         ],
-                        persona="default",
-                        temperature=0.3,
+                        persona=chat_persona,
+                        temperature=chat_temp,
                         response_length="普通",
                         client=client,
                     )
@@ -543,17 +553,28 @@ if st.session_state["current_mode"] == "チャット":
         append_message(st.session_state.current_chat_id, "assistant", answer)
         
         # 4. 会話タイトル生成/更新
-        if len(st.session_state.chat_history) >= 4 and client:
-            current_history_for_title_gen = [m for m in st.session_state.chat_history if m["role"] in ["user", "assistant"]]
+        if (
+            not st.session_state.get("title_generated")
+            and len(st.session_state.chat_history) >= 2
+            and client
+        ):
+            current_history_for_title_gen = [
+                m for m in st.session_state.chat_history if m["role"] in ["user", "assistant"]
+            ]
             if current_history_for_title_gen:
                 try:
-                    # generate_conversation_titleはChatControllerのメソッド
                     if "chat_controller" in st.session_state and st.session_state.chat_controller:
-                        new_title_val = st.session_state.chat_controller.generate_conversation_title(current_history_for_title_gen, client)
-                        if new_title_val != st.session_state.get('gpt_conversation_title'):
-                            st.session_state.gpt_conversation_title = new_title_val
-                            update_title(st.session_state.current_chat_id, new_title_val)
-                            logger.info(f"会話タイトルを更新: {new_title_val}")
+                        new_title_val = st.session_state.chat_controller.generate_conversation_title(
+                            current_history_for_title_gen, client
+                        )
+                        st.session_state.gpt_conversation_title = new_title_val
+                        update_title(st.session_state.current_chat_id, new_title_val)
+                        for h in st.session_state.chat_histories:
+                            if h["id"] == st.session_state.current_chat_id:
+                                h["title"] = new_title_val
+                                break
+                        st.session_state.title_generated = True
+                        logger.info(f"会話タイトルを更新: {new_title_val}")
                 except Exception as e:
                     logger.error(f"会話タイトル生成エラー: {e}", exc_info=True)
 
