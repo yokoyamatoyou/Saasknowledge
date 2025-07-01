@@ -12,6 +12,10 @@ A simple Streamlit prototype for uploading files, creating a knowledge base and 
 * Launch the app with:
 
   ```bash
-  ./knowledgeplus_design-main/run_app.sh
-  ```
+./knowledgeplus_design-main/run_app.sh
+```
+
+If you require model files that are normally fetched from HuggingFace, be aware
+that this environment blocks direct downloads from that service. Retrieve the
+same files from a mirror or copy them locally before launching the app.
 
