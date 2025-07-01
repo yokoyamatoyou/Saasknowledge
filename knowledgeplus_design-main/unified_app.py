@@ -241,8 +241,9 @@ if "temperature" not in st.session_state:
     st.session_state["temperature"] = 0.7
 if "response_length" not in st.session_state:
     st.session_state["response_length"] = "普通"
-if "rag_enabled" not in st.session_state:
-    st.session_state["rag_enabled"] = True # Default to RAG enabled
+if "use_knowledge_search" not in st.session_state:
+    # Flag controlling knowledge base lookup
+    st.session_state["use_knowledge_search"] = True
 if "prompt_advice" not in st.session_state:
     st.session_state["prompt_advice"] = False
 if "title_generated" not in st.session_state:
@@ -462,9 +463,9 @@ if st.session_state["current_mode"] == "チャット":
 
     use_kb = st.checkbox(
         "全てのナレッジから検索する",
-        value=st.session_state.get("rag_enabled", True),
+        value=st.session_state.get("use_knowledge_search", True),
     )
-    st.session_state["rag_enabled"] = use_kb
+    st.session_state["use_knowledge_search"] = use_kb
 
     # チャット履歴表示エリア
     chat_container = st.container(height=None) # Maximize vertical space
