@@ -1,23 +1,11 @@
-from pathlib import Path
 import streamlit as st
 import logging
 import uuid
-from datetime import datetime
-import io
-import base64
-from PIL import Image
-import json
-import re
-import numpy as np
-import pandas as pd
-import shutil
-import tempfile
 
 # Import shared modules
-from shared.chat_controller import ChatController, get_persona_list, load_persona
-from shared.search_engine import HybridSearchEngine, search_knowledge_base
+from shared.chat_controller import ChatController
+from shared.search_engine import HybridSearchEngine
 from shared.file_processor import FileProcessor
-from shared.kb_builder import KnowledgeBuilder
 from shared.upload_utils import ensure_openai_key, BASE_KNOWLEDGE_DIR
 
 # Import functions from knowledge_gpt_app.app (some might be moved later)
@@ -33,7 +21,7 @@ from knowledge_gpt_app.app import (
 # Import FAQ generation (assuming it's a standalone script)
 from generate_faq import generate_faqs_from_chunks
 
-from config import DEFAULT_KB_NAME, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS
+from config import DEFAULT_KB_NAME
 
 logger = logging.getLogger(__name__)
 

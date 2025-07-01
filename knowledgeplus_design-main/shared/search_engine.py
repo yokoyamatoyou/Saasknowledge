@@ -5,7 +5,12 @@ import numpy as np
 # from sklearn.feature_extraction.text import TfidfVectorizer # BM25には不要
 from sklearn.metrics.pairwise import cosine_similarity
 import pickle
-from sentence_transformers import SentenceTransformer
+try:
+    from sentence_transformers import SentenceTransformer
+except Exception as e:
+    SentenceTransformer = None  # type: ignore[assignment]
+    import logging
+    logging.warning(f"SentenceTransformer import failed: {e}")
 # import time # 直接は不要
 from rank_bm25 import BM25Okapi
 import nltk
@@ -135,12 +140,16 @@ class HybridSearchEngine:
         logger.info(f"BM25処理後の有効チャンク数: {len(self.chunks)}")
         self._check_chunk_embedding_consistency()
         
-        try:
-            logger.info("バックアップ埋め込みモデル SentenceTransformer を読み込み中...")
-            self.model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
-            logger.info("SentenceTransformer 読み込み完了")
-        except Exception as e_st:
-            logger.error(f"SentenceTransformer 読み込みエラー: {e_st}")
+        if SentenceTransformer is not None:
+            try:
+                logger.info("バックアップ埋め込みモデル SentenceTransformer を読み込み中...")
+                self.model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
+                logger.info("SentenceTransformer 読み込み完了")
+            except Exception as e_st:
+                logger.error(f"SentenceTransformer 読み込みエラー: {e_st}")
+                self.model = None
+        else:
+            logger.info("SentenceTransformer が利用できないためバックアップモデルを読み込みません")
             self.model = None
 
     def reindex(self) -> None:
