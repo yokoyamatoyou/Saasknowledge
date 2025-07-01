@@ -222,7 +222,7 @@ class KnowledgeBuilder:
                 "image_path": paths.get("image_path"),
                 "file_link": file_link,
                 "stats": {
-                    "vector_dimensions": len(embedding) if embedding else 0,
+                    "vector_dimensions": len(embedding) if embedding is not None else 0,
                     "keywords_count": len(structured_metadata.get("keywords", [])),
                     "chunk_length": len(search_chunk),
                 }
