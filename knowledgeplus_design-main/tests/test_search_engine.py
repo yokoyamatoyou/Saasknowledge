@@ -57,7 +57,7 @@ def temp_kb_with_data(tmp_path):
             json.dump(chunk["metadata"], f)
         with open(embeddings_path / f"{chunk['id']}.pkl", "wb") as f:
             import pickle
-            pickle.dump({'embedding': dummy_embeddings[chunk["id"]]}, f)
+            pickle.dump({'embedding': dummy_embeddings[chunk['id']]}, f)
             
     # Create a dummy kb_metadata.json
     with open(kb_path / "kb_metadata.json", "w", encoding="utf-8") as f:
