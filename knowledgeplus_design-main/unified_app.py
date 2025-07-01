@@ -167,6 +167,38 @@ h1 {
 </style>
 """, unsafe_allow_html=True)
 
+def safe_generate_gpt_response(user_input, conversation_history=None, persona="default", temperature=None, response_length=None, client=None):
+    """Wrapper around ChatController.generate_gpt_response with error handling."""
+    try:
+        gen = st.session_state.chat_controller.generate_gpt_response(
+            user_input,
+            conversation_history=conversation_history,
+            persona=persona,
+            temperature=temperature,
+            response_length=response_length,
+            client=client,
+        )
+        return gen
+    except Exception as e:
+        st.error(f"GPT応答生成エラー: {e}")
+        logger.error("GPT response generation error", exc_info=True)
+        return None
+
+
+def render_document_card(doc: dict) -> None:
+    """Display a single search result using the `doc-card` style."""
+    meta = doc.get("metadata", {}) or {}
+    display_meta = meta.get("display_metadata", {}) or {}
+    title = meta.get("title") or display_meta.get("title") or meta.get("filename", "No title")
+    snippet = doc.get("text", "")[:120].replace("\n", " ")
+    similarity = doc.get("similarity")
+    from html import escape
+    body = f"<div class='doc-card'><strong>{escape(title)}</strong>"
+    if similarity is not None:
+        body += f"<div>Score: {similarity:.3f}</div>"
+    body += f"<div>{escape(snippet)}...</div></div>"
+    st.markdown(body, unsafe_allow_html=True)
+
 # --- Session State Initialization ---
 if "current_mode" not in st.session_state:
     st.session_state["current_mode"] = "検索" # Default to Search mode
@@ -250,16 +282,18 @@ if st.session_state["current_mode"] == "検索":
                     st.write("AIが要約を生成中...")
                     summary_placeholder = st.empty()
                     full_summary = ""
-                    for chunk in st.session_state.chat_controller.generate_gpt_response(
+                    gen = safe_generate_gpt_response(
                         prompt,
                         conversation_history=[],
                         persona="default",
                         temperature=0.3,
                         response_length="簡潔",
                         client=client,
-                    ):
-                        full_summary += chunk
-                        summary_placeholder.markdown(full_summary + "▌") # Add blinking cursor
+                    )
+                    if gen:
+                        for chunk in gen:
+                            full_summary += chunk
+                            summary_placeholder.markdown(full_summary + "▌")
                     summary_placeholder.markdown(full_summary) # Final content without cursor
                 else:
                     st.info("要約生成に失敗しました。")
@@ -368,8 +402,8 @@ if st.session_state["current_mode"] == "チャット":
                 # ChatControllerが初期化されていない場合（RAG無効時など）は、直接GPT応答を生成
                 if "chat_controller" not in st.session_state or st.session_state.chat_controller is None:
                     # Fallback to direct GPT response without RAG
-                    for chunk in safe_generate_gpt_response(
-                        user_msg, # Use user_msg directly as prompt
+                    gen = safe_generate_gpt_response(
+                        user_msg,
                         conversation_history=[
                             {"role": m["role"], "content": m["content"]}
                             for m in st.session_state["chat_history"][:-1]
@@ -379,11 +413,13 @@ if st.session_state["current_mode"] == "チャット":
                         temperature=0.3,
                         response_length="普通",
                         client=client,
-                    ):
-                        full_response += chunk
-                        message_placeholder.markdown(full_response + "▌")
+                    )
+                    if gen:
+                        for chunk in gen:
+                            full_response += chunk
+                            message_placeholder.markdown(full_response + "▌")
                 else:
-                    for chunk in safe_generate_gpt_response(
+                    gen = safe_generate_gpt_response(
                         prompt,
                         conversation_history=[
                             {"role": m["role"], "content": m["content"]}
@@ -394,9 +430,11 @@ if st.session_state["current_mode"] == "チャット":
                         temperature=0.3,
                         response_length="普通",
                         client=client,
-                    ):
-                        full_response += chunk
-                        message_placeholder.markdown(full_response + "▌")
+                    )
+                    if gen:
+                        for chunk in gen:
+                            full_response += chunk
+                            message_placeholder.markdown(full_response + "▌")
                 message_placeholder.markdown(full_response) # Final content without cursor
             answer = full_response
         else:
