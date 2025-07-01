@@ -35,7 +35,7 @@ PDFエクスポートには日本語フォント `ipaexg.ttf` が必要です。
 ### アプリケーションの起動
 
 ```bash
-streamlit run unified_app.py
+streamlit run app.py
 ```
 
 アップロードされたファイルや生成されたデータは `knowledge_base/<kb_name>` 以下に保存されます。デフォルトのナレッジベース名は `config.py` の `DEFAULT_KB_NAME` で定義されています。
@@ -58,7 +58,7 @@ graph TD
     A[FileProcessor] --> B[KnowledgeBuilder]
     B --> C[HybridSearchEngine]
     C --> D[ChatController]
-    D --> E[unified_app.py]
+    D --> E[app.py]
 
     subgraph Backend Services
         B
@@ -87,14 +87,14 @@ graph TD
     click B "https://github.com/your-repo/blob/main/shared/kb_builder.py" "KnowledgeBuilder Source"
     click C "https://github.com/your-repo/blob/main/shared/search_engine.py" "HybridSearchEngine Source"
     click D "https://github.com/your-repo/blob/main/shared/chat_controller.py" "ChatController Source"
-    click E "https://github.com/your-repo/blob/main/unified_app.py" "unified_app.py Source"
+    click E "https://github.com/your-repo/blob/main/app.py" "app.py Source"
 ```
 
 *   **FileProcessor**: さまざまなファイル形式（テキスト、画像、CADなど）を読み込み、検索可能なテキストや画像データに変換します。
 *   **KnowledgeBuilder**: 変換されたファイルを意味のあるチャンクに分割し、OpenAIの埋め込み技術を用いてベクトル化し、ディスク上に保存します。これにより、ナレッジベースが構築されます。
 *   **HybridSearchEngine**: ベクトル検索とキーワード検索（BM25）を組み合わせ、ナレッジベースから関連性の高い情報を効率的に検索します。
 *   **ChatController**: 会話履歴を管理し、`HybridSearchEngine` から取得したコンテキストを基にGPTモデル（OpenAI API）を呼び出し、ユーザーの質問に対する応答を生成します。
-*   **unified_app.py**: Streamlitを用いたユーザーインターフェースを提供し、上記のバックエンドコンポーネントを統合して、シームレスなユーザー体験を実現します。
+*   **app.py**: Streamlitを用いたユーザーインターフェースを提供し、上記のバックエンドコンポーネントを統合して、シームレスなユーザー体験を実現します。
 
 ## 🧪 テストの実行
 

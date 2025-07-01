@@ -64,7 +64,7 @@ root so that PDF export works correctly.
 
 ## Running the app
 
-Launch the unified interface using the helper scripts at the repository root. These scripts run `unified_app.py` which accepts documents, images and CAD files in one place:
+Launch the unified interface using the helper scripts at the repository root. These scripts run `app.py` which accepts documents, images and CAD files in one place:
 
 ```bash
 # Windows
@@ -77,7 +77,7 @@ run_app.bat
 For backwards compatibility a small wrapper script is also provided at
 `knowledge_gpt_app/unified_app.py`. Running `streamlit run
 knowledge_gpt_app/unified_app.py` will simply delegate to the root
-`unified_app.py` so existing workflows continue to work.
+`app.py` so existing workflows continue to work.
 
 
 ## Integration Plan
