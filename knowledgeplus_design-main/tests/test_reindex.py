@@ -37,3 +37,14 @@ def test_reindex_removes_deleted_chunks(tmp_path, monkeypatch):
     upload_utils.save_processed_data(kb_name, "2", chunk_text="banana", embedding=[2], metadata={})
     engine = HybridSearchEngine(str(tmp_path / kb_name))
     assert len(engine.chunks) == 2
+
+    # remove one chunk on disk after the engine has loaded
+    (tmp_path / kb_name / "chunks" / "1.txt").unlink()
+    (tmp_path / kb_name / "metadata" / "1.json").unlink()
+    (tmp_path / kb_name / "embeddings" / "1.pkl").unlink()
+
+    engine.reindex()
+
+    # verify the deleted chunk is no longer present
+    assert len(engine.chunks) == 1
+    assert all(c["id"] != "1" for c in engine.chunks)
