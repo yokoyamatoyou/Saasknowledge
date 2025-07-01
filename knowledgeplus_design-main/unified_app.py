@@ -1,12 +1,19 @@
 import streamlit as st
 import logging
 import uuid
+from datetime import datetime
 
 # Import shared modules
-from shared.chat_controller import ChatController
+from shared.chat_controller import ChatController, get_persona_list
 from shared.search_engine import HybridSearchEngine
 from shared.file_processor import FileProcessor
 from shared.upload_utils import ensure_openai_key, BASE_KNOWLEDGE_DIR
+from shared.chat_history_utils import (
+    load_chat_histories,
+    create_history,
+    append_message,
+    update_title,
+)
 
 # Import functions from knowledge_gpt_app.app (some might be moved later)
 from knowledge_gpt_app.app import (
@@ -233,6 +240,18 @@ if "response_length" not in st.session_state:
     st.session_state["response_length"] = "普通"
 if "rag_enabled" not in st.session_state:
     st.session_state["rag_enabled"] = True # Default to RAG enabled
+if "prompt_advice" not in st.session_state:
+    st.session_state["prompt_advice"] = False
+if "chat_histories" not in st.session_state:
+    st.session_state["chat_histories"] = load_chat_histories()
+if "current_chat_id" not in st.session_state:
+    if st.session_state["chat_histories"]:
+        hist = st.session_state["chat_histories"][0]
+        st.session_state["current_chat_id"] = hist["id"]
+        st.session_state["chat_history"] = hist["messages"]
+        st.session_state["gpt_conversation_title"] = hist["title"]
+    else:
+        st.session_state["current_chat_id"] = create_history({})
 
 # --- Sidebar Navigation ---
 # Use a key to persist selection and add emoji icons
@@ -251,6 +270,52 @@ selected_mode_display = st.sidebar.radio(
     help="アプリケーションのモードを選択します。"
 )
 st.session_state["current_mode"] = list(mode_options.keys())[list(mode_options.values()).index(selected_mode_display)]
+
+# Chat related sidebar controls
+st.sidebar.markdown("---")
+if st.sidebar.button("＋ 新しいチャット", key="new_chat_btn"):
+    new_id = create_history({
+        "persona": st.session_state.get("persona"),
+        "temperature": st.session_state.get("temperature"),
+        "prompt_advice": st.session_state.get("prompt_advice"),
+    })
+    st.session_state.current_chat_id = new_id
+    st.session_state.chat_history = []
+    st.session_state.gpt_conversation_title = "新しい会話"
+    st.session_state.chat_histories.insert(0, {
+        "id": new_id,
+        "title": "新しい会話",
+        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "settings": {},
+        "messages": [],
+    })
+
+if st.session_state.chat_histories:
+    with st.sidebar.expander("過去の会話", expanded=False):
+        for hist in st.session_state.chat_histories:
+            if st.button(hist["title"], key=f"load_{hist['id']}"):
+                st.session_state.current_chat_id = hist["id"]
+                st.session_state.chat_history = hist["messages"]
+                st.session_state.gpt_conversation_title = hist["title"]
+                st.rerun()
+
+with st.sidebar.expander("チャット設定", expanded=False):
+    personas = get_persona_list()
+    persona_ids = [p["id"] for p in personas]
+    persona_names = {p["id"]: p.get("name", p["id"]) for p in personas}
+    current_id = st.session_state.get("persona", persona_ids[0])
+    selected_id = st.selectbox(
+        "AIペルソナ", persona_ids,
+        index=persona_ids.index(current_id),
+        format_func=lambda x: persona_names.get(x, x),
+    )
+    st.session_state.persona = selected_id
+    st.session_state.temperature = st.slider(
+        "温度", 0.0, 1.0, float(st.session_state.get("temperature", 0.7)), 0.05
+    )
+    st.session_state.prompt_advice = st.checkbox(
+        "アドバイスを有効化", value=st.session_state.get("prompt_advice", False)
+    )
 
 # --- Main Content Area based on Mode ---
 st.title("KNOWLEDGE+") # Always show the main title
@@ -369,11 +434,13 @@ if st.session_state["current_mode"] == "アップロード":
 
 
 if st.session_state["current_mode"] == "チャット":
-    st.subheader("チャット") # Subheader for current mode
-    
-    # RAG検索の有効/無効トグル
-    rag_enabled = st.sidebar.checkbox("RAG検索を有効にする", value=st.session_state["rag_enabled"], help="ナレッジベースから情報を取得して回答を生成します。無効にすると一般的なAIチャットになります。")
-    st.session_state["rag_enabled"] = rag_enabled
+    st.subheader("チャット")  # Subheader for current mode
+
+    use_kb = st.checkbox(
+        "全てのナレッジから検索する",
+        value=st.session_state.get("rag_enabled", True),
+    )
+    st.session_state["rag_enabled"] = use_kb
 
     # チャット履歴表示エリア
     chat_container = st.container(height=None) # Maximize vertical space
@@ -386,10 +453,28 @@ if st.session_state["current_mode"] == "チャット":
     user_msg = st.chat_input("メッセージを送信")
     if user_msg:
         st.session_state["chat_history"].append({"role": "user", "content": user_msg})
+        append_message(st.session_state.current_chat_id, "user", user_msg)
+
+        if st.session_state.get("prompt_advice"):
+            client = get_openai_client()
+            if client:
+                advice_gen = safe_generate_gpt_response(
+                    f"以下のユーザープロンプトを、より明確で効果的なプロンプトにするための改善案を、簡潔な箇条書きのMarkdown形式で提案してください:\n\n---\n{user_msg}\n---",
+                    conversation_history=[],
+                    persona="default",
+                    temperature=0.0,
+                    response_length="簡潔",
+                    client=client,
+                )
+                advice_text = ""
+                if advice_gen:
+                    for chunk in advice_gen:
+                        advice_text += chunk
+                st.info(f"💡 プロンプトアドバイス:\n{advice_text}")
         
         context = ""
-        if rag_enabled:
-            # RAG検索が有効な場合のみナレッジベースを読み込み、検索を実行
+        if use_kb:
+            # ナレッジ検索が有効な場合のみナレッジベースを読み込み、検索を実行
             # ChatControllerのインスタンス化をここで行うことで、RAG無効時は不要な初期化を避ける
             if "chat_controller" not in st.session_state or not isinstance(st.session_state.chat_controller, ChatController):
                 try:
@@ -403,13 +488,13 @@ if st.session_state["current_mode"] == "チャット":
                 results, _ = search_multiple_knowledge_bases(user_msg, [DEFAULT_KB_NAME])
                 context = "\n".join(r.get("text", "") for r in results[:3])
                 if not context:
-                    st.info("RAG検索で関連情報が見つかりませんでした。AIの一般的な知識で回答します。")
+                    st.info("ナレッジ検索で関連情報が見つかりませんでした。AIの一般的な知識で回答します。")
             else:
-                st.warning("RAG検索が無効化されているか、ナレッジベースの初期化に失敗したため、RAG検索は行われません。")
+                st.warning("ナレッジ検索が無効化されているか、ナレッジベースの初期化に失敗したため、検索は行われません。")
 
         client = get_openai_client()
         if client:
-            prompt = f"次の情報を参考にユーザーの質問に答えてください:\n{context}\n\n質問:{user_msg}" if rag_enabled and context else user_msg
+            prompt = f"次の情報を参考にユーザーの質問に答えてください:\n{context}\n\n質問:{user_msg}" if use_kb and context else user_msg
             
             with st.chat_message("assistant"):
                 message_placeholder = st.empty()
@@ -455,6 +540,7 @@ if st.session_state["current_mode"] == "チャット":
         else:
             answer = "OpenAIクライアントを初期化できませんでした。"
         st.session_state["chat_history"].append({"role": "assistant", "content": answer})
+        append_message(st.session_state.current_chat_id, "assistant", answer)
         
         # 4. 会話タイトル生成/更新
         if len(st.session_state.chat_history) >= 4 and client:
@@ -466,6 +552,7 @@ if st.session_state["current_mode"] == "チャット":
                         new_title_val = st.session_state.chat_controller.generate_conversation_title(current_history_for_title_gen, client)
                         if new_title_val != st.session_state.get('gpt_conversation_title'):
                             st.session_state.gpt_conversation_title = new_title_val
+                            update_title(st.session_state.current_chat_id, new_title_val)
                             logger.info(f"会話タイトルを更新: {new_title_val}")
                 except Exception as e:
                     logger.error(f"会話タイトル生成エラー: {e}", exc_info=True)
