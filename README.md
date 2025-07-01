@@ -1,8 +1,9 @@
 # Saasknowledge
 
-A simple Streamlit prototype for uploading files, creating a knowledge base and chatting with it.
+A simple Streamlit prototype for uploading files, creating a knowledge base and chatting with it. Some dependencies such as `torch` and `transformers` are quite heavy. If you only need the core features you can install a lighter set of packages first and add the extras later.
 
 * Read the [full setup guide](knowledgeplus_design-main/README.md) for details.
+* Install packages with `pip install -r knowledgeplus_design-main/requirements-light.txt` for the basics.
 * Set the OpenAI key before starting:
 
   ```bash

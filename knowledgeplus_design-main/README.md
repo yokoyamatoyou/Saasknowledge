@@ -6,8 +6,16 @@ KnowledgePlusは、ナレッジベース構築、検索、チャット、FAQ生�
 
 ### 依存関係のインストール
 
+Choose the dependency set that fits your environment.
+
 ```bash
+# Minimal install
+pip install -r requirements-light.txt
+
+# Full feature set
 pip install -r requirements.txt
+# or combine
+pip install -r requirements-light.txt -r requirements-extra.txt
 ```
 
 ### OpenAI APIキーの設定
