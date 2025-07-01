@@ -51,11 +51,11 @@ def temp_kb_with_data(tmp_path):
     }
 
     for chunk in dummy_chunks:
-        with open(chunks_path / f"{chunk["id"]}.txt", "w", encoding="utf-8") as f:
+        with open(chunks_path / f"{chunk['id']}.txt", "w", encoding="utf-8") as f:
             f.write(chunk["text"])
-        with open(metadata_path / f"{chunk["id"]}.json", "w", encoding="utf-8") as f:
+        with open(metadata_path / f"{chunk['id']}.json", "w", encoding="utf-8") as f:
             json.dump(chunk["metadata"], f)
-        with open(embeddings_path / f"{chunk["id"]}.pkl", "wb") as f:
+        with open(embeddings_path / f"{chunk['id']}.pkl", "wb") as f:
             import pickle
             pickle.dump({'embedding': dummy_embeddings[chunk["id"]]}, f)
             

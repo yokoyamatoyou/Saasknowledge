@@ -32,6 +32,7 @@ def test_manual_refresh_call_present():
 
 def test_safe_generate_handles_error(monkeypatch):
     pytest.importorskip('streamlit')
+    pytest.importorskip('sudachipy')
 
     import streamlit as st
     # Mock st.error to capture its calls
@@ -77,6 +78,7 @@ def test_safe_generate_handles_error(monkeypatch):
 
 def test_refresh_search_engine_reloads_engine(monkeypatch):
     pytest.importorskip('streamlit')
+    pytest.importorskip('sudachipy')
     import streamlit as st
     
     # Mock st.session_state
