@@ -1,3 +1,4 @@
+---
 name: Python package
 
 on:
@@ -22,7 +23,8 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('knowledgeplus_design-main/requirements-light.txt') }}
+          key: ${{ runner.os }}-pip-
+            ${{ hashFiles('knowledgeplus_design-main/requirements-light.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
