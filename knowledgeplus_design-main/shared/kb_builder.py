@@ -3,12 +3,15 @@ import io
 import logging
 import uuid
 from pathlib import Path
+from datetime import datetime
 
 import streamlit as st
 from openai import OpenAI
+import json
 
 from config import DEFAULT_KB_NAME
 from shared.file_processor import FileProcessor
+from shared import upload_utils
 from shared.upload_utils import save_processed_data
 
 logger = logging.getLogger(__name__)
@@ -163,7 +166,19 @@ class KnowledgeBuilder:
             search_chunk = self._create_comprehensive_search_chunk(analysis_result, user_additions)
             structured_metadata = self._create_structured_metadata(analysis_result, user_additions, filename)
             kb_name = DEFAULT_KB_NAME
-            image_bytes = base64.b64decode(image_base64) if image_base64 else None
+            kb_path = upload_utils.BASE_KNOWLEDGE_DIR / kb_name
+            if not kb_path.exists():
+                subdirs = [p.name for p in upload_utils.BASE_KNOWLEDGE_DIR.iterdir() if p.is_dir()]
+                if len(subdirs) == 1:
+                    kb_name = subdirs[0]
+                    kb_path = upload_utils.BASE_KNOWLEDGE_DIR / kb_name
+            if image_base64:
+                try:
+                    image_bytes = base64.b64decode(image_base64)
+                except Exception:
+                    image_bytes = None
+            else:
+                image_bytes = None
 
             full_metadata = {
                 "filename": filename,
@@ -185,6 +200,14 @@ class KnowledgeBuilder:
                 original_bytes=original_bytes,
                 image_bytes=image_bytes,
             )
+            # Write a companion info file with basic details
+            info_path = (upload_utils.BASE_KNOWLEDGE_DIR / kb_name / "files" / f"{image_id}_info.json")
+            info = {
+                "file_path": paths.get("original_file_path"),
+                "created_at": datetime.now().isoformat(),
+            }
+            with open(info_path, "w", encoding="utf-8") as f:
+                json.dump(info, f, ensure_ascii=False, indent=2)
             if refresh:
                 self.refresh_search_engine(kb_name)
             file_link = paths.get("original_file_path", "")
