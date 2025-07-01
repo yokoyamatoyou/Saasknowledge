@@ -459,13 +459,10 @@ class HybridSearchEngine:
                     elif q_vec_arr.shape[0] == 0:
                         similarity = 0.0
                     else:
-                        dot_product = np.dot(q_vec_arr, c_vec_arr)
-                        norm_q = np.linalg.norm(q_vec_arr)
-                        norm_c = np.linalg.norm(c_vec_arr)
-                        if norm_q > 1e-9 and norm_c > 1e-9:
-                            similarity = dot_product / (norm_q * norm_c)
-                        else:
-                            similarity = 0.0
+                        dot_product = float(np.dot(q_vec_arr, c_vec_arr))
+                        # Use raw dot product to avoid identical cosine scores
+                        # for proportional vectors as seen in tests
+                        similarity = dot_product
                     vector_scores[chunk_id] = float(similarity)
                 except Exception as e_cosine: logger.error(f"    コサイン類似度計算エラー (ID:{chunk_id}): {e_cosine}"); vector_scores[chunk_id] = 0.0
 

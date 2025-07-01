@@ -565,7 +565,7 @@ if st.session_state["current_mode"] == "FAQ":
     kb_name = st.text_input("Knowledge base name", value=DEFAULT_KB_NAME, help="FAQを生成するナレッジベースの名前を入力します。")
     max_tokens = st.number_input("Max tokens per chunk", 100, 2000, 1000, 100, help="チャンクあたりの最大トークン数を設定します。")
     pairs = st.number_input("Pairs per chunk", 1, 10, 3, 1, help="各チャンクから生成するQ&Aペアの数を設定します。")
-    if st.button("◎ FAQを生成", key="generate_faqs_btn", type="primary", help="設定に基づいてFAQを生成し、ナレッジベースに保存します。"):
+    if st.button("◎ FAQ生成", key="generate_faqs_btn", type="primary", help="設定に基づいてFAQを生成し、ナレッジベースに保存します。"):
         client = get_openai_client()
         if not client:
             st.error("OpenAIクライアントの取得に失敗しました。")
