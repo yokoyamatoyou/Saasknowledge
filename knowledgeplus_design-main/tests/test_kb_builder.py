@@ -42,7 +42,7 @@ def mock_file_processor():
 
 @pytest.fixture
 def kb_builder_instance(mock_file_processor, mock_openai_client, mock_refresh_search_engine):
-    return KnowledgeBuilder(mock_file_processor, mock_openai_client, mock_refresh_search_engine)
+    return KnowledgeBuilder(mock_file_processor, lambda: mock_openai_client, mock_refresh_search_engine)
 
 @pytest.fixture
 def temp_kb_dir(tmp_path):
@@ -87,17 +87,17 @@ def test_build_from_file_image(kb_builder_instance, temp_kb_dir, monkeypatch):
 
     # Verify files are created in the temporary knowledge base directory
     item_id = saved_item["id"]
-    assert (temp_kb_dir / "chunks" / f"{item_id}.json").exists()
+    assert (temp_kb_dir / "chunks" / f"{item_id}.txt").exists()
     assert (temp_kb_dir / "embeddings" / f"{item_id}.pkl").exists() # Should be .pkl
     assert (temp_kb_dir / "metadata" / f"{item_id}.json").exists()
     assert (temp_kb_dir / "images" / f"{item_id}.jpg").exists()
     assert (temp_kb_dir / "files" / f"{item_id}_info.json").exists()
 
     # Verify content of chunk file
-    with open(temp_kb_dir / "chunks" / f"{item_id}.json", 'r', encoding='utf-8') as f:
-        chunk_data = json.load(f)
-        assert "画像タイプ: 写真" in chunk_data["content"]
-        assert "主要内容: これはテスト画像です" in chunk_data["content"]
+    with open(temp_kb_dir / "chunks" / f"{item_id}.txt", 'r', encoding='utf-8') as f:
+        chunk_text = f.read()
+        assert "画像タイプ: 写真" in chunk_text
+        assert "主要内容: これはテスト画像です" in chunk_text
 
     # Verify content of metadata file
     with open(temp_kb_dir / "metadata" / f"{item_id}.json", 'r', encoding='utf-8') as f:
