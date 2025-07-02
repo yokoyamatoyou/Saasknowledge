@@ -13,6 +13,7 @@ from shared.upload_utils import (
 from shared.file_processor import FileProcessor
 from shared.kb_builder import KnowledgeBuilder
 from ui_modules.theme import apply_intel_theme
+from shared.logging_utils import configure_logging
 
 def _refresh_search_engine(kb_name: str) -> None:
     """Dynamically import and call refresh_search_engine to avoid circular imports."""
@@ -54,11 +55,8 @@ if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
 
 # ロギング設定
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger('multimodal_kb_builder')
+configure_logging()
+logger = logging.getLogger(__name__)
 
 # 定数
 GPT4O_MODEL = "gpt-4.1"

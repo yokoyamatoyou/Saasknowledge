@@ -56,17 +56,11 @@ from shared.upload_utils import (
 )
 from generate_faq import generate_faqs_from_chunks
 from ui_modules.theme import apply_intel_theme
+from shared.logging_utils import configure_logging
 
 # ロギング設定を最初に行う
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("rag_tool.log", encoding='utf-8'),
-        logging.StreamHandler(),
-    ],
-)
-logger = logging.getLogger("rag_tool")
+configure_logging()
+logger = logging.getLogger(__name__)
 
 # スクリプトディレクトリの解決
 current_dir = Path(__file__).resolve().parent
