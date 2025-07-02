@@ -18,6 +18,13 @@ You can also override the default `knowledge_base/` directory location by settin
   export KNOWLEDGE_BASE_DIR=/path/to/storage
   ```
 
+You can similarly override where chat histories are stored by setting
+`CHAT_HISTORY_DIR`:
+
+  ```bash
+  export CHAT_HISTORY_DIR=/path/to/chat_history
+  ```
+
 * Launch the app with:
 
   ```bash
