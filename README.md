@@ -37,6 +37,14 @@ same files from a mirror or copy them locally before launching the app.
 
 ## Testing
 
+Before running `pytest`, install the test dependencies:
+
+```bash
+pip install -r knowledgeplus_design-main/requirements-light.txt
+# If you need optional features
+pip install -r knowledgeplus_design-main/requirements-extra.txt
+```
+
 Run the automated tests after installing the light requirements. Execute from the
 repository root:
 
