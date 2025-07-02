@@ -17,6 +17,10 @@ pip install -r requirements.txt
 # or combine
 pip install -r requirements-light.txt -r requirements-extra.txt
 ```
+The `requirements-extra.txt` file holds large libraries such as **torch** and
+**transformers**. Installing the light requirements first then the extras keeps
+the initial setup lightweight while still allowing advanced features when
+needed.
 
 If `rank-bm25` fails to install during the above step, upgrade `pip` and install it manually:
 
