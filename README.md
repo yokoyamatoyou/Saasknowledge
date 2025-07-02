@@ -27,3 +27,12 @@ If you require model files that are normally fetched from HuggingFace, be aware
 that this environment blocks direct downloads from that service. Retrieve the
 same files from a mirror or copy them locally before launching the app.
 
+## Testing
+
+Run the automated tests after installing the light requirements. Execute from the
+repository root:
+
+```bash
+pytest -q
+```
+
