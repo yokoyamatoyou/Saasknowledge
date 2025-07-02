@@ -21,8 +21,8 @@ You can also override the default `knowledge_base/` directory location by settin
 * Launch the app with:
 
   ```bash
-./knowledgeplus_design-main/run_app.sh
-```
+  ./run_app.sh
+  ```
 
 If you require model files that are normally fetched from HuggingFace, be aware
 that this environment blocks direct downloads from that service. Retrieve the
