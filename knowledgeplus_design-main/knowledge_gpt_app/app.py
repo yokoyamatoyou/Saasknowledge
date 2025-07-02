@@ -116,8 +116,9 @@ try:
     ensure_nltk_resources_kb()
     logger.info("自作モジュールのインポートに成功しました")
 except Exception as e:
-    logger.error(f"自作モジュールのインポートに失敗しました: {e}")
-    traceback.print_exc()
+    logger.error(
+        f"自作モジュールのインポートに失敗しました: {e}", exc_info=True
+    )
 
 # OpenAIクライアントを取得する関数 (app.py内で共通して使用)
 @st.cache_resource

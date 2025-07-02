@@ -186,7 +186,10 @@ class HybridSearchEngine:
         if metadata_file.exists():
             try:
                 with open(metadata_file, 'r', encoding='utf-8') as f: return json.load(f)
-            except Exception as e: logger.error(f"ナレッジベースメタデータ読み込みエラー: {e}"); traceback.print_exc()
+            except Exception as e:
+                logger.error(
+                    f"ナレッジベースメタデータ読み込みエラー: {e}", exc_info=True
+                )
         else:
             logger.info(f"ナレッジベースメタデータファイルが見つかりません: {metadata_file}")
         return {}
@@ -214,7 +217,11 @@ class HybridSearchEngine:
                 else:
                     logger.warning(f"    メタデータファイル {metadata_file.name} が見つかりません。")
                 loaded_chunks.append({'id': chunk_id, 'text': chunk_text, 'metadata': metadata})
-            except Exception as e: logger.error(f"チャンク '{chunk_file_path.name}' の読み込み中にエラー: {e}"); traceback.print_exc()
+            except Exception as e:
+                logger.error(
+                    f"チャンク '{chunk_file_path.name}' の読み込み中にエラー: {e}",
+                    exc_info=True,
+                )
         logger.info(f"    _load_chunks 完了。ロードされたチャンク数: {len(loaded_chunks)}")
         return loaded_chunks
 
@@ -392,8 +399,9 @@ class HybridSearchEngine:
             logger.error("  警告: BM25インデックス構築中にZeroDivisionError。BM25は機能しない可能性があります。")
             return None
         except Exception as e:
-            logger.error(f"  BM25インデックス構築中に予期せぬエラー: {e}")
-            traceback.print_exc()
+            logger.error(
+                f"  BM25インデックス構築中に予期せぬエラー: {e}", exc_info=True
+            )
             return None
             
     def get_embedding_from_openai(self, text: str, model_name: typing.Union[str, None] = None, client = None) -> typing.Union[list[float], None]: # ★修正
@@ -491,7 +499,10 @@ class HybridSearchEngine:
                         logger.error(f"    致命的エラー: BM25スコアリスト長 ({len(raw_bm25_scores_from_lib)}) と "
                               f"有効チャンク数 ({len(self.chunks)}) が不一致。BM25スコアは使用できません。")
                 except Exception as e_bm25_search:
-                    logger.error(f"    BM25検索処理中に予期せぬエラー: {e_bm25_search}"); traceback.print_exc()
+                    logger.error(
+                        f"    BM25検索処理中に予期せぬエラー: {e_bm25_search}",
+                        exc_info=True,
+                    )
             else:
                 logger.info("    BM25検索用の有効なクエリトークンがないため、BM25スコアは0として扱います。")
         else:
@@ -564,8 +575,10 @@ def search_knowledge_base(query: str, kb_path: str, top_k: int = 5, threshold: f
         logger.info("="*50 + "\n")
         return results, not_found
     except Exception as e_skb:
-        logger.error(f"検索処理全体でエラー (search_knowledge_base): {type(e_skb).__name__}: {e_skb}")
-        logger.info("スタックトレース:"); traceback.print_exc()
+        logger.error(
+            f"検索処理全体でエラー (search_knowledge_base): {type(e_skb).__name__}: {e_skb}",
+            exc_info=True,
+        )
         return [], True
 
 def get_openai_client_for_kb_search():
