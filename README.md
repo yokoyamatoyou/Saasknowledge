@@ -11,6 +11,12 @@ A simple Streamlit prototype for uploading files, creating a knowledge base and 
   export OPENAI_API_KEY=your_api_key
   ```
 
+You can also override the default `knowledge_base/` directory location by setting `KNOWLEDGE_BASE_DIR` before running the app:
+
+  ```bash
+  export KNOWLEDGE_BASE_DIR=/path/to/storage
+  ```
+
 * Launch the app with:
 
   ```bash
