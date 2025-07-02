@@ -11,6 +11,11 @@ CHAT_HISTORY_DIR = Path(__file__).resolve().parents[2] / "chat_history"
 CHAT_HISTORY_DIR.mkdir(parents=True, exist_ok=True)
 
 
+def get_history_path(history_id: str) -> Path:
+    """Return the file path for the given history ID."""
+    return CHAT_HISTORY_DIR / f"{history_id}.json"
+
+
 def load_chat_histories() -> List[Dict]:
     """Return a list of available chat histories sorted by creation time."""
     histories = []
@@ -40,13 +45,14 @@ def create_history(settings: Optional[Dict] = None) -> str:
         "settings": settings or {},
         "messages": [],
     }
-    with open(CHAT_HISTORY_DIR / f"{history_id}.json", "w", encoding="utf-8") as f:
+    path = get_history_path(history_id)
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     return history_id
 
 
 def append_message(history_id: str, role: str, content: str) -> None:
-    path = CHAT_HISTORY_DIR / f"{history_id}.json"
+    path = get_history_path(history_id)
     if not path.exists():
         return
     with open(path, "r", encoding="utf-8") as f:
@@ -57,7 +63,7 @@ def append_message(history_id: str, role: str, content: str) -> None:
 
 
 def update_title(history_id: str, title: str) -> None:
-    path = CHAT_HISTORY_DIR / f"{history_id}.json"
+    path = get_history_path(history_id)
     if not path.exists():
         return
     with open(path, "r", encoding="utf-8") as f:
@@ -72,7 +78,7 @@ def delete_history(history_id: str) -> bool:
 
     Returns True if the file existed and was removed, False otherwise.
     """
-    path = CHAT_HISTORY_DIR / f"{history_id}.json"
+    path = get_history_path(history_id)
     if not path.exists():
         return False
     try:
