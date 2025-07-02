@@ -16,6 +16,7 @@ from shared.chat_history_utils import (
     create_history,
     append_message,
     update_title,
+    delete_history,
 )
 
 # Import functions from knowledge_gpt_app.app (some might be moved later)
@@ -292,12 +293,32 @@ if hasattr(sidebar, "button") and sidebar.button("＋ 新しいチャット", ke
 
 if st.session_state.chat_histories and hasattr(sidebar, "expander"):
     with sidebar.expander("過去の会話", expanded=False):
-        for hist in st.session_state.chat_histories:
-            if st.button(hist["title"], key=f"load_{hist['id']}"):
+        for hist in list(st.session_state.chat_histories):
+            col_load, col_del = st.columns([4, 1])
+            if col_load.button(hist["title"], key=f"load_{hist['id']}"):
                 st.session_state.current_chat_id = hist["id"]
                 st.session_state.chat_history = hist["messages"]
                 st.session_state.gpt_conversation_title = hist["title"]
                 st.session_state.title_generated = True
+                st.rerun()
+            if col_del.button("削除", key=f"del_{hist['id']}"):
+                delete_history(hist["id"])
+                st.session_state.chat_histories = [
+                    h for h in st.session_state.chat_histories if h["id"] != hist["id"]
+                ]
+                if st.session_state.current_chat_id == hist["id"]:
+                    if st.session_state.chat_histories:
+                        new_hist = st.session_state.chat_histories[0]
+                        st.session_state.current_chat_id = new_hist["id"]
+                        st.session_state.chat_history = new_hist["messages"]
+                        st.session_state.gpt_conversation_title = new_hist["title"]
+                        st.session_state.title_generated = True
+                    else:
+                        new_id = create_history({})
+                        st.session_state.current_chat_id = new_id
+                        st.session_state.chat_history = []
+                        st.session_state.gpt_conversation_title = "新しい会話"
+                        st.session_state.title_generated = False
                 st.rerun()
 
 if hasattr(sidebar, "expander"):

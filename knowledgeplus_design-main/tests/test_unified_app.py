@@ -43,6 +43,13 @@ def test_prompt_advice_option_present():
     assert 'アドバイスを有効化' in text
 
 
+def test_delete_history_button_present():
+    app_path = PROJECT_ROOT / 'unified_app.py'
+    text = app_path.read_text(encoding='utf-8')
+    assert 'delete_history' in text
+    assert '削除' in text
+
+
 def test_safe_generate_handles_error(monkeypatch):
     pytest.importorskip('streamlit')
     pytest.importorskip('sudachipy')
