@@ -3,6 +3,8 @@ import logging
 import uuid
 from datetime import datetime
 
+from shared.env import load_env
+
 # Import shared modules
 from shared.chat_controller import ChatController, get_persona_list
 from shared.search_engine import HybridSearchEngine
@@ -33,6 +35,9 @@ from config import DEFAULT_KB_NAME
 from shared.prompt_advisor import generate_prompt_advice
 
 logger = logging.getLogger(__name__)
+
+# Load environment variables from .env if present
+load_env()
 
 # Early check for OpenAI API key
 try:
@@ -253,11 +258,21 @@ selected_mode_display = st.sidebar.radio(
     key="sidebar_mode_radio",
     help="アプリケーションのモードを選択します。"
 )
-st.session_state["current_mode"] = list(mode_options.keys())[list(mode_options.values()).index(selected_mode_display)]
+# Convert the selected display label back to the internal key. If the label is
+# not recognized (e.g. in tests that monkeypatch the sidebar), keep the
+# existing mode to avoid errors.
+if selected_mode_display in mode_options.values():
+    st.session_state["current_mode"] = list(mode_options.keys())[list(mode_options.values()).index(selected_mode_display)]
+else:
+    logger.warning("Invalid mode selection: %s", selected_mode_display)
 
-# Chat related sidebar controls
-st.sidebar.markdown("---")
-if st.sidebar.button("＋ 新しいチャット", key="new_chat_btn"):
+# Chat related sidebar controls. Some unit tests monkeypatch `st.sidebar` with a
+# simple object that only provides `radio()`. Guard these calls so the app can
+# be imported even when sidebar methods are missing.
+sidebar = st.sidebar
+if hasattr(sidebar, "markdown"):
+    sidebar.markdown("---")
+if hasattr(sidebar, "button") and sidebar.button("＋ 新しいチャット", key="new_chat_btn"):
     new_id = create_history({
         "persona": st.session_state.get("persona"),
         "temperature": st.session_state.get("temperature"),
@@ -275,8 +290,8 @@ if st.sidebar.button("＋ 新しいチャット", key="new_chat_btn"):
         "messages": [],
     })
 
-if st.session_state.chat_histories:
-    with st.sidebar.expander("過去の会話", expanded=False):
+if st.session_state.chat_histories and hasattr(sidebar, "expander"):
+    with sidebar.expander("過去の会話", expanded=False):
         for hist in st.session_state.chat_histories:
             if st.button(hist["title"], key=f"load_{hist['id']}"):
                 st.session_state.current_chat_id = hist["id"]
@@ -285,26 +300,28 @@ if st.session_state.chat_histories:
                 st.session_state.title_generated = True
                 st.rerun()
 
-with st.sidebar.expander("チャット設定", expanded=False):
-    personas = get_persona_list()
-    persona_ids = [p["id"] for p in personas]
-    persona_names = {p["id"]: p.get("name", p["id"]) for p in personas}
-    current_id = st.session_state.get("persona", persona_ids[0])
-    selected_id = st.selectbox(
-        "AIペルソナ", persona_ids,
-        index=persona_ids.index(current_id),
-        format_func=lambda x: persona_names.get(x, x),
-    )
-    st.session_state.persona = selected_id
-    st.session_state.temperature = st.slider(
-        "温度", 0.0, 1.0, float(st.session_state.get("temperature", 0.7)), 0.05
-    )
+if hasattr(sidebar, "expander"):
+    with sidebar.expander("チャット設定", expanded=False):
+        personas = get_persona_list()
+        persona_ids = [p["id"] for p in personas]
+        persona_names = {p["id"]: p.get("name", p["id"]) for p in personas}
+        current_id = st.session_state.get("persona", persona_ids[0])
+        selected_id = st.selectbox(
+            "AIペルソナ", persona_ids,
+            index=persona_ids.index(current_id),
+            format_func=lambda x: persona_names.get(x, x),
+        )
+        st.session_state.persona = selected_id
+        st.session_state.temperature = st.slider(
+            "温度", 0.0, 1.0, float(st.session_state.get("temperature", 0.7)), 0.05
+        )
 
-with st.sidebar.expander("プロンプトアドバイス", expanded=False):
-    st.session_state.prompt_advice = st.checkbox(
-        "アドバイスを有効化",
-        value=st.session_state.get("prompt_advice", False),
-    )
+if hasattr(sidebar, "expander"):
+    with sidebar.expander("プロンプトアドバイス", expanded=False):
+        st.session_state.prompt_advice = st.checkbox(
+            "アドバイスを有効化",
+            value=st.session_state.get("prompt_advice", False),
+        )
 
 # --- Main Content Area based on Mode ---
 st.title("KNOWLEDGE+") # Always show the main title
