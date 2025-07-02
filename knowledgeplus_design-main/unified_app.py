@@ -172,24 +172,16 @@ h1 {
 </style>
 """, unsafe_allow_html=True)
 
-if "sidebar_visible" not in st.session_state:
-    st.session_state["sidebar_visible"] = False
+from ui_modules.sidebar_toggle import render_sidebar_toggle
 
-toggle_label = ">>" if not st.session_state.sidebar_visible else "<<"
-if st.button(toggle_label, key="toggle_sidebar", help="サイドバーの表示切替"):
-    st.session_state.sidebar_visible = not st.session_state.sidebar_visible
-    st.rerun()
+TOGGLE_SIDEBAR_KEY = "toggle_sidebar"
+TOGGLE_SIDEBAR_COLLAPSED = ">>"
+TOGGLE_SIDEBAR_EXPANDED = "<<"
 
-st.markdown(
-    f"""
-    <style>
-    [data-testid="stSidebar"] {{
-        transition: margin-left 0.3s ease;
-        margin-left: {'0' if st.session_state.sidebar_visible else '-18rem'};
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True,
+render_sidebar_toggle(
+    key=TOGGLE_SIDEBAR_KEY,
+    collapsed_label=TOGGLE_SIDEBAR_COLLAPSED,
+    expanded_label=TOGGLE_SIDEBAR_EXPANDED,
 )
 
 def safe_generate_gpt_response(user_input, conversation_history=None, persona="default", temperature=None, response_length=None, client=None):
