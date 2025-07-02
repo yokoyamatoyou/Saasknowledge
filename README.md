@@ -5,7 +5,7 @@ A simple Streamlit prototype for uploading files, creating a knowledge base and 
 * Read the [full setup guide](knowledgeplus_design-main/README.md) for details.
 * Install packages with `pip install -r knowledgeplus_design-main/requirements-light.txt` for the basics.
 * Add advanced features later with `pip install -r knowledgeplus_design-main/requirements-extra.txt`.
-* Alternatively run `scripts/install_light.sh` or `scripts/install_full.sh` to install the minimal or full set in two steps.
+* Alternatively run `scripts/install_light.sh` for the basics, `scripts/install_extra.sh` when you need the heavy libraries, or `scripts/install_full.sh` to install everything in one go.
 * Copy `knowledgeplus_design-main/.env.example` to `.env` and set the OpenAI key before starting:
 
   ```bash
