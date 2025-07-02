@@ -30,6 +30,7 @@ from knowledge_gpt_app.app import (
 from generate_faq import generate_faqs_from_chunks
 
 from config import DEFAULT_KB_NAME
+from shared.prompt_advisor import generate_prompt_advice
 
 logger = logging.getLogger(__name__)
 
@@ -478,19 +479,9 @@ if st.session_state["current_mode"] == "チャット":
         if st.session_state.get("prompt_advice"):
             client = get_openai_client()
             if client:
-                advice_gen = safe_generate_gpt_response(
-                    f"以下のユーザープロンプトを、より明確で効果的なプロンプトにするための改善案を、簡潔な箇条書きのMarkdown形式で提案してください:\n\n---\n{user_msg}\n---",
-                    conversation_history=[],
-                    persona="default",
-                    temperature=0.0,
-                    response_length="簡潔",
-                    client=client,
-                )
-                advice_text = ""
-                if advice_gen:
-                    for chunk in advice_gen:
-                        advice_text += chunk
-                st.info(f"💡 プロンプトアドバイス:\n{advice_text}")
+                advice_text = generate_prompt_advice(user_msg, client=client)
+                if advice_text:
+                    st.info(f"💡 プロンプトアドバイス:\n{advice_text}")
         
         context = ""
         if use_kb:
