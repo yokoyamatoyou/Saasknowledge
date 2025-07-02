@@ -174,6 +174,7 @@ h1 {
 """, unsafe_allow_html=True)
 
 from ui_modules.sidebar_toggle import render_sidebar_toggle
+from ui_modules.document_card import render_document_card
 
 TOGGLE_SIDEBAR_KEY = "toggle_sidebar"
 TOGGLE_SIDEBAR_COLLAPSED = ">>"
@@ -201,21 +202,6 @@ def safe_generate_gpt_response(user_input, conversation_history=None, persona="d
         st.error(f"GPT応答生成エラー: {e}")
         logger.error("GPT response generation error", exc_info=True)
         return None
-
-
-def render_document_card(doc: dict) -> None:
-    """Display a single search result using the `doc-card` style."""
-    meta = doc.get("metadata", {}) or {}
-    display_meta = meta.get("display_metadata", {}) or {}
-    title = meta.get("title") or display_meta.get("title") or meta.get("filename", "No title")
-    snippet = doc.get("text", "")[:120].replace("\n", " ")
-    similarity = doc.get("similarity")
-    from html import escape
-    body = f"<div class='doc-card'><strong>{escape(title)}</strong>"
-    if similarity is not None:
-        body += f"<div>Score: {similarity:.3f}</div>"
-    body += f"<div>{escape(snippet)}...</div></div>"
-    st.markdown(body, unsafe_allow_html=True)
 
 # --- Session State Initialization ---
 if "current_mode" not in st.session_state:
