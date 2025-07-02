@@ -506,6 +506,8 @@ if st.session_state["current_mode"] == "チャット":
                 advice_text = generate_prompt_advice(user_msg, client=client)
                 if advice_text:
                     st.info(f"💡 プロンプトアドバイス:\n{advice_text}")
+                    st.session_state["chat_history"].append({"role": "info", "content": advice_text})
+                    append_message(st.session_state.current_chat_id, "info", advice_text)
         
         context = ""
         if use_kb:

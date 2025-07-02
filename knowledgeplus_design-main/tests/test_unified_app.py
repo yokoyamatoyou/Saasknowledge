@@ -50,6 +50,12 @@ def test_delete_history_button_present():
     assert '削除' in text
 
 
+def test_prompt_advice_saved_to_history():
+    app_path = PROJECT_ROOT / 'unified_app.py'
+    text = app_path.read_text(encoding='utf-8')
+    assert 'append_message(st.session_state.current_chat_id, "info", advice_text)' in text
+
+
 def test_safe_generate_handles_error(monkeypatch):
     pytest.importorskip('streamlit')
     pytest.importorskip('sudachipy')
