@@ -65,3 +65,18 @@ def update_title(history_id: str, title: str) -> None:
     data["title"] = title
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def delete_history(history_id: str) -> bool:
+    """Delete the specified history file.
+
+    Returns True if the file existed and was removed, False otherwise.
+    """
+    path = CHAT_HISTORY_DIR / f"{history_id}.json"
+    if not path.exists():
+        return False
+    try:
+        path.unlink()
+        return True
+    except OSError:
+        return False
