@@ -1,13 +1,21 @@
 from __future__ import annotations
 
 import json
+import os
 import uuid
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-# Store histories at the repository root so they are shared across all apps
-CHAT_HISTORY_DIR = Path(__file__).resolve().parents[2] / "chat_history"
+# Store histories at the repository root so they are shared across all apps.
+# Allow override via the ``CHAT_HISTORY_DIR`` environment variable so the
+# location can be customized for different deployments.
+CHAT_HISTORY_DIR = Path(
+    os.getenv(
+        "CHAT_HISTORY_DIR",
+        str(Path(__file__).resolve().parents[2] / "chat_history"),
+    )
+)
 CHAT_HISTORY_DIR.mkdir(parents=True, exist_ok=True)
 
 

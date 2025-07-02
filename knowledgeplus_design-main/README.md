@@ -53,6 +53,8 @@ streamlit run app.py
 
 アップロードされたファイルや生成されたデータは `knowledge_base/<kb_name>` 以下に保存されます。デフォルトのナレッジベース名は `config.py` の `DEFAULT_KB_NAME` で定義されています。
 
+保存先ディレクトリを変更したい場合は `KNOWLEDGE_BASE_DIR` 環境変数を、チャット履歴の保存場所を変更したい場合は `CHAT_HISTORY_DIR` を設定してください。
+
 ## ✨ 主な機能
 
 *   **検索中心のUI**: Googleのようなシンプルで直感的なインターフェースで、必要な情報に素早くアクセスできます。
