@@ -69,7 +69,10 @@ SUPPORTED_DOCUMENT_TYPES = ['pdf']
 SUPPORTED_CAD_TYPES = ['dxf', 'stl', 'ply', 'obj', 'step', 'stp', 'iges', 'igs', '3ds']
 
 # 共通ナレッジベースディレクトリ
-BASE_KNOWLEDGE_DIR = Path("knowledge_base").resolve()
+# centralize configuration using the shared utility
+from shared.upload_utils import BASE_KNOWLEDGE_DIR as SHARED_KB_DIR
+
+BASE_KNOWLEDGE_DIR = SHARED_KB_DIR
 BASE_KNOWLEDGE_DIR.mkdir(exist_ok=True)
 
 # データディレクトリ
