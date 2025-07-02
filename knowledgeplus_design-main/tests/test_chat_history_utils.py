@@ -24,3 +24,6 @@ def test_chat_history_lifecycle(tmp_path, monkeypatch):
     assert h["title"] == "Session"
     assert h["settings"] == {"mode": "test"}
     assert len(h["messages"]) == 2
+
+    assert chu.delete_history(hid) is True
+    assert not (tmp_path / f"{hid}.json").exists()
