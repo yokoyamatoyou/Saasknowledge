@@ -16,26 +16,15 @@
 *   **`streamlit.experimental_rerun` の非推奨化:** `ui_modules/thumbnail_editor.py` および関連テストで `st.experimental_rerun()` を `st.rerun()` に置き換えました。
 *   **`st.session_state` のモック問題:** `tests/test_unified_app.py` において、`st.session_state` を辞書のように振る舞い、かつ属性アクセスも可能なオブジェクトとしてモックするように修正しました。
 *   **`test_reindex.py` のインデントエラー:** `test_reindex.py` のインデントがずれていた問題を修正しました。
+*   **`test_reindex.py` のテストデータ更新:** ストップワードとして扱われない単語
+    "apple", "banana", "orange" を使用するよう変更し、検索エンジンのテストが正しく
+    動作することを確認しました。
 
 ## 2. 現在の課題
 
-### `test_reindex.py` のテスト失敗
-
-`test_reindex.py` の `test_reindex_loads_new_chunks` テストが `AssertionError: assert 2 == 3` で失敗し続けています。
-
-**原因:**
-`shared/search_engine.py` 内の `_create_tokenized_corpus_and_filter_chunks` 関数が、テストデータ（`"one"`, `"two"`, `"three"`）をストップワードとしてフィルタリングしているためです。
-`tokenize_text_for_bm25_internal` 関数が、`_stop_words_set` に含まれる英語のストップワード（例: "one"）をテキストから除去し、その結果、チャンクが空になるか、ダミーのトークンのみになるため、BM25インデックスの構築対象から除外されています。
+特に共有すべき大きな課題はありません。
 
 ## 3. 今後の作業
-
-### `test_reindex.py` の修正
-
-`test_reindex_loads_new_chunks` テストをパスさせる必要があります。以下のいずれかのアプローチを検討してください。
-
-1.  **テストデータの変更:** `test_reindex.py` のテストデータを、英語のストップワードではない単語（例: "apple", "banana", "orange"）に変更する。
-2.  **ストップワードリストの調整:** `shared/search_engine.py` の `_stop_words_set` から英語のストップワードを一時的に削除してテストをパスさせる（ただし、これは本番環境での検索精度に影響を与える可能性があります）。
-3.  **トークナイザーロジックの調整:** `tokenize_text_for_bm25_internal` のロジックを調整し、テストデータがフィルタリングされないようにする（より根本的な解決策ですが、影響範囲を考慮する必要があります）。
 
 ### その他の作業
 
