@@ -16,6 +16,7 @@ build/
 
 # Chat history directory
 chat_history/
+!chat_history/README.md
 
 # Knowledge base directory
 knowledge_base/
