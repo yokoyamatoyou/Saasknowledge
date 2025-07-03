@@ -60,6 +60,10 @@ def create_history(settings: Optional[Dict] = None) -> str:
 
 
 def append_message(history_id: str, role: str, content: str) -> None:
+    """Append ``role`` and ``content`` to ``history_id``'s message list.
+
+    The JSON file ``<history_id>.json`` is updated in place if it exists.
+    """
     path = get_history_path(history_id)
     if not path.exists():
         return
@@ -71,6 +75,7 @@ def append_message(history_id: str, role: str, content: str) -> None:
 
 
 def update_title(history_id: str, title: str) -> None:
+    """Update the title for the specified history file if it exists."""
     path = get_history_path(history_id)
     if not path.exists():
         return
