@@ -1,4 +1,5 @@
 import math
+import sys
 from types import SimpleNamespace
 
 __version__ = "1.24.0"
@@ -34,3 +35,11 @@ class _Linalg:
         return math.sqrt(sum(float(v) * float(v) for v in vec))
 
 linalg = _Linalg()
+
+# Provide minimal submodules so ``import numpy.random`` and
+# ``import numpy.core`` succeed in tests without installing the real
+# NumPy package.
+random = SimpleNamespace()
+core = SimpleNamespace()
+sys.modules.setdefault(__name__ + ".random", random)
+sys.modules.setdefault(__name__ + ".core", core)
