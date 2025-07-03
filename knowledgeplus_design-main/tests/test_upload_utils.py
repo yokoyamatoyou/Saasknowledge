@@ -47,3 +47,10 @@ def test_save_processed_data_version(tmp_path, monkeypatch):
         original_bytes=b"b",
     )
     assert Path(third["original_file_path"]) != Path(first["original_file_path"])
+
+def test_save_user_metadata(tmp_path, monkeypatch):
+    monkeypatch.setattr(upload_utils, "BASE_KNOWLEDGE_DIR", tmp_path)
+    path = upload_utils.save_user_metadata("kb", "abc123", "Title", ["x", "y"])
+    assert Path(path).exists()
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    assert data == {"title": "Title", "tags": ["x", "y"]}
