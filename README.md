@@ -47,10 +47,16 @@ You can similarly override where chat histories are stored by setting
   ```bash
   ./run_app.sh          # macOS/Linux
   run_app.bat           # Windows
+  # or run Streamlit directly from the repository root
+  streamlit run app.py
   ```
   The helper scripts load variables from `.env` if present and then verify that
   `OPENAI_API_KEY` is set, exiting early if it is missing to avoid confusing
   startup errors.
+
+When the server starts it will remain active to serve the web UI. This waiting
+state is expected and should not be treated as a failure when Codex prepares a
+pull request.
 
 If you require model files that are normally fetched from HuggingFace, be aware
 that this environment blocks direct downloads from that service. Retrieve the
