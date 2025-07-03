@@ -54,3 +54,21 @@ def test_save_user_metadata(tmp_path, monkeypatch):
     assert Path(path).exists()
     data = json.loads(Path(path).read_text(encoding="utf-8"))
     assert data == {"title": "Title", "tags": ["x", "y"]}
+
+
+def test_load_user_metadata_and_list(tmp_path, monkeypatch):
+    monkeypatch.setattr(upload_utils, "BASE_KNOWLEDGE_DIR", tmp_path)
+    kb_dir = tmp_path / "kb" / "metadata"
+    kb_dir.mkdir(parents=True)
+    meta_file = kb_dir / "1.json"
+    meta_file.write_text(json.dumps({"paths": {}}), encoding="utf-8")
+    user_file = kb_dir / "1_user.json"
+    user_file.write_text(json.dumps({"title": "T"}), encoding="utf-8")
+
+    items = upload_utils.list_metadata_items("kb")
+    assert items == [("1", {"paths": {}})]
+
+    data = upload_utils.load_user_metadata("kb", "1")
+    assert data == {"title": "T"}
+    missing = upload_utils.load_user_metadata("kb", "nope")
+    assert missing == {}

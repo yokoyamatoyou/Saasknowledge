@@ -106,3 +106,34 @@ def save_user_metadata(kb_name: str, item_id: str, title: str, tags: list[str]) 
     with open(meta_path, "w", encoding="utf-8") as f:
         json.dump({"title": title, "tags": tags}, f, ensure_ascii=False, indent=2)
     return str(meta_path)
+
+
+def load_user_metadata(kb_name: str, item_id: str) -> Dict[str, Any]:
+    """Load user-provided metadata for the given item if it exists."""
+    meta_path = BASE_KNOWLEDGE_DIR / kb_name / "metadata" / f"{item_id}_user.json"
+    if meta_path.exists():
+        try:
+            with open(meta_path, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+
+def list_metadata_items(kb_name: str) -> list[tuple[str, Dict[str, Any]]]:
+    """Return (id, metadata) tuples for all items in a knowledge base."""
+    items: list[tuple[str, Dict[str, Any]]] = []
+    meta_dir = BASE_KNOWLEDGE_DIR / kb_name / "metadata"
+    if not meta_dir.exists():
+        return items
+    for meta_path in meta_dir.glob("*.json"):
+        name = meta_path.name
+        if name == "kb_metadata.json" or name.endswith("_user.json"):
+            continue
+        try:
+            with open(meta_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            continue
+        items.append((meta_path.stem, data))
+    return items
