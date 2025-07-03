@@ -19,6 +19,7 @@ from pathlib import Path
 import re
 import typing
 import logging
+from shared.openai_utils import get_openai_client
 
 logger = logging.getLogger(__name__)
 
@@ -412,15 +413,9 @@ class HybridSearchEngine:
         if model_name is None:
             model_name = self.embedding_model
         if client is None:
-            try:
-                from openai import OpenAI
-                api_key_env = os.getenv("OPENAI_API_KEY")
-                if not api_key_env:
-                    logger.warning("  警告 (get_embedding): OPENAI_API_KEY が未設定。埋め込み取得不可。")
-                    return None
-                client = OpenAI(api_key=api_key_env)
-            except Exception as e_client_init:
-                logger.error(f"  OpenAI Client初期化エラー (get_embedding内): {e_client_init}")
+            client = get_openai_client()
+            if client is None:
+                logger.warning("  警告 (get_embedding): OpenAIクライアントを取得できません。")
                 return None
         if not text or not isinstance(text, str) or len(text.strip()) == 0:
             logger.warning("  警告 (get_embedding): 埋め込み対象のテキストが空または不正。")
