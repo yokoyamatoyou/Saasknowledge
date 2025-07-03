@@ -9,3 +9,7 @@
 - Implemented sidebar toggle in `unified_app.py` so the sidebar slides in and out using `<<` and `>>`.
 - Verified automated tests still pass.
 
+
+## 2025-07-03
+- Added unit test for `save_user_metadata` to verify metadata files are stored correctly.
+- All tests continue to pass with `pytest -q`.
