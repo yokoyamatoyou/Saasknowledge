@@ -62,7 +62,7 @@ def generate_faqs_from_chunks(kb_name: str, max_tokens: int = 1000, num_pairs: i
             faq_id = f"faq_{uuid4().hex}"
             combined = f"Q: {q}\nA: {a}"
             try:
-                from mm_kb_builder.app import get_embedding as _get_embedding
+                from knowledge_gpt_app.app import get_embedding as _get_embedding
             except Exception:
                 raise RuntimeError("Embedding function unavailable")
             embedding = _get_embedding(combined, client)

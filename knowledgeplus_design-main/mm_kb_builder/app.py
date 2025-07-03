@@ -102,6 +102,14 @@ def get_openai_client():
         st.error(f"OpenAIクライアント初期化エラー: {e}")
         return None
 
+def get_embedding(text, client=None):
+    """Wrapper for KnowledgeBuilder._get_embedding."""
+    if client is None:
+        client = get_openai_client()
+        if client is None:
+            return None
+    return _kb_builder._get_embedding(text, client)
+
 def analyze_image_with_gpt4o(image_base64, filename, cad_metadata=None, client=None):
     """GPT-4oで画像解析（CADメタデータ対応）"""
     if client is None:
