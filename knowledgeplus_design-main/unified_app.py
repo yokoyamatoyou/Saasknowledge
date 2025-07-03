@@ -183,8 +183,8 @@ from ui_modules.sidebar_toggle import render_sidebar_toggle
 from ui_modules.document_card import render_document_card
 
 TOGGLE_SIDEBAR_KEY = "toggle_sidebar"
-TOGGLE_SIDEBAR_COLLAPSED = ">>"
-TOGGLE_SIDEBAR_EXPANDED = "<<"
+TOGGLE_SIDEBAR_COLLAPSED = "＞＞"
+TOGGLE_SIDEBAR_EXPANDED = "＜＜"
 
 render_sidebar_toggle(
     key=TOGGLE_SIDEBAR_KEY,

@@ -3,8 +3,8 @@ import streamlit as st
 
 def render_sidebar_toggle(
     key: str = "toggle_sidebar",
-    collapsed_label: str = ">>",
-    expanded_label: str = "<<",
+    collapsed_label: str = "＞＞",
+    expanded_label: str = "＜＜",
 ) -> None:
     """Display a toggle button to collapse or expand the sidebar."""
     if "sidebar_visible" not in st.session_state:
