@@ -34,7 +34,7 @@ def test_sidebar_toggle_button_present():
     app_path = PROJECT_ROOT / 'unified_app.py'
     text = app_path.read_text(encoding='utf-8')
     assert 'toggle_sidebar' in text
-    assert '>>' in text and '<<' in text
+    assert '＞＞' in text and '＜＜' in text
 
 
 def test_prompt_advice_option_present():
