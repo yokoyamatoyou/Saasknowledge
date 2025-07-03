@@ -3,8 +3,12 @@ import json
 import os
 from pathlib import Path
 from uuid import uuid4
+import logging
 
 from shared.upload_utils import BASE_KNOWLEDGE_DIR, save_processed_data
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 try:
     from openai import OpenAI
@@ -83,7 +87,7 @@ def main(argv=None):
     parser.add_argument("--pairs", type=int, default=3)
     args = parser.parse_args(argv)
     count = generate_faqs_from_chunks(args.kb_name, args.max_tokens, args.pairs)
-    print(f"Generated {count} FAQ entries")
+    logger.info("Generated %s FAQ entries", count)
 
 
 if __name__ == "__main__":
