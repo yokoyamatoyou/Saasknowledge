@@ -2,8 +2,8 @@
 # Launch the unified Streamlit interface from repository root
 cd "$(dirname "$0")/knowledgeplus_design-main" || exit 1
 
-# Load variables from .env if present and OPENAI_API_KEY isn't already set
-if [ -z "$OPENAI_API_KEY" ] && [ -f ../.env ]; then
+# Load variables from .env if present so optional overrides apply
+if [ -f ../.env ]; then
   set -a
   # shellcheck disable=SC1091
   . ../.env
