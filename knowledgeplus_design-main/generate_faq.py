@@ -1,29 +1,16 @@
 import argparse
 import json
-import os
 from pathlib import Path
 from uuid import uuid4
 import logging
 
 from shared.upload_utils import BASE_KNOWLEDGE_DIR, save_processed_data
+from shared.openai_utils import get_openai_client
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-try:
-    from openai import OpenAI
-except Exception:  # pragma: no cover - openai may not be installed in tests
-    OpenAI = None
 
-
-def get_openai_client():
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key or OpenAI is None:
-        return None
-    try:
-        return OpenAI(api_key=api_key)
-    except Exception:
-        return None
 
 
 def generate_faqs_from_chunks(kb_name: str, max_tokens: int = 1000, num_pairs: int = 3, client=None) -> int:

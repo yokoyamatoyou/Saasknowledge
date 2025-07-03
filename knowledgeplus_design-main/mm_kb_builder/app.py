@@ -2,14 +2,11 @@ import os
 import sys
 import streamlit as st
 from config import DEFAULT_KB_NAME
-from openai import OpenAI
 import json
 from pathlib import Path
 import logging
 import uuid
-from shared.upload_utils import (
-    ensure_openai_key,
-)
+from shared.openai_utils import get_openai_client
 from shared.file_processor import FileProcessor
 from shared.kb_builder import KnowledgeBuilder
 from ui_modules.theme import apply_intel_theme
@@ -91,16 +88,6 @@ _kb_builder = KnowledgeBuilder(
     get_openai_client_func=get_openai_client,
     refresh_search_engine_func=_refresh_search_engine,
 )
-
-# OpenAIクライアント取得
-@st.cache_resource
-def get_openai_client():
-    try:
-        api_key = ensure_openai_key()
-        return OpenAI(api_key=api_key)
-    except Exception as e:
-        st.error(f"OpenAIクライアント初期化エラー: {e}")
-        return None
 
 def get_embedding(text, client=None):
     """Wrapper for KnowledgeBuilder._get_embedding."""

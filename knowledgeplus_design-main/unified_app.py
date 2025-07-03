@@ -23,11 +23,11 @@ from shared.chat_history_utils import (
 from knowledge_gpt_app.app import (
     list_knowledge_bases,
     semantic_chunking,
-    get_openai_client,
     refresh_search_engine,
-    read_file as app_read_file, # Rename to avoid conflict with FileProcessor
-    search_multiple_knowledge_bases
+    read_file as app_read_file,  # Rename to avoid conflict with FileProcessor
+    search_multiple_knowledge_bases,
 )
+from shared.openai_utils import get_openai_client
 
 # Import FAQ generation (assuming it's a standalone script)
 from generate_faq import generate_faqs_from_chunks

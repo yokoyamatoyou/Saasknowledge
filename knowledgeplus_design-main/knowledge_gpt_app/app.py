@@ -1,7 +1,6 @@
 import os
 import sys
 import streamlit as st
-from openai import OpenAI
 from config import EMBEDDING_MODEL, EMBEDDING_DIMENSIONS, DEFAULT_KB_NAME
 import PyPDF2
 import docx
@@ -54,6 +53,7 @@ from shared.upload_utils import (
     BASE_KNOWLEDGE_DIR as SHARED_KB_DIR,
     ensure_openai_key,
 )
+from shared.openai_utils import get_openai_client
 from generate_faq import generate_faqs_from_chunks
 from ui_modules.theme import apply_intel_theme
 from shared.logging_utils import configure_logging
@@ -120,19 +120,6 @@ except Exception as e:
         f"自作モジュールのインポートに失敗しました: {e}", exc_info=True
     )
 
-# OpenAIクライアントを取得する関数 (app.py内で共通して使用)
-@st.cache_resource
-def get_openai_client():
-    """OpenAIクライアントを取得する関数"""
-    try:
-        api_key = ensure_openai_key()
-        client = OpenAI(api_key=api_key)
-        logger.info("OpenAIクライアントの取得に成功しました。")
-        return client
-    except Exception as e:
-        logger.error(f"OpenAI クライアント初期化エラー: {e}")
-        st.error(f"OpenAI クライアントの初期化中にエラーが発生しました: {e}")
-        return None
 
 # 固定モデル名
 GPT4_MODEL = "gpt-4.1-2025-04-14"
