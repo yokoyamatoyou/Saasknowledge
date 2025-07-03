@@ -46,8 +46,9 @@ You can similarly override where chat histories are stored by setting
   ./run_app.sh          # macOS/Linux
   run_app.bat           # Windows
   ```
-  The helper scripts check for `OPENAI_API_KEY` and exit if the variable is
-  missing to avoid confusing startup errors.
+  The helper scripts load variables from `.env` if present and then verify that
+  `OPENAI_API_KEY` is set, exiting early if it is missing to avoid confusing
+  startup errors.
 
 If you require model files that are normally fetched from HuggingFace, be aware
 that this environment blocks direct downloads from that service. Retrieve the
