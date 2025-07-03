@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 import sys
+import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from shared import upload_utils
 
@@ -72,3 +73,10 @@ def test_load_user_metadata_and_list(tmp_path, monkeypatch):
     assert data == {"title": "T"}
     missing = upload_utils.load_user_metadata("kb", "nope")
     assert missing == {}
+
+
+def test_ensure_openai_key_missing(monkeypatch):
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    with pytest.raises(EnvironmentError) as exc:
+        upload_utils.ensure_openai_key()
+    assert "OPENAI_API_KEY" in str(exc.value)

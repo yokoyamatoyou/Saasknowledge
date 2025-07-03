@@ -11,10 +11,18 @@ BASE_KNOWLEDGE_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def ensure_openai_key():
-    """Return the OpenAI API key or raise an informative error."""
+    """Return the OpenAI API key or raise an informative error.
+
+    The message guides users to create a ``.env`` file from ``.env.example`` or
+    export the variable manually.  This improves onboarding and follows the
+    repository's installation notes.
+    """
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        raise EnvironmentError("OPENAI_API_KEY environment variable is not set")
+        raise EnvironmentError(
+            "OPENAI_API_KEY environment variable is not set. "
+            "Create a .env file from .env.example or export the key."
+        )
     return api_key
 
 
