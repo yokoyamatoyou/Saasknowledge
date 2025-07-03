@@ -20,8 +20,9 @@
     "apple", "banana", "orange" を使用するよう変更し、検索エンジンのテストが正しく
     動作することを確認しました。
 *   **`streamlit` モジュール不足の解決:** `ModuleNotFoundError: No module named 'streamlit'`
-    でテストが失敗したため、`pip install -r requirements.txt` を実行して依存関係を
-    インストールする手順を追加しました。初回起動時のアンケートを抑制するには、以下
+    でテストが失敗したため、まず `scripts/install_light.sh` を実行して基本パッケージを
+    インストールし、続けて `scripts/install_extra.sh` で重いライブラリを追加する手順を
+    記載しました。初回起動時のアンケートを抑制するには、以下
     を一度実行しておくと自動テレメトリー確認のプロンプトを回避できます。
 
     ```bash

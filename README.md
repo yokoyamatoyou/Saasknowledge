@@ -6,7 +6,8 @@ To keep pull requests stable when using Codex, install dependencies in two steps
 * Read the [full setup guide](knowledgeplus_design-main/README.md) for details.
 * Install packages with `pip install -r knowledgeplus_design-main/requirements-light.txt` for the basics.
 * Add advanced features later with `pip install -r knowledgeplus_design-main/requirements-extra.txt`.
-* Alternatively run `scripts/install_light.sh` for the basics, `scripts/install_extra.sh` when you need the heavy libraries, or `scripts/install_full.sh` to install everything in one go.
+* Or run the helper scripts: `scripts/install_light.sh` first and `scripts/install_extra.sh` when you need the heavy libraries.
+* A combined `scripts/install_full.sh` exists but installing everything in one step may trigger network errors, so the two-step approach is recommended.
 
 ### Handling large dependencies
 

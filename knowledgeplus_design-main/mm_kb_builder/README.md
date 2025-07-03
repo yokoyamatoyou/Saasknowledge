@@ -5,9 +5,10 @@ Uploaded images and text are processed into embeddings so that the chatbot can s
 
 ## Usage
 
-1. Install dependencies:
+1. Install dependencies from the repository root:
    ```bash
-   pip install -r requirements.txt
+   scripts/install_light.sh
+   scripts/install_extra.sh  # heavy libraries like torch
    ```
 2. Set your `OPENAI_API_KEY` environment variable.
 3. Launch the builder:
