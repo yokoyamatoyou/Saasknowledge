@@ -2,11 +2,28 @@ import sys
 from pathlib import Path
 import types
 import pytest
+import importlib
+sys.modules.pop('numpy', None)
+np = importlib.import_module('numpy')
+import numpy.random
+import numpy.core
+import nltk
 
 # Get the project root directory (one level up from the 'tests' directory)
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 sys.path.insert(0, str(PROJECT_ROOT))
+sys.modules.setdefault(
+    "sentence_transformers",
+    types.SimpleNamespace(SentenceTransformer=lambda *a, **k: object())
+)
+# Provide minimal UI module stubs so unified_app can import
+sys.modules['ui_modules.search_ui'] = types.ModuleType('ui_modules.search_ui')
+sys.modules['ui_modules.search_ui'].render_search_mode = lambda *a, **k: None
+sys.modules['ui_modules.management_ui'] = types.ModuleType('ui_modules.management_ui')
+sys.modules['ui_modules.management_ui'].render_management_mode = lambda *a, **k: None
+sys.modules['ui_modules.chat_ui'] = types.ModuleType('ui_modules.chat_ui')
+sys.modules['ui_modules.chat_ui'].render_chat_mode = lambda *a, **k: None
 from config import DEFAULT_KB_NAME
 
 def test_sidebar_has_faq_button():
@@ -69,6 +86,15 @@ def test_safe_generate_handles_error(monkeypatch):
     monkeypatch.setattr('ui_modules.theme.apply_intel_theme', lambda *a, **k: None)
     monkeypatch.setattr(st, 'set_page_config', lambda *a, **k: None)
     monkeypatch.setattr(st, 'title', lambda *a, **k: None)
+    monkeypatch.setattr(
+        st,
+        'columns',
+        lambda *a, **k: (
+            types.SimpleNamespace(button=lambda *a, **k: False),
+            types.SimpleNamespace(button=lambda *a, **k: False),
+            None,
+        ),
+    )
     sidebar = types.SimpleNamespace(radio=lambda *a, **k: 'FAQ')
     monkeypatch.setattr(st, 'sidebar', sidebar)
     monkeypatch.setattr(st, 'info', lambda *a, **k: None)

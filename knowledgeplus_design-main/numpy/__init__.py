@@ -1,6 +1,14 @@
 import math
 from types import SimpleNamespace
 
+__version__ = "1.24.0"
+int_ = int
+uint = int
+datetime64 = int
+timedelta64 = int
+int64 = int
+float64 = float
+
 float32 = float
 
 class ndarray(list):

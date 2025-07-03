@@ -4,11 +4,21 @@ from io import BytesIO
 from pathlib import Path
 import sys
 import pytest
+import importlib
+sys.modules.pop('numpy', None)
+np = importlib.import_module('numpy')
+import numpy.random
+import numpy.core
+import nltk
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-
-import numpy as np
 if not hasattr(np, "__version__"):
-    np.__version__ = "0.0"
+    np.__version__ = "1.24.0"
+
+# Stub heavy dependencies before importing the app
+sys.modules.setdefault(
+    "sentence_transformers",
+    types.SimpleNamespace(SentenceTransformer=lambda *a, **k: object())
+)
 
 pytest.importorskip("streamlit")
 pytest.importorskip("sudachipy")
