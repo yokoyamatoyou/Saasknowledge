@@ -382,7 +382,7 @@ with tab2:
                         st.caption(f"文字数: {len(preview_chunk)}")
                     
                     st.markdown("**≡ 構造化メタデータ（検索結果表示用）:**")
-                    with st.expander("メタデータ詳細", expanded=False):
+                    with st.popover("メタデータ詳細"):
                         st.json(preview_metadata)
             
             with col3:
