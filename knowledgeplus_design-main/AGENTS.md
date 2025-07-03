@@ -24,10 +24,12 @@ upgrading.
 
 ## Installation
 
-Create a virtual environment and install the packages:
+Create a virtual environment and install the packages.
+To reduce network errors, install dependencies in two steps from the repository root:
 
 ```bash
-pip install -r requirements.txt
+scripts/install_light.sh
+scripts/install_extra.sh  # heavy packages like torch
 ```
 
 If the BM25 library fails to install, upgrade `pip` and install `rank-bm25` separately:

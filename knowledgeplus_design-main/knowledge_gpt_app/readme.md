@@ -31,9 +31,10 @@
    cd knowledge-gpt-app
    ```
 
-2. 依存パッケージのインストール
-   ```
-   pip install -r requirements.txt
+2. 依存パッケージのインストール（リポジトリルートから）
+   ```bash
+   scripts/install_light.sh
+   scripts/install_extra.sh  # torch など大型ライブラリ
    ```
 
 3. 環境変数の設定

@@ -23,5 +23,5 @@
 - Removed temporary print statements from `shared/search_engine.py` and cleaned up minor style issues.
 
 ## 2025-07-06
-- Installed full dependency set via `pip install -r requirements.txt` to resolve missing modules.
+- Installed dependencies using `scripts/install_light.sh` followed by `scripts/install_extra.sh` to resolve missing modules without network errors.
 - Verified that `pytest -q` completes successfully with 33 tests.

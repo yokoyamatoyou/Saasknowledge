@@ -9,18 +9,17 @@ KnowledgePlusは、ナレッジベース構築、検索、チャット、FAQ生�
 Choose the dependency set that fits your environment.
 
 ```bash
-# Minimal install
-pip install -r requirements-light.txt
+# Recommended two-step install from the repository root
+scripts/install_light.sh
+scripts/install_extra.sh  # add heavy libraries like torch only when needed
 
-# Full feature set
-pip install -r requirements.txt
-# or combine
-pip install -r requirements-light.txt -r requirements-extra.txt
+# Direct pip commands if you prefer
+pip install -r requirements-light.txt
+pip install -r requirements-extra.txt
 ```
 The `requirements-extra.txt` file holds large libraries such as **torch** and
-**transformers**. Installing the light requirements first then the extras keeps
-the initial setup lightweight while still allowing advanced features when
-needed.
+**transformers**. Installing them separately after the light requirements helps
+avoid network timeouts and keeps the initial setup lightweight.
 
 If `rank-bm25` fails to install during the above step, upgrade `pip` and install it manually:
 
