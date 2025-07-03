@@ -26,6 +26,7 @@ def _create_items(tmp_dir: Path, count: int):
     for i in range(count):
         cid = str(i)
         text = f"text {i} for testing"
+        texts.append(text)
         paths = upload_utils.save_processed_data(
             kb,
             cid,
