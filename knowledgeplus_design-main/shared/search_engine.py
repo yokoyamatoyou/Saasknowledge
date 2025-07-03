@@ -3,7 +3,6 @@ import json
 from config import EMBEDDING_MODEL, EMBEDDING_DIMENSIONS, DEFAULT_KB_NAME
 import numpy as np
 # from sklearn.feature_extraction.text import TfidfVectorizer # BM25には不要
-from sklearn.metrics.pairwise import cosine_similarity
 import pickle
 try:
     from sentence_transformers import SentenceTransformer
@@ -17,9 +16,8 @@ import nltk
 # from nltk.tokenize import word_tokenize # SudachiPyに置き換え、またはフォールバックとして保持
 from nltk.corpus import stopwords
 from pathlib import Path
-import traceback
 import re
-import typing # ★ typing モジュールをインポート
+import typing
 import logging
 
 logger = logging.getLogger(__name__)
@@ -185,7 +183,8 @@ class HybridSearchEngine:
         metadata_file = self.kb_path / "kb_metadata.json"
         if metadata_file.exists():
             try:
-                with open(metadata_file, 'r', encoding='utf-8') as f: return json.load(f)
+                with open(metadata_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
             except Exception as e:
                 logger.error(
                     f"ナレッジベースメタデータ読み込みエラー: {e}", exc_info=True
@@ -212,7 +211,8 @@ class HybridSearchEngine:
                 metadata = {}
                 metadata_file = self.metadata_path / f"{chunk_id}.json" # メタデータファイル名もchunk_id.jsonに変更
                 if metadata_file.exists():
-                    with open(metadata_file, 'r', encoding='utf-8') as f: metadata = json.load(f)
+                    with open(metadata_file, 'r', encoding='utf-8') as f:
+                        metadata = json.load(f)
                     logger.info(f"    メタデータファイル {metadata_file.name} をロードしました。")
                 else:
                     logger.warning(f"    メタデータファイル {metadata_file.name} が見つかりません。")
@@ -237,7 +237,8 @@ class HybridSearchEngine:
                 stem = emb_file_path.stem
                 chunk_id = stem # chunk_idをファイル名から直接取得
                 logger.info(f"    埋め込みファイル {emb_file_path.name} からIDを抽出: {chunk_id}")
-                with open(emb_file_path, 'rb') as f: embedding_data = pickle.load(f)
+                with open(emb_file_path, 'rb') as f:
+                    embedding_data = pickle.load(f)
                 emb_vector = None
                 if isinstance(embedding_data, dict) and 'embedding' in embedding_data:
                     emb_vector = embedding_data['embedding']
@@ -245,7 +246,10 @@ class HybridSearchEngine:
                     emb_vector = embedding_data
                 if emb_vector is not None:
                     loaded_embeddings[chunk_id] = np.array(emb_vector, dtype=np.float32).tolist()
-            except Exception as e: logger.error(f"埋め込みファイル '{emb_file_path.name}' の読み込み中にエラー: {e}")
+            except Exception as e:
+                logger.error(
+                    f"埋め込みファイル '{emb_file_path.name}' の読み込み中にエラー: {e}"
+                )
         logger.info(f"    _load_embeddings 完了。ロードされた埋め込み数: {len(loaded_embeddings)}")
         return loaded_embeddings
     
@@ -310,7 +314,7 @@ class HybridSearchEngine:
         logger.info(f"BM25用コーパスのトークン化完了。処理できた有効チャンク数: {len(successfully_processed_chunks)} / {len(self.chunks)}")
         return tokenized_corpus, successfully_processed_chunks
 
-    def _load_or_build_bm25_index(self) -> typing.Union[BM25Okapi, None]: # ★修正
+    def _load_or_build_bm25_index(self) -> typing.Union[BM25Okapi, None]:
         loaded_from_file = False
         if self.tokenized_corpus_file_path.exists():
             logger.info(f"トークン化済みコーパスをファイルからロード中: {self.tokenized_corpus_file_path}")
@@ -404,8 +408,9 @@ class HybridSearchEngine:
             )
             return None
             
-    def get_embedding_from_openai(self, text: str, model_name: typing.Union[str, None] = None, client = None) -> typing.Union[list[float], None]: # ★修正
-        if model_name is None: model_name = self.embedding_model
+    def get_embedding_from_openai(self, text: str, model_name: typing.Union[str, None] = None, client=None) -> typing.Union[list[float], None]:
+        if model_name is None:
+            model_name = self.embedding_model
         if client is None:
             try:
                 from openai import OpenAI
@@ -418,7 +423,7 @@ class HybridSearchEngine:
                 logger.error(f"  OpenAI Client初期化エラー (get_embedding内): {e_client_init}")
                 return None
         if not text or not isinstance(text, str) or len(text.strip()) == 0:
-            logger.warning(f"  警告 (get_embedding): 埋め込み対象のテキストが空または不正。")
+            logger.warning("  警告 (get_embedding): 埋め込み対象のテキストが空または不正。")
             return None
         try:
             response = client.embeddings.create(
@@ -472,7 +477,11 @@ class HybridSearchEngine:
                         # for proportional vectors as seen in tests
                         similarity = dot_product
                     vector_scores[chunk_id] = float(similarity)
-                except Exception as e_cosine: logger.error(f"    コサイン類似度計算エラー (ID:{chunk_id}): {e_cosine}"); vector_scores[chunk_id] = 0.0
+                except Exception as e_cosine:
+                    logger.error(
+                        f"    コサイン類似度計算エラー (ID:{chunk_id}): {e_cosine}"
+                    )
+                    vector_scores[chunk_id] = 0.0
 
         bm25_scores_map: dict[str, float] = {}
         if self.bm25_index and self.tokenized_corpus_for_bm25 and self.chunks:
@@ -521,7 +530,7 @@ class HybridSearchEngine:
                 'bm25_score': bm25_s_final
             })
         hybrid_scores_data.sort(key=lambda x: x['similarity'], reverse=True)
-        logger.info(f"  上位ハイブリッドスコア (ソート後):")
+        logger.info("  上位ハイブリッドスコア (ソート後):")
         for i, score_item in enumerate(hybrid_scores_data[:min(5, len(hybrid_scores_data))]):
            logger.info(f"    {i+1}. ID: {score_item['chunk']['id']}, "
                  f"Hybrid: {score_item['similarity']:.4f} "
@@ -557,8 +566,8 @@ class HybridSearchEngine:
             is_not_found = False
         return output_results, is_not_found
 
-def search_knowledge_base(query: str, kb_path: str, top_k: int = 5, threshold: float = 0.15, 
-                          embedding_model: typing.Union[str, None] = None, client = None) -> tuple[list[dict], bool]: # ★修正
+def search_knowledge_base(query: str, kb_path: str, top_k: int = 5, threshold: float = 0.15,
+                          embedding_model: typing.Union[str, None] = None, client=None) -> tuple[list[dict], bool]:
     try:
         logger.info("\n" + "="*50)
         logger.info(f"ナレッジベース検索開始: クエリ='{query}'")
