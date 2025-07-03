@@ -20,9 +20,7 @@ import pickle
 from pathlib import Path
 import logging
 import traceback
-import nltk
 from nltk.tokenize import word_tokenize
-from nltk.corpus import stopwords
 
 # Optional libraries for PDF/Docx OCR handling
 try:
@@ -67,44 +65,17 @@ current_dir = Path(__file__).resolve().parent
 
 # 親ディレクトリ(リポジトリルート)をパスに追加
 repo_root = current_dir.parent
+# Add repository root to module path
 if str(repo_root) not in sys.path:
     sys.path.insert(0, str(repo_root))
-
-# 強化版NLTKリソースダウンロード関数
-def ensure_nltk_resources():
-    """必要なNLTKリソースが確実にダウンロードされるようにする"""
-    try:
-        logger.info("NLTKリソースの確認とダウンロードを開始...")
-        resources = ['punkt', 'stopwords', 'averaged_perceptron_tagger', 'wordnet', 'omw-1.4']
-        for resource in resources:
-            try:
-                if resource in ['punkt', 'stopwords']:
-                     nltk.data.find(f'tokenizers/{resource}' if resource == 'punkt' else f'corpora/{resource}')
-                elif resource == 'averaged_perceptron_tagger':
-                    nltk.data.find(f'taggers/{resource}')
-                elif resource == 'wordnet' or resource == 'omw-1.4':
-                     nltk.data.find(f'corpora/{resource}')
-                else:
-                     nltk.data.find(resource)
-                logger.info(f"リソース '{resource}' は既にダウンロード済みです")
-            except LookupError:
-                logger.info(f"リソース '{resource}' をダウンロード中...")
-                nltk.download(resource, quiet=True)
-                logger.info(f"リソース '{resource}' のダウンロードが完了しました")
-        return True
-    except Exception as e:
-        logger.error(f"NLTKリソースのダウンロード中にエラーが発生しました: {e}")
-        return False
-
-ensure_nltk_resources()
 
 # 自作モジュールのインポート
 try:
     from shared.search_engine import (
         search_knowledge_base,
         HybridSearchEngine,
-        ensure_nltk_resources as ensure_nltk_resources_kb,
     )
+    from shared.nltk_utils import ensure_nltk_resources
     from shared.chat_controller import (
         ChatController,
         get_persona_list,
@@ -113,7 +84,7 @@ try:
     )
     from shared.vector_store import initialize_vector_store
     
-    ensure_nltk_resources_kb()
+    ensure_nltk_resources()
     logger.info("自作モジュールのインポートに成功しました")
 except Exception as e:
     logger.error(

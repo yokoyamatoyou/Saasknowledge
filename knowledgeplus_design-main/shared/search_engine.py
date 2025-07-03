@@ -12,9 +12,9 @@ except Exception as e:
     logging.warning(f"SentenceTransformer import failed: {e}")
 # import time # 直接は不要
 from rank_bm25 import BM25Okapi
-import nltk
 # from nltk.tokenize import word_tokenize # SudachiPyに置き換え、またはフォールバックとして保持
 from nltk.corpus import stopwords
+from shared.nltk_utils import ensure_nltk_resources
 from pathlib import Path
 import re
 import typing
@@ -38,25 +38,8 @@ except Exception as e_sudachi_init:
     _sudachi_tokenizer_instance_for_bm25 = None
 # --- SudachiPyのインポートと初期化ここまで ---
 
-# NLTKリソースダウンロード関数
-def ensure_nltk_resources():
-    """必要なNLTKリソースが確実にダウンロードされるようにする"""
-    try:
-        logger.info("NLTKリソースの確認とダウンロードを開始...")
-        resources = ['punkt', 'stopwords', 'averaged_perceptron_tagger', 'wordnet', 'omw-1.4']
-        for resource in resources:
-            try:
-                nltk.data.find(f'tokenizers/{resource}')
-                logger.info(f"リソース '{resource}' は既にダウンロード済みです")
-            except LookupError:
-                logger.info(f"リソース '{resource}' をダウンロード中...")
-                nltk.download(resource, quiet=True)
-                logger.info(f"リソース '{resource}' のダウンロードが完了しました")
-        return True
-    except Exception as e:
-        logger.error(f"NLTKリソースのダウンロード中にエラーが発生しました: {e}")
-        return False
 
+# Ensure NLTK resources are available for tokenization and stopword lists
 ensure_nltk_resources()
 
 _stop_words_set = set()
