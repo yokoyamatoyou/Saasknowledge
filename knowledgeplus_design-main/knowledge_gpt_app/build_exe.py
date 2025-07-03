@@ -72,8 +72,18 @@ start "" "{EXE_NAME}.exe"
     
     logger.info(f"ランチャー作成完了: {launcher_path}")
 
-def check_dependencies():
-    """必要な依存パッケージをチェック"""
+def check_dependencies(auto_install: bool | None = None) -> bool:
+    """必要な依存パッケージをチェック
+
+    Parameters
+    ----------
+    auto_install : bool | None, optional
+        True なら不足パッケージを自動でインストールします。
+        None の場合は環境変数 ``AUTO_INSTALL_DEPS`` を参照します。
+    """
+    if auto_install is None:
+        env_flag = os.getenv("AUTO_INSTALL_DEPS", "0").lower()
+        auto_install = env_flag in {"1", "true", "yes"}
     required_packages = [
         "streamlit",
         "openai",
@@ -97,15 +107,21 @@ def check_dependencies():
         logger.warning("以下の必要なパッケージがインストールされていません:")
         for pkg in missing_packages:
             logger.info(f"  - {pkg}")
-        
-        install = input("これらのパッケージをインストールしますか？ (y/n): ")
-        if install.lower() == 'y':
+
+        if auto_install:
+            logger.info("AUTO_INSTALL_DEPS モードで不足パッケージを自動インストールします。")
             for pkg in missing_packages:
                 subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
             logger.info("依存パッケージのインストールが完了しました。")
         else:
-            logger.warning("依存パッケージをインストールしないとビルドできません。")
-            return False
+            install = input("これらのパッケージをインストールしますか？ (y/n): ")
+            if install.lower() == 'y':
+                for pkg in missing_packages:
+                    subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
+                logger.info("依存パッケージのインストールが完了しました。")
+            else:
+                logger.warning("依存パッケージをインストールしないとビルドできません。")
+                return False
     
     return True
 
