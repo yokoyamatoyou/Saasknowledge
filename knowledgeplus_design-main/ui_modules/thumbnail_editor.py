@@ -3,11 +3,13 @@ from typing import List, Dict, Any
 
 import streamlit as st
 
+from shared import upload_utils
 from shared.upload_utils import (
-    BASE_KNOWLEDGE_DIR,
     save_user_metadata,
     list_metadata_items,
 )
+
+BASE_KNOWLEDGE_DIR = upload_utils.BASE_KNOWLEDGE_DIR
 
 
 def _load_items(kb_name: str) -> List[Dict[str, Any]]:

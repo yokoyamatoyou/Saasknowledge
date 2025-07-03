@@ -1,17 +1,26 @@
 import os
 import sys
-import streamlit as st
-from config import DEFAULT_KB_NAME
 import json
-from pathlib import Path
 import logging
 import uuid
+from pathlib import Path
+from datetime import datetime
+
+import streamlit as st
+import numpy as np
+from PIL import Image
+import base64
+import io
+import pandas as pd
+
+from config import DEFAULT_KB_NAME, EMBEDDING_DIMENSIONS
+from shared.upload_utils import BASE_KNOWLEDGE_DIR as SHARED_KB_DIR
 from shared.openai_utils import get_openai_client
 from shared.file_processor import FileProcessor
 from shared.kb_builder import KnowledgeBuilder
 from ui_modules.theme import apply_intel_theme
 from shared.logging_utils import configure_logging
-from core.mm_builder_utils import get_embedding, analyze_image_with_gpt4o
+from core.mm_builder_utils import analyze_image_with_gpt4o
 
 def _refresh_search_engine(kb_name: str) -> None:
     """Dynamically import and call refresh_search_engine to avoid circular imports."""
@@ -37,13 +46,6 @@ if not st.session_state.get("_page_configured", False):
 # インテル風テーマ適用
 apply_intel_theme(st)
 
-# ライブラリチェック
-try:
-    import pytesseract
-    OCR_SUPPORT = True
-except ImportError:
-    OCR_SUPPORT = False
-
 # 設定
 current_dir = Path(__file__).resolve().parent
 
@@ -58,7 +60,6 @@ logger = logging.getLogger(__name__)
 
 # 定数
 GPT4O_MODEL = "gpt-4.1"
-from config import EMBEDDING_MODEL, EMBEDDING_DIMENSIONS
 
 SUPPORTED_IMAGE_TYPES = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'webp']
 SUPPORTED_DOCUMENT_TYPES = ['pdf']
@@ -66,8 +67,6 @@ SUPPORTED_CAD_TYPES = ['dxf', 'stl', 'ply', 'obj', 'step', 'stp', 'iges', 'igs',
 
 # 共通ナレッジベースディレクトリ
 # centralize configuration using the shared utility
-from shared.upload_utils import BASE_KNOWLEDGE_DIR as SHARED_KB_DIR
-
 BASE_KNOWLEDGE_DIR = SHARED_KB_DIR
 BASE_KNOWLEDGE_DIR.mkdir(exist_ok=True)
 
@@ -441,7 +440,7 @@ with tab3:
                         st.metric("⟐ テキスト", kb_info.get('item_types', {}).get('text_chunk', 0))
                     with col_stat4:
                         st.metric("⟲ 最終更新", kb_info.get('last_updated', '')[:10] if kb_info.get('last_updated') else 'N/A')
-                except:
+                except Exception:
                     st.info(f"≡ ナレッジベース登録データ: {len(metadata_files)}件")
             else:
                 st.info(f"≡ ナレッジベース登録データ: {len(metadata_files)}件")
@@ -603,7 +602,7 @@ with tab3:
                                                         st.image(image, width=150)
                                                     else:
                                                         st.write("画像ファイルなし")
-                                                except Exception as e:
+                                                except Exception:
                                                     st.write("画像プレビュー不可")
                                             
                                             with result_col4:
