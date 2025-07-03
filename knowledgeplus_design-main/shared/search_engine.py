@@ -467,9 +467,9 @@ class HybridSearchEngine:
                 try:
                     q_vec_arr = np.array(query_vector, dtype=np.float32).flatten()
                     c_vec_arr = np.array(chunk_vector, dtype=np.float32).flatten()
-                    if q_vec_arr.shape[0] != c_vec_arr.shape[0]:
+                    if len(q_vec_arr) != len(c_vec_arr):
                         similarity = 0.0
-                    elif q_vec_arr.shape[0] == 0:
+                    elif len(q_vec_arr) == 0:
                         similarity = 0.0
                     else:
                         dot_product = float(np.dot(q_vec_arr, c_vec_arr))
@@ -497,7 +497,7 @@ class HybridSearchEngine:
                         for i, chunk_data_bm25 in enumerate(self.chunks):
                             bm25_scores_map[chunk_data_bm25['id']] = float(raw_bm25_scores_from_lib[i])
                         all_bm25_vals = np.array(list(bm25_scores_map.values()), dtype=np.float32)
-                        if all_bm25_vals.size > 0 :
+                        if len(all_bm25_vals) > 0:
                             max_bm25_score = np.max(all_bm25_vals)
                             if max_bm25_score > 1e-9:
                                 for cid in bm25_scores_map:
@@ -547,9 +547,9 @@ class HybridSearchEngine:
                 'id': r_final_item['chunk']['id'],
                 'text': r_final_item['chunk']['text'],
                 'metadata': r_final_item['chunk']['metadata'],
-                'similarity': r_final_item['similarity'],
-                'vector_score': r_final_item['vector_score'],
-                'bm25_score': r_final_item['bm25_score']
+                'similarity': float(r_final_item['similarity']),
+                'vector_score': float(r_final_item['vector_score']),
+                'bm25_score': float(r_final_item['bm25_score'])
             })
         is_not_found = len(output_results) == 0
         if is_not_found and hybrid_scores_data and top_k > 0:
@@ -559,9 +559,9 @@ class HybridSearchEngine:
                 'id': best_match_item['chunk']['id'],
                 'text': best_match_item['chunk']['text'],
                 'metadata': best_match_item['chunk']['metadata'],
-                'similarity': best_match_item['similarity'],
-                'vector_score': best_match_item['vector_score'],
-                'bm25_score': best_match_item['bm25_score']
+                'similarity': float(best_match_item['similarity']),
+                'vector_score': float(best_match_item['vector_score']),
+                'bm25_score': float(best_match_item['bm25_score'])
             }]
             is_not_found = False
         return output_results, is_not_found
