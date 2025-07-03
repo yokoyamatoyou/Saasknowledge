@@ -53,7 +53,7 @@ def test_generate_faq_imports_helper(tmp_path, monkeypatch):
 
     import types, sys
     kgapp = types.ModuleType("knowledge_gpt_app.app")
-    sys.modules["knowledge_gpt_app.app"] = kgapp
+    monkeypatch.setitem(sys.modules, "knowledge_gpt_app.app", kgapp)
 
     called = {}
 
