@@ -7,20 +7,17 @@ import docx
 import pandas as pd
 import json
 import re
-import numpy as np
 from io import BytesIO
 from sudachipy import tokenizer, dictionary
 import base64
 import tempfile
 import shutil
 from datetime import datetime
-from sklearn.metrics.pairwise import cosine_similarity
 import uuid
-import pickle
 from pathlib import Path
 import logging
-import traceback
 from nltk.tokenize import word_tokenize
+import time
 
 # Optional libraries for PDF/Docx OCR handling
 try:
@@ -28,6 +25,15 @@ try:
     PDF_SUPPORT = True
 except Exception:
     PDF_SUPPORT = False
+
+from shared.upload_utils import (
+    save_processed_data,
+    BASE_KNOWLEDGE_DIR as SHARED_KB_DIR,
+)
+from shared.openai_utils import get_openai_client
+from generate_faq import generate_faqs_from_chunks
+from ui_modules.theme import apply_intel_theme
+from shared.logging_utils import configure_logging
 
 import pytesseract
 OCR_SUPPORT = True
@@ -43,18 +49,6 @@ try:
 except Exception:
     openpyxl = None
     EXCEL_SUPPORT = False
-import time
-from sentence_transformers import SentenceTransformer
-from rank_bm25 import BM25Okapi
-from shared.upload_utils import (
-    save_processed_data,
-    BASE_KNOWLEDGE_DIR as SHARED_KB_DIR,
-    ensure_openai_key,
-)
-from shared.openai_utils import get_openai_client
-from generate_faq import generate_faqs_from_chunks
-from ui_modules.theme import apply_intel_theme
-from shared.logging_utils import configure_logging
 
 # ロギング設定を最初に行う
 configure_logging()
@@ -72,7 +66,6 @@ if str(repo_root) not in sys.path:
 # 自作モジュールのインポート
 try:
     from shared.search_engine import (
-        search_knowledge_base,
         HybridSearchEngine,
     )
     from shared.nltk_utils import ensure_nltk_resources
@@ -80,9 +73,7 @@ try:
         ChatController,
         get_persona_list,
         load_persona,
-        generate_conversation_title,
     )
-    from shared.vector_store import initialize_vector_store
     
     ensure_nltk_resources()
     logger.info("自作モジュールのインポートに成功しました")
@@ -354,20 +345,23 @@ def read_file(file):
     return content
 
 def estimate_tokens(text):
-    if not text: return 0
+    if not text:
+        return 0
     japanese_ratio = len(re.findall(r'[\u3000-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]', text)) / max(len(text), 1)
     chars_per_token = 2.0 if japanese_ratio > 0.5 else 3.5
     return int(len(text) / chars_per_token * 1.1)
 
 def is_mostly_japanese(text):
-    if not text: return False
+    if not text:
+        return False
     japanese_ratio = len(re.findall(r'[\u3000-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]', text)) / max(len(text), 1)
     return japanese_ratio > 0.5
 
 _sudachi_tokenizer_obj = None
 def analyze_with_sudachi(text, mode_str='C'):
     global _sudachi_tokenizer_obj
-    if not text: return [], []
+    if not text:
+        return [], []
     mode_map = {
         'A': tokenizer.Tokenizer.SplitMode.A,
         'B': tokenizer.Tokenizer.SplitMode.B,
@@ -393,17 +387,20 @@ def analyze_with_sudachi(text, mode_str='C'):
     return tokens_surface, important_tokens
 
 def safe_tokenize(text):
-    if not text: return ["dummy_token"]
+    if not text:
+        return ["dummy_token"]
     try:
         tokens = word_tokenize(text)
         if not tokens:
             tokens = re.findall(r'\b\w+\b', text)
-            if not tokens: tokens = ["dummy_token"]
+            if not tokens:
+                tokens = ["dummy_token"]
         return tokens
     except Exception as e:
         logger.error(f"NLTKトークン化エラー: {e}")
         tokens = re.findall(r'\b\w+\b', text)
-        if not tokens: tokens = ["dummy_token"]
+        if not tokens:
+            tokens = ["dummy_token"]
         return tokens
 
 def get_embedding(text, model=None, client=None):
@@ -598,7 +595,16 @@ def export_knowledge_base(kb_name):
 def generate_chunk_metadata(chunk_text, document_type, client=None):
     if client is None:
         client = get_openai_client()
-        if client is None: return {"summary": "メタデータ生成失敗(クライアント無)", "keywords": [], "tags": [], "search_queries": [], "synonyms": {}, "semantic_connections": [], "mini_context": ""}
+        if client is None:
+            return {
+                "summary": "メタデータ生成失敗(クライアント無)",
+                "keywords": [],
+                "tags": [],
+                "search_queries": [],
+                "synonyms": {},
+                "semantic_connections": [],
+                "mini_context": "",
+            }
     if not chunk_text or not chunk_text.strip():
         return {"summary": "チャンク空のためメタデータ生成スキップ", "keywords": [], "tags": [], "search_queries": [], "synonyms": {}, "semantic_connections": [], "mini_context": ""}
     try:
@@ -632,8 +638,10 @@ def generate_chunk_metadata(chunk_text, document_type, client=None):
 def optimize_chunk_for_mini(chunk_text, document_type, metadata, client=None):
     if client is None:
         client = get_openai_client()
-        if client is None: return "チャンク内容最適化失敗(クライアント無)"
-    if not chunk_text or not chunk_text.strip(): return "チャンク空のため最適化スキップ"
+        if client is None:
+            return "チャンク内容最適化失敗(クライアント無)"
+    if not chunk_text or not chunk_text.strip():
+        return "チャンク空のため最適化スキップ"
     try:
         keywords_str = ", ".join(metadata.get("keywords", []))
         summary = metadata.get("summary", "要約なし")
@@ -659,9 +667,12 @@ def optimize_chunk_for_mini(chunk_text, document_type, metadata, client=None):
 def segment_text_by_meaning(text, sudachi_mode='C', document_type="一般文書", client=None):
     if client is None:
         client = get_openai_client()
-        if client is None: return [p for p in text.split('\n\n') if p.strip()]
-    if not text or not text.strip(): return []
-    if len(text) < 1000: return [text.strip()]
+        if client is None:
+            return [p for p in text.split('\n\n') if p.strip()]
+    if not text or not text.strip():
+        return []
+    if len(text) < 1000:
+        return [text.strip()]
     try:
         sample_text = text[:min(len(text),7000)]
         analysis_prompt = f"""
@@ -1311,7 +1322,7 @@ elif app_mode == "ナレッジ検索":
                             client=client_for_search_and_gpt
                         )
                 if not_found_flag_val or not search_results_data:
-                    st.warning(f"検索結果が見つかりませんでした。クエリを変えるか、類似度閾値を調整してみてください。")
+                    st.warning("検索結果が見つかりませんでした。クエリを変えるか、類似度閾値を調整してみてください。")
                 else:
                     st.success(f"{len(search_results_data)}件の関連情報が見つかりました（類似度閾値: {search_threshold_val_ui}）。")
                     if generate_gpt_answer_flag_ui and search_results_data:
@@ -1500,7 +1511,7 @@ elif app_mode == "chatGPT":
                     placeholder.markdown(gpt_response_text_val)
                 except Exception as e:
                     logger.error(f"GPT応答生成中にエラー: {e}", exc_info=True)
-                    gpt_response_text_val = f"申し訳ありません、応答の生成中にエラーが発生しました。"
+                    gpt_response_text_val = "申し訳ありません、応答の生成中にエラーが発生しました。"
                     placeholder.error(gpt_response_text_val)
             
             # 3. アシスタントの応答をセッションに追加
