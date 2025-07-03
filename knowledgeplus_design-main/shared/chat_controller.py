@@ -4,6 +4,7 @@ from datetime import datetime
 from openai import OpenAI
 import logging
 from shared.search_engine import HybridSearchEngine
+from shared.openai_utils import get_openai_client
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -139,11 +140,7 @@ class ChatController:
 
     @staticmethod
     def _get_openai_client_internal(): # Renamed and made static
-        api_key = os.environ.get("OPENAI_API_KEY")
-        if not api_key:
-            logger.warning("OPENAI_API_KEYが環境変数に設定されていません (gpt_handler)")
-            return None
-        return OpenAI(api_key=api_key)
+        return get_openai_client()
 
     def generate_gpt_response(self, user_input, conversation_history=None, persona="default", temperature=None, response_length=None, client=None):
         """
