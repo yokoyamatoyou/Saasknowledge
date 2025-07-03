@@ -9,7 +9,7 @@ import streamlit as st
 from openai import OpenAI
 import json
 
-from config import DEFAULT_KB_NAME
+from config import DEFAULT_KB_NAME, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS
 from shared.file_processor import FileProcessor
 from shared import upload_utils
 from shared.upload_utils import save_processed_data
@@ -124,8 +124,8 @@ class KnowledgeBuilder:
         
         return "\n".join(chunk_parts)
 
-    def _get_embedding(self, text, client, dimensions=1536):
-        """テキストの埋め込みベクトルを生成（text-embedding-3-large最適化）"""
+    def _get_embedding(self, text, client, dimensions=EMBEDDING_DIMENSIONS):
+        """テキストの埋め込みベクトルを生成"""
         if client is None:
             return None
         
@@ -133,15 +133,15 @@ class KnowledgeBuilder:
             if not text or not text.strip():
                 return None
                 
-            # text-embedding-3-largeは8191トークンまで対応
+            # モデルのトークン上限を考慮して長さを調整
             if len(text) > 30000:
                 text = text[:30000]
             
             # dimensionsパラメータ対応（コスト効率化）
             params = {
-                "model": "text-embedding-3-large",
+                "model": EMBEDDING_MODEL,
                 "input": text,
-                "dimensions": dimensions
+                "dimensions": dimensions,
             }
                 
             response = client.embeddings.create(**params)
