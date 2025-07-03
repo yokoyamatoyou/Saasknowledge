@@ -6,9 +6,6 @@ from datetime import datetime
 from shared.env import load_env
 
 # Import shared modules
-from shared.chat_controller import ChatController, get_persona_list
-from shared.search_engine import HybridSearchEngine
-from shared.file_processor import FileProcessor
 from shared.upload_utils import ensure_openai_key, BASE_KNOWLEDGE_DIR
 from ui_modules.theme import apply_intel_theme
 from shared.chat_history_utils import (
@@ -18,22 +15,15 @@ from shared.chat_history_utils import (
     update_title,
     delete_history,
 )
+from ui_modules.sidebar_toggle import render_sidebar_toggle
+from ui_modules.search_ui import render_search_mode
+from ui_modules.management_ui import render_management_mode
+from ui_modules.chat_ui import render_chat_mode
 
 # Import functions from knowledge_gpt_app.app (some might be moved later)
-from knowledge_gpt_app.app import (
-    list_knowledge_bases,
-    semantic_chunking,
-    refresh_search_engine,
-    read_file as app_read_file,  # Rename to avoid conflict with FileProcessor
-    search_multiple_knowledge_bases,
-)
 from shared.openai_utils import get_openai_client
 
-# Import FAQ generation (assuming it's a standalone script)
-from generate_faq import generate_faqs_from_chunks
-
 from config import DEFAULT_KB_NAME
-from shared.prompt_advisor import generate_prompt_advice
 
 logger = logging.getLogger(__name__)
 
@@ -178,10 +168,6 @@ h1 {
 }
 </style>
 """, unsafe_allow_html=True)
-
-from ui_modules.sidebar_toggle import render_sidebar_toggle
-from ui_modules.document_card import render_document_card
-from ui_modules.thumbnail_editor import display_thumbnail_grid
 
 TOGGLE_SIDEBAR_KEY = "toggle_sidebar"
 TOGGLE_SIDEBAR_COLLAPSED = "＞＞"
@@ -346,275 +332,11 @@ if hasattr(sidebar, "expander"):
         )
 
 # --- Main Content Area based on Mode ---
-st.title("KNOWLEDGE+") # Always show the main title
+st.title("KNOWLEDGE+")  # Always show the main title
 
 if st.session_state["current_mode"] == "検索":
-    # Search mode specific UI
-    query = st.text_input(
-        "main_search_box",
-        placeholder="🔍 キーワードで検索、またはAIへの質問を入力...",
-        label_visibility="collapsed",
-        help="ナレッジベースから情報を検索します。"
-    )
-
-    col1, col2, col3 = st.columns([1, 1, 4])
-    with col1:
-        if st.button("検索", type="primary", help="入力されたキーワードでナレッジベースを検索します。"):
-            st.session_state["search_executed"] = True
-            kb_names = [kb["name"] for kb in list_knowledge_bases()]
-            st.session_state["results"], _ = search_multiple_knowledge_bases(
-                query, kb_names
-            )
-            st.session_state["last_query"] = query
-    with col2:
-        if st.button("クリア", help="検索ボックスと結果をクリアします。"):
-            st.session_state["search_executed"] = False
-            st.session_state["results"] = []
-            st.session_state["last_query"] = ""
-            st.rerun()
-
-    if st.session_state.get("search_executed"):
-        st.markdown("\n---") # Separator
-        tabs = st.tabs(["AIによる要約", "関連ナレッジ一覧"])
-        with tabs[0]:
-            results = st.session_state.get("results", [])
-            if results:
-                client = get_openai_client()
-                if client:
-                    context = "\n".join(r.get("text", "") for r in results[:3])
-                    prompt = (
-                        f"次の情報から質問『{st.session_state.get('last_query','')}』への"
-                        f"要約回答を生成してください:\n{context}"
-                    )
-                    # Streaming for AI Summary
-                    st.write("AIが要約を生成中...")
-                    summary_placeholder = st.empty()
-                    full_summary = ""
-                    gen = safe_generate_gpt_response(
-                        prompt,
-                        conversation_history=[],
-                        persona="default",
-                        temperature=0.3,
-                        response_length="簡潔",
-                        client=client,
-                    )
-                    if gen:
-                        for chunk in gen:
-                            full_summary += chunk
-                            summary_placeholder.markdown(full_summary + "▌")
-                    summary_placeholder.markdown(full_summary) # Final content without cursor
-                else:
-                    st.info("要約生成に失敗しました。")
-            else:
-                st.info("検索結果がありません。")
-        with tabs[1]:
-            for doc in st.session_state.get("results", []):
-                render_document_card(doc)
-
-
-
-
-if st.session_state["current_mode"] == "管理":
-    st.subheader("管理")
-    tabs = st.tabs(["ナレッジベース構築", "FAQ自動生成"])
-
-    with tabs[0]:
-        st.divider()
-        with st.expander("ナレッジを追加する", expanded=True):
-            process_mode = st.radio("処理モード", ["個別処理", "まとめて処理"], help="ファイルを個別に処理するか、まとめて処理するかを選択します。")
-            index_mode = st.radio("インデックス更新", ["自動(処理後)", "手動"], help="ファイル処理後に検索インデックスを自動で更新するか、手動で更新するかを選択します。")
-
-            files = st.file_uploader(
-                "ファイルを選択",
-                type=FileProcessor.SUPPORTED_IMAGE_TYPES + FileProcessor.SUPPORTED_DOCUMENT_TYPES + FileProcessor.SUPPORTED_CAD_TYPES,
-                accept_multiple_files=process_mode == "まとめて処理",
-                help="サポートされている画像、ドキュメント、CADファイルをアップロードします。",
-            )
-
-            if files:
-                if not isinstance(files, list):
-                    files = [files]
-
-                for file in files:
-                    with st.spinner(f"ファイルを解析中: {file.name}..."):
-                        text = app_read_file(file)
-                    with st.spinner(f"ベクトル化しています: {file.name}..."):
-                        if text:
-                            client = get_openai_client()
-                            if client:
-                                semantic_chunking(
-                                    text,
-                                    15,
-                                    "C",
-                                    "auto",
-                                    DEFAULT_KB_NAME,
-                                    client,
-                                    original_filename=file.name,
-                                    original_bytes=file.getvalue(),
-                                    refresh=index_mode == "自動(処理後)" and process_mode == "個別処理",
-                                )
-
-                if process_mode == "まとめて処理" and index_mode == "自動(処理後)":
-                    refresh_search_engine(DEFAULT_KB_NAME)
-
-                st.toast("アップロード完了")
-
-            if index_mode == "手動":
-                if st.button("検索インデックス更新"):
-                    with st.spinner("検索エンジン更新中..."):
-                        refresh_search_engine(DEFAULT_KB_NAME)
-                    st.toast("検索インデックスを更新しました")
-
-        # Show uploaded items with thumbnail metadata editor
-        display_thumbnail_grid(DEFAULT_KB_NAME)
-
-    with tabs[1]:
-        kb_name = st.text_input("Knowledge base name", value=DEFAULT_KB_NAME, help="FAQを生成するナレッジベースの名前を入力します。")
-        max_tokens = st.number_input("Max tokens per chunk", 100, 2000, 1000, 100, help="チャンクあたりの最大トークン数を設定します。")
-        pairs = st.number_input("Pairs per chunk", 1, 10, 3, 1, help="各チャンクから生成するQ&Aペアの数を設定します。")
-        if st.button("◎ FAQ生成", key="generate_faqs_btn", type="primary", help="設定に基づいてFAQを生成し、ナレッジベースに保存します。"):
-            client = get_openai_client()
-            if not client:
-                st.error("OpenAIクライアントの取得に失敗しました。")
-            else:
-                with st.spinner("FAQを生成中..."):
-                    count = generate_faqs_from_chunks(kb_name, int(max_tokens), int(pairs), client=client)
-                    refresh_search_engine(kb_name)
-                st.success(f"{count}件のFAQを生成しました。")
-
-if st.session_state["current_mode"] == "チャット":
-    st.subheader("チャット")  # Subheader for current mode
-
-    use_kb = st.checkbox(
-        "全てのナレッジから検索する",
-        value=st.session_state.get("use_knowledge_search", True),
-    )
-    st.session_state["use_knowledge_search"] = use_kb
-
-    # チャット履歴表示エリア
-    chat_container = st.container(height=None) # Maximize vertical space
-
-    with chat_container:
-        for msg in st.session_state["chat_history"]:
-            with st.chat_message(msg["role"]):
-                st.markdown(msg["content"])
-
-    user_msg = st.chat_input("メッセージを送信")
-    if user_msg:
-        st.session_state["chat_history"].append({"role": "user", "content": user_msg})
-        append_message(st.session_state.current_chat_id, "user", user_msg)
-
-        if st.session_state.get("prompt_advice"):
-            client = get_openai_client()
-            if client:
-                advice_text = generate_prompt_advice(user_msg, client=client)
-                if advice_text:
-                    st.info(f"💡 プロンプトアドバイス:\n{advice_text}")
-                    st.session_state["chat_history"].append({"role": "info", "content": advice_text})
-                    append_message(st.session_state.current_chat_id, "info", advice_text)
-        
-        context = ""
-        if use_kb:
-            # ナレッジ検索が有効な場合のみナレッジベースを読み込み、検索を実行
-            # ChatControllerのインスタンス化をここで行うことで、RAG無効時は不要な初期化を避ける
-            if "chat_controller" not in st.session_state or not isinstance(st.session_state.chat_controller, ChatController):
-                try:
-                    engine = HybridSearchEngine(str(BASE_KNOWLEDGE_DIR / DEFAULT_KB_NAME))
-                    st.session_state.chat_controller = ChatController(engine)
-                except Exception as e:
-                    st.error(f"ナレッジベースの初期化に失敗しました: {e}")
-                    st.session_state.chat_controller = None # 初期化失敗時はNoneを設定
-
-            if st.session_state.chat_controller:
-                results, _ = search_multiple_knowledge_bases(user_msg, [DEFAULT_KB_NAME])
-                context = "\n".join(r.get("text", "") for r in results[:3])
-                if not context:
-                    st.info("ナレッジ検索で関連情報が見つかりませんでした。AIの一般的な知識で回答します。")
-            else:
-                st.warning("ナレッジ検索が無効化されているか、ナレッジベースの初期化に失敗したため、検索は行われません。")
-
-        client = get_openai_client()
-        if client:
-            prompt = (
-                f"次の情報を参考にユーザーの質問に答えてください:\n{context}\n\n質問:{user_msg}"
-                if use_kb and context
-                else user_msg
-            )
-            chat_temp = 0.2 if use_kb else float(st.session_state.get("temperature", 0.7))
-            chat_persona = st.session_state.get("persona", "default")
-            
-            with st.chat_message("assistant"):
-                message_placeholder = st.empty()
-                full_response = ""
-                # ChatControllerが初期化されていない場合（RAG無効時など）は、直接GPT応答を生成
-                if "chat_controller" not in st.session_state or st.session_state.chat_controller is None:
-                    # Fallback to direct GPT response without RAG
-                    gen = safe_generate_gpt_response(
-                        user_msg,
-                        conversation_history=[
-                            {"role": m["role"], "content": m["content"]}
-                            for m in st.session_state["chat_history"][:-1]
-                            if m["role"] in ("user", "assistant")
-                        ],
-                        persona=chat_persona,
-                        temperature=chat_temp,
-                        response_length="普通",
-                        client=client,
-                    )
-                    if gen:
-                        for chunk in gen:
-                            full_response += chunk
-                            message_placeholder.markdown(full_response + "▌")
-                else:
-                    gen = safe_generate_gpt_response(
-                        prompt,
-                        conversation_history=[
-                            {"role": m["role"], "content": m["content"]}
-                            for m in st.session_state["chat_history"][:-1]
-                            if m["role"] in ("user", "assistant")
-                        ],
-                        persona=chat_persona,
-                        temperature=chat_temp,
-                        response_length="普通",
-                        client=client,
-                    )
-                    if gen:
-                        for chunk in gen:
-                            full_response += chunk
-                            message_placeholder.markdown(full_response + "▌")
-                message_placeholder.markdown(full_response) # Final content without cursor
-            answer = full_response
-        else:
-            answer = "OpenAIクライアントを初期化できませんでした。"
-        st.session_state["chat_history"].append({"role": "assistant", "content": answer})
-        append_message(st.session_state.current_chat_id, "assistant", answer)
-        
-        # 4. 会話タイトル生成/更新
-        if (
-            not st.session_state.get("title_generated")
-            and len(st.session_state.chat_history) >= 2
-            and client
-        ):
-            current_history_for_title_gen = [
-                m for m in st.session_state.chat_history if m["role"] in ["user", "assistant"]
-            ]
-            if current_history_for_title_gen:
-                try:
-                    if "chat_controller" in st.session_state and st.session_state.chat_controller:
-                        new_title_val = st.session_state.chat_controller.generate_conversation_title(
-                            current_history_for_title_gen, client
-                        )
-                        st.session_state.gpt_conversation_title = new_title_val
-                        update_title(st.session_state.current_chat_id, new_title_val)
-                        for h in st.session_state.chat_histories:
-                            if h["id"] == st.session_state.current_chat_id:
-                                h["title"] = new_title_val
-                                break
-                        st.session_state.title_generated = True
-                        logger.info(f"会話タイトルを更新: {new_title_val}")
-                except Exception as e:
-                    logger.error(f"会話タイトル生成エラー: {e}", exc_info=True)
-
-        st.rerun()
-
-
+    render_search_mode(safe_generate_gpt_response)
+elif st.session_state["current_mode"] == "管理":
+    render_management_mode()
+elif st.session_state["current_mode"] == "チャット":
+    render_chat_mode(safe_generate_gpt_response)

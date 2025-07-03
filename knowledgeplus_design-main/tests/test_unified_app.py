@@ -10,7 +10,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 from config import DEFAULT_KB_NAME
 
 def test_sidebar_has_faq_button():
-    app_path = PROJECT_ROOT / 'unified_app.py'
+    app_path = PROJECT_ROOT / 'ui_modules' / 'management_ui.py'
     text = app_path.read_text(encoding='utf-8')
     assert 'FAQ生成' in text
     assert '処理モード' in text
@@ -23,7 +23,7 @@ def test_sidebar_has_faq_button():
 
 
 def test_manual_refresh_call_present():
-    app_path = PROJECT_ROOT / 'unified_app.py'
+    app_path = PROJECT_ROOT / 'ui_modules' / 'management_ui.py'
     text = app_path.read_text(encoding='utf-8')
     import re
     pattern = r'if st\.button\("検索インデックス更新"\).*refresh_search_engine\(DEFAULT_KB_NAME\)'
@@ -51,7 +51,7 @@ def test_delete_history_button_present():
 
 
 def test_prompt_advice_saved_to_history():
-    app_path = PROJECT_ROOT / 'unified_app.py'
+    app_path = PROJECT_ROOT / 'ui_modules' / 'chat_ui.py'
     text = app_path.read_text(encoding='utf-8')
     assert 'append_message(st.session_state.current_chat_id, "info", advice_text)' in text
 
@@ -148,6 +148,6 @@ def test_refresh_search_engine_reloads_engine(monkeypatch):
 
 
 def test_thumbnail_grid_call_present():
-    app_path = PROJECT_ROOT / 'unified_app.py'
+    app_path = PROJECT_ROOT / 'ui_modules' / 'management_ui.py'
     text = app_path.read_text(encoding='utf-8')
     assert 'display_thumbnail_grid(DEFAULT_KB_NAME)' in text
