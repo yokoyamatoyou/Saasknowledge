@@ -1,6 +1,7 @@
 # Saasknowledge
 
 A simple Streamlit prototype for uploading files, creating a knowledge base and chatting with it. Some dependencies such as `torch` and `transformers` are quite heavy. If you only need the core features you can install a lighter set of packages first and add the extras later.
+To keep pull requests stable when using Codex, install dependencies in two steps: run `scripts/install_light.sh` first and then `scripts/install_extra.sh`.
 
 * Read the [full setup guide](knowledgeplus_design-main/README.md) for details.
 * Install packages with `pip install -r knowledgeplus_design-main/requirements-light.txt` for the basics.
