@@ -25,6 +25,7 @@ request failures.
   ```bash
   export OPENAI_API_KEY=your_api_key
   ```
+  - Optionally edit `KNOWLEDGE_BASE_DIR` and `CHAT_HISTORY_DIR` in `.env` to change where data is stored.
 
 You can also override the default `knowledge_base/` directory location by setting `KNOWLEDGE_BASE_DIR` before running the app:
 
