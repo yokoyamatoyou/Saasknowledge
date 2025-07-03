@@ -17,6 +17,9 @@ light requirements first and then fetch the extras only when needed:
 scripts/install_light.sh
 scripts/install_extra.sh  # add the heavy packages later
 ```
+When using Codex for automated contributions, run the light script first and
+install the extras separately. This avoids network errors that can lead to pull
+request failures.
 * Copy `knowledgeplus_design-main/.env.example` to `.env` and set the OpenAI key before starting:
 
   ```bash
