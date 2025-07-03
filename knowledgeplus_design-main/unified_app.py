@@ -181,6 +181,7 @@ h1 {
 
 from ui_modules.sidebar_toggle import render_sidebar_toggle
 from ui_modules.document_card import render_document_card
+from ui_modules.thumbnail_editor import display_thumbnail_grid
 
 TOGGLE_SIDEBAR_KEY = "toggle_sidebar"
 TOGGLE_SIDEBAR_COLLAPSED = "＞＞"
@@ -463,6 +464,9 @@ if st.session_state["current_mode"] == "管理":
                     with st.spinner("検索エンジン更新中..."):
                         refresh_search_engine(DEFAULT_KB_NAME)
                     st.toast("検索インデックスを更新しました")
+
+        # Show uploaded items with thumbnail metadata editor
+        display_thumbnail_grid(DEFAULT_KB_NAME)
 
     with tabs[1]:
         kb_name = st.text_input("Knowledge base name", value=DEFAULT_KB_NAME, help="FAQを生成するナレッジベースの名前を入力します。")
