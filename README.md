@@ -50,9 +50,9 @@ You can similarly override where chat histories are stored by setting
   # or run Streamlit directly from the repository root
   streamlit run app.py
   ```
-  The helper scripts load variables from `.env` if present and then verify that
-  `OPENAI_API_KEY` is set, exiting early if it is missing to avoid confusing
-  startup errors.
+  The helper scripts source `.env` if it exists so optional settings like
+  `KNOWLEDGE_BASE_DIR` are applied. They then verify that `OPENAI_API_KEY` is
+  set, exiting early if the key is missing to avoid confusing startup errors.
 
 When the server starts it will remain active to serve the web UI. This waiting
 state is expected and should not be treated as a failure when Codex prepares a
