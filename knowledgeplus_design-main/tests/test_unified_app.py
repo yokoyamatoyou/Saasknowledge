@@ -145,3 +145,9 @@ def test_refresh_search_engine_reloads_engine(monkeypatch):
 
     # Assert that reindex was called on the correct engine instance
     assert st.session_state.search_engines[DEFAULT_KB_NAME].reindex_called
+
+
+def test_thumbnail_grid_call_present():
+    app_path = PROJECT_ROOT / 'unified_app.py'
+    text = app_path.read_text(encoding='utf-8')
+    assert 'display_thumbnail_grid(DEFAULT_KB_NAME)' in text

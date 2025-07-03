@@ -13,3 +13,8 @@
 ## 2025-07-03
 - Added unit test for `save_user_metadata` to verify metadata files are stored correctly.
 - All tests continue to pass with `pytest -q`.
+
+## 2025-07-04
+- Integrated thumbnail metadata editor into the management tab using `display_thumbnail_grid`.
+- Added regression test to confirm the call is present in `unified_app.py`.
+- All tests pass with `pytest -q`.
