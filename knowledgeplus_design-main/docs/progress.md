@@ -18,3 +18,10 @@
 - Integrated thumbnail metadata editor into the management tab using `display_thumbnail_grid`.
 - Added regression test to confirm the call is present in `unified_app.py`.
 - All tests pass with `pytest -q`.
+
+## 2025-07-05
+- Removed temporary print statements from `shared/search_engine.py` and cleaned up minor style issues.
+
+## 2025-07-06
+- Installed full dependency set via `pip install -r requirements.txt` to resolve missing modules.
+- Verified that `pytest -q` completes successfully with 33 tests.
