@@ -1,10 +1,13 @@
-import json
 from pathlib import Path
 from typing import List, Dict, Any
 
 import streamlit as st
 
-from shared.upload_utils import BASE_KNOWLEDGE_DIR, save_user_metadata
+from shared.upload_utils import (
+    BASE_KNOWLEDGE_DIR,
+    save_user_metadata,
+    list_metadata_items,
+)
 
 
 def _load_items(kb_name: str) -> List[Dict[str, Any]]:
@@ -15,19 +18,7 @@ def _load_items(kb_name: str) -> List[Dict[str, Any]]:
     ``metadata_1``), so the ID may include that prefix.
     """
     items = []
-    meta_dir = BASE_KNOWLEDGE_DIR / kb_name / "metadata"
-    if not meta_dir.exists():
-        return items
-    for meta_path in meta_dir.glob("*.json"):
-        name = meta_path.name
-        if name == "kb_metadata.json" or name.endswith("_user.json"):
-            continue
-        try:
-            with open(meta_path, "r", encoding="utf-8") as f:
-                meta = json.load(f)
-        except Exception:
-            continue
-        item_id = meta_path.stem
+    for item_id, meta in list_metadata_items(kb_name):
         text = ""
         chunk_path = meta.get("paths", {}).get("chunk_path")
         if chunk_path and Path(chunk_path).exists():
