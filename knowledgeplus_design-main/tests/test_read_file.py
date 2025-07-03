@@ -6,6 +6,10 @@ import sys
 import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import numpy as np
+if not hasattr(np, "__version__"):
+    np.__version__ = "0.0"
+
 pytest.importorskip("streamlit")
 pytest.importorskip("sudachipy")
 
@@ -48,4 +52,21 @@ def test_read_file_markdown_image(monkeypatch):
     text = kgapp.read_file(buf)
     assert "hello" in text
     assert "ocr" in text
+
+
+def test_read_file_pdf_simple(monkeypatch):
+    import knowledge_gpt_app.app as kgapp
+    from fpdf import FPDF
+
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    pdf.cell(40, 10, "simple text")
+    data = pdf.output(dest="S").encode("latin1")
+
+    buf = BytesIO(data)
+    buf.name = "file.pdf"
+
+    text = kgapp.read_file(buf)
+    assert "simple text" in text
 
