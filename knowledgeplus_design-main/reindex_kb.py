@@ -1,9 +1,11 @@
 import argparse
 from pathlib import Path
 import logging
-from shared.search_engine import HybridSearchEngine
 
-logging.basicConfig(level=logging.INFO)
+from shared.search_engine import HybridSearchEngine
+from shared.logging_utils import configure_logging
+
+configure_logging()
 logger = logging.getLogger(__name__)
 
 

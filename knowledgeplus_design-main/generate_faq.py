@@ -5,8 +5,9 @@ import logging
 
 from shared.upload_utils import BASE_KNOWLEDGE_DIR, save_processed_data
 from shared.openai_utils import get_openai_client
+from shared.logging_utils import configure_logging
 
-logging.basicConfig(level=logging.INFO)
+configure_logging()
 logger = logging.getLogger(__name__)
 
 
