@@ -33,3 +33,19 @@ def test_sidebar_toggle_custom_width(monkeypatch):
     st.session_state.clear()
     sidebar_toggle.render_sidebar_toggle(key="toggle_w", sidebar_width="25rem")
     assert '25rem' in captured.get('css', '')
+
+
+def test_sidebar_toggle_initial_state_from_env(monkeypatch):
+    monkeypatch.setattr(st, 'button', lambda *a, **k: False)
+    monkeypatch.setattr(st, 'markdown', lambda *a, **k: None)
+    monkeypatch.setattr(st, 'rerun', lambda: None)
+    monkeypatch.setenv('SIDEBAR_DEFAULT_VISIBLE', 'true')
+
+    # Reload module so the environment variable is read
+    if 'ui_modules.sidebar_toggle' in sys.modules:
+        del sys.modules['ui_modules.sidebar_toggle']
+    sidebar_toggle = importlib.import_module('ui_modules.sidebar_toggle')
+
+    st.session_state.clear()
+    sidebar_toggle.render_sidebar_toggle(key='toggle_env')
+    assert st.session_state.get('sidebar_visible') is True
