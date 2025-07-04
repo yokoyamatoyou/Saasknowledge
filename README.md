@@ -67,6 +67,15 @@ If you require model files that are normally fetched from HuggingFace, be aware
 that this environment blocks direct downloads from that service. Retrieve the
 same files from a mirror or copy them locally before launching the app.
 
+## Pre-commit
+
+Set up git hooks so code style checks run automatically:
+
+```bash
+pip install pre-commit
+pre-commit install
+```
+
 ## Testing
 
 Before running `pytest`, install the test dependencies:
