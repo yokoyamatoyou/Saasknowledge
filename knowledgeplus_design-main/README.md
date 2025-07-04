@@ -52,8 +52,8 @@ streamlit run app.py
 
 アップロードされたファイルや生成されたデータは `knowledge_base/<kb_name>` 以下に保存されます。デフォルトのナレッジベース名は `config.py` の `DEFAULT_KB_NAME` で定義されており、環境変数 `DEFAULT_KB_NAME` で上書きできます。
 
-保存先ディレクトリを変更したい場合は `KNOWLEDGE_BASE_DIR` 環境変数を、チャット履歴の保存場所を変更したい場合は `CHAT_HISTORY_DIR` を設定してください。
-これらの値は `upload_utils` や `chat_history_utils` などのモジュール読み込み時に適用されます。アプリを起動する前に環境変数を設定しておくと、アップロードされたファイルや会話履歴が指定したディレクトリに保存されます。
+保存先ディレクトリを変更したい場合は `KNOWLEDGE_BASE_DIR` 環境変数を、チャット履歴の保存場所を変更したい場合は `CHAT_HISTORY_DIR` を設定してください。ペルソナ設定の保存先を変えたい場合は `PERSONA_DIR` を指定します。
+これらの値は `upload_utils` や `chat_history_utils`、`chat_controller` などのモジュール読み込み時に適用されます。アプリを起動する前に環境変数を設定しておくと、アップロードされたファイルや会話履歴、ペルソナ設定が指定したディレクトリに保存されます。
 
 ## ✨ 主な機能
 
