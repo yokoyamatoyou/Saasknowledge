@@ -4,6 +4,25 @@ import logging
 import os
 import tempfile
 from pathlib import Path
+from io import BytesIO
+
+try:
+    import docx  # python-docx
+    DOCX_SUPPORT = True
+except ImportError:  # pragma: no cover - optional
+    DOCX_SUPPORT = False
+
+try:
+    from PIL import Image
+    PIL_SUPPORT = True
+except ImportError:  # pragma: no cover - optional
+    PIL_SUPPORT = False
+
+try:
+    import PyPDF2
+    PDF_TEXT_SUPPORT = True
+except ImportError:  # pragma: no cover - optional
+    PDF_TEXT_SUPPORT = False
 
 import streamlit as st
 
@@ -248,6 +267,48 @@ class FileProcessor:
         except Exception as e:
             logger.error(f"STEP処理エラー: {e}")
             return None, {"error": f"STEP処理中にエラーが発生しました: {e}"}
+
+    @staticmethod
+    def extract_text_and_images(file_obj):
+        """Return text and embedded images from DOCX or PDF.
+
+        Images are returned as base64 encoded PNG strings. Unsupported files
+        fall back to plain text extraction.
+        """
+        ext = Path(file_obj.name).suffix.lower().lstrip(".")
+        text = ""
+        images = []
+        try:
+            if ext == "docx" and DOCX_SUPPORT:
+                doc = docx.Document(file_obj)
+                for para in doc.paragraphs:
+                    text += para.text + "\n"
+                if PIL_SUPPORT:
+                    for rel in doc.part.related_parts.values():
+                        if "image" in rel.content_type:
+                            img = Image.open(BytesIO(rel.blob))
+                            buf = BytesIO()
+                            img.save(buf, format="PNG")
+                            images.append(base64.b64encode(buf.getvalue()).decode("utf-8"))
+            elif ext == "pdf" and PDF_TEXT_SUPPORT:
+                data = file_obj.read()
+                file_obj.seek(0)
+                reader = PyPDF2.PdfReader(BytesIO(data))
+                for page in reader.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += page_text + "\n"
+                if PDF_SUPPORT and PIL_SUPPORT:
+                    for img in pdf2image.convert_from_bytes(data):
+                        buf = BytesIO()
+                        img.save(buf, format="PNG")
+                        images.append(base64.b64encode(buf.getvalue()).decode("utf-8"))
+            else:
+                text = file_obj.read().decode("utf-8", errors="replace")
+                file_obj.seek(0)
+        except Exception as e:  # pragma: no cover - parsing failures
+            logger.error(f"Document extraction error: {e}")
+        return text, images
 
     @classmethod
     def process_file(cls, file):

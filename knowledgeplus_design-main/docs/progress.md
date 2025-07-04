@@ -25,3 +25,8 @@
 ## 2025-07-06
 - Installed dependencies using `scripts/install_light.sh` followed by `scripts/install_extra.sh` to resolve missing modules without network errors.
 - Verified that `pytest -q` completes successfully with 33 tests.
+
+## 2025-07-07
+- Added `extract_text_and_images()` helper in `shared/file_processor.py` to parse DOCX/PDF files and return embedded images.
+- Created `test_file_processor_extract.py` covering DOCX extraction.
+- All tests pass with `pytest -q` (34 tests).
