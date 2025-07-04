@@ -1,19 +1,19 @@
 import argparse
 import json
-from uuid import uuid4
 import logging
+from uuid import uuid4
 
-from shared.upload_utils import BASE_KNOWLEDGE_DIR, save_processed_data
-from shared.openai_utils import get_openai_client
 from shared.logging_utils import configure_logging
+from shared.openai_utils import get_openai_client
+from shared.upload_utils import BASE_KNOWLEDGE_DIR, save_processed_data
 
 configure_logging()
 logger = logging.getLogger(__name__)
 
 
-
-
-def generate_faqs_from_chunks(kb_name: str, max_tokens: int = 1000, num_pairs: int = 3, client=None) -> int:
+def generate_faqs_from_chunks(
+    kb_name: str, max_tokens: int = 1000, num_pairs: int = 3, client=None
+) -> int:
     kb_dir = BASE_KNOWLEDGE_DIR / kb_name
     chunks_dir = kb_dir / "chunks"
     if not chunks_dir.exists():
@@ -39,6 +39,10 @@ def generate_faqs_from_chunks(kb_name: str, max_tokens: int = 1000, num_pairs: i
             )
             content = response.choices[0].message.content
             pairs = json.loads(content)
+        except json.JSONDecodeError as e:
+            logger.error("JSON decode failed: %s", getattr(e, "msg", e))
+            logger.error("Raw response: %s", content)
+            continue
         except Exception:
             continue
         for pair in pairs:
@@ -49,7 +53,9 @@ def generate_faqs_from_chunks(kb_name: str, max_tokens: int = 1000, num_pairs: i
             faq_id = f"faq_{uuid4().hex}"
             combined = f"Q: {q}\nA: {a}"
             try:
-                from knowledge_gpt_app.app import get_embedding as _get_embedding
+                _get_embedding = __import__(
+                    "knowledge_gpt_app.app", fromlist=["get_embedding"]
+                ).get_embedding
             except Exception:
                 raise RuntimeError("Embedding function unavailable")
             embedding = _get_embedding(combined, client)
