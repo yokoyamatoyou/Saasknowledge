@@ -42,6 +42,11 @@ You can similarly override where chat histories are stored by setting
   export CHAT_HISTORY_DIR=/path/to/chat_history
   ```
 
+These variables are evaluated when helper modules such as
+`upload_utils` and `chat_history_utils` are imported. Set them before
+running the application or tests so that all uploads and chat logs are
+stored under the specified directories.
+
 * Launch the app with:
 
   ```bash
