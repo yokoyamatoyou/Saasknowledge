@@ -10,7 +10,7 @@ np = importlib.import_module('numpy')
 import numpy.random
 import numpy.core
 import nltk
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 if not hasattr(np, "__version__"):
     np.__version__ = "1.24.0"
 

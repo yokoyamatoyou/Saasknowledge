@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 # Adjust the import path to allow importing from shared
 import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 from shared.kb_builder import KnowledgeBuilder
 from shared.file_processor import FileProcessor

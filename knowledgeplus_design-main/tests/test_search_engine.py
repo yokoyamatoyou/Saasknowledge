@@ -6,7 +6,7 @@ import numpy as np
 
 # Adjust the import path to allow importing from shared
 import sys
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 from shared.search_engine import HybridSearchEngine, tokenize_text_for_bm25_internal
 

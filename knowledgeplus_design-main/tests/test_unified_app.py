@@ -12,7 +12,7 @@ import nltk
 # Get the project root directory (one level up from the 'tests' directory)
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-sys.path.insert(0, str(PROJECT_ROOT))
+sys.path.insert(1, str(PROJECT_ROOT))
 sys.modules.setdefault(
     "sentence_transformers",
     types.SimpleNamespace(SentenceTransformer=lambda *a, **k: object())
