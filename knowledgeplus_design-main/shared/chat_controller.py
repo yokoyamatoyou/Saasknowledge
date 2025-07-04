@@ -1,6 +1,7 @@
 import os
 import json
 from datetime import datetime
+from pathlib import Path
 from openai import OpenAI
 import logging
 from shared.search_engine import HybridSearchEngine
@@ -15,7 +16,14 @@ logger = logging.getLogger(__name__)
 # 各関数内で必要に応じて初期化する形にする。ここでは後者で実装。
 
 # ペルソナデータの保存ディレクトリ
-PERSONA_DIR = "./data/personalities"
+#
+# `PERSONA_DIR` 環境変数が指定されている場合はその値を利用し、指定が無ければ
+# リポジトリ直下 ``data/personalities`` をデフォルトとする。Google
+# Cloud などへの移行時に保存先を切り替えられるようにするための調整。
+PERSONA_DIR = os.getenv(
+    "PERSONA_DIR",
+    str(Path(__file__).resolve().parents[1] / "data" / "personalities"),
+)
 
 
 
