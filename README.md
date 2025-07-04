@@ -78,16 +78,22 @@ pre-commit install
 
 ## Testing
 
-Before running `pytest`, install the test dependencies:
+Before running `pytest`, install the minimal dependencies required for the test
+suite. The helper script below pulls in packages such as **Pillow**, which the
+tests rely on:
 
 ```bash
-pip install -r knowledgeplus_design-main/requirements-light.txt
-# If you need optional features
-pip install -r knowledgeplus_design-main/requirements-extra.txt
+scripts/install_light.sh
 ```
 
-Run the automated tests after installing the light requirements. Execute from the
-repository root:
+If certain tests depend on heavier libraries, you can also run:
+
+```bash
+scripts/install_extra.sh
+```
+
+After installing the necessary packages, execute the tests from the repository
+root:
 
 ```bash
 pytest -q
