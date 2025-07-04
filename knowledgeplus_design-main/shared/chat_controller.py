@@ -162,13 +162,19 @@ class ChatController:
             response_length (str): 応答の長さ指定
             client (OpenAI, optional): OpenAIクライアントインスタンス。Noneの場合、内部で初期化。
         
-        Returns:
-            str: 生成された応答テキスト
+        Yields:
+            str: 応答の一部テキスト
+
+        Raises:
+            RuntimeError: OpenAIクライアントの初期化に失敗した場合や、
+                応答生成中にエラーが発生した場合
         """
         if client is None:
-            client = self._get_openai_client_internal() # Call static method
+            client = self._get_openai_client_internal()  # Call static method
             if client is None:
-                return "OpenAIクライアントの初期化に失敗しました。APIキーを確認してください。"
+                raise RuntimeError(
+                    "OpenAIクライアントの初期化に失敗しました。APIキーを確認してください。"
+                )
 
         if conversation_history is None:
             conversation_history = []
@@ -190,20 +196,21 @@ class ChatController:
         
         try:
             stream = client.chat.completions.create(
-                model="gpt-4.1-mini-2025-04-14", # app.pyのGPT4_MINI_MODELと合わせる
+                model="gpt-4.1-mini-2025-04-14",  # app.pyのGPT4_MINI_MODELと合わせる
                 messages=messages,
                 temperature=temperature,
                 max_tokens=max_tokens,
                 top_p=1.0,
                 frequency_penalty=0.0,
                 presence_penalty=0.0,
-                stream=True
+                stream=True,
             )
             for chunk in stream:
                 if chunk.choices[0].delta.content is not None:
                     yield chunk.choices[0].delta.content
-        except Exception as e:
-            return f"応答生成中に予期しないエラーが発生しました: {str(e)}"
+        except Exception as e:  # pragma: no cover - network errors may vary
+            logger.error("GPT response generation failed: %s", e, exc_info=True)
+            raise RuntimeError(f"応答生成中に予期しないエラーが発生しました: {e}") from e
 
     def generate_conversation_title(self, conversation_history, client=None):
         """

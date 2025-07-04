@@ -60,8 +60,15 @@ render_sidebar_toggle(
     expanded_label=TOGGLE_SIDEBAR_EXPANDED,
 )
 
-def safe_generate_gpt_response(user_input, conversation_history=None, persona="default", temperature=None, response_length=None, client=None):
-    """Wrapper around ChatController.generate_gpt_response with error handling."""
+def safe_generate_gpt_response(
+    user_input,
+    conversation_history=None,
+    persona="default",
+    temperature=None,
+    response_length=None,
+    client=None,
+):
+    """Return a response generator or ``None`` on failure."""
     try:
         gen = st.session_state.chat_controller.generate_gpt_response(
             user_input,
