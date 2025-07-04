@@ -15,7 +15,17 @@ _kb_builder = KnowledgeBuilder(_file_processor,
 
 
 def get_embedding(text: str, client=None):
-    """Wrapper for KnowledgeBuilder._get_embedding."""
+    """Return the embedding vector for ``text`` using the OpenAI API.
+
+    Args:
+        text: 埋め込みを生成したいテキスト
+        client: 既存の ``OpenAI`` クライアント。省略時は ``get_openai_client``
+            を呼び出して取得する。
+
+    Returns:
+        list[float] | None: 生成された埋め込みベクトル。クライアントの取得に
+        失敗した場合やエラー発生時は ``None`` を返す。
+    """
     if client is None:
         client = get_openai_client()
         if client is None:
@@ -26,9 +36,25 @@ def get_embedding(text: str, client=None):
 GPT4O_MODEL = "gpt-4.1"
 
 
-def analyze_image_with_gpt4o(image_base64: str, filename: str,
-                              cad_metadata: Optional[dict] = None, client=None):
-    """Analyze an image with GPT-4o and return structured data."""
+def analyze_image_with_gpt4o(
+    image_base64: str,
+    filename: str,
+    cad_metadata: Optional[dict] = None,
+    client=None,
+) -> dict:
+    """Analyze an image with GPT-4o and return structured metadata.
+
+    Args:
+        image_base64: Base64 形式の画像データ
+        filename: 画像のファイル名
+        cad_metadata: CAD ファイル用の追加メタデータ (任意)
+        client: 利用する ``OpenAI`` クライアント。省略時は ``get_openai_client``
+            を呼び出す。
+
+    Returns:
+        dict: GPT-4o の応答を JSON としてパースした辞書。クライアントが取得
+        できない場合やエラーが発生した場合は ``{"error": ...}`` を返す。
+    """
     if client is None:
         client = get_openai_client()
         if client is None:
