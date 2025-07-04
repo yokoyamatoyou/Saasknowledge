@@ -23,7 +23,12 @@ from shared.logging_utils import configure_logging
 from core.mm_builder_utils import analyze_image_with_gpt4o
 
 def _refresh_search_engine(kb_name: str) -> None:
-    """Dynamically import and call refresh_search_engine to avoid circular imports."""
+    """Reload the chatbot's search index for the given knowledge base.
+
+    The heavy index refresh logic lives in ``knowledge_gpt_app``. This
+    helper imports ``refresh_search_engine`` only when needed to avoid
+    circular dependencies and then calls it with ``kb_name``.
+    """
     try:
         from knowledge_gpt_app.app import refresh_search_engine as _refresh
     except Exception as e:  # pragma: no cover - import may fail in isolation
