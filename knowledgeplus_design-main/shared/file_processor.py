@@ -310,6 +310,24 @@ class FileProcessor:
             logger.error(f"Document extraction error: {e}")
         return text, images
 
+    @staticmethod
+    def create_metadata_from_text(text: str, images: list[str]) -> dict:
+        """Return minimal metadata using the given text and images.
+
+        This helper generates a short summary from the beginning of the text and
+        records the number of extracted images.  It avoids heavy model calls so
+        that PDF/DOCX processing remains lightweight.
+        """
+        summary = text.replace("\n", " ")[:100]
+        return {"summary": summary, "image_count": len(images)}
+
+    @staticmethod
+    def extract_text_images_metadata(file_obj):
+        """Return text, images and simple metadata for DOCX or PDF files."""
+        text, images = FileProcessor.extract_text_and_images(file_obj)
+        meta = FileProcessor.create_metadata_from_text(text, images)
+        return text, images, meta
+
     @classmethod
     def process_file(cls, file):
         file_extension = Path(file.name).suffix.lower().replace('.', '')
