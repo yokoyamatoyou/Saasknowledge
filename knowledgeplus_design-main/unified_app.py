@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import logging
 import uuid
@@ -39,9 +40,13 @@ except Exception as e:
     st.stop()
 
 # Global page config and styling
-st.set_page_config(
-    layout="wide", page_title="KNOWLEDGE+", initial_sidebar_state="collapsed"
-)
+sidebar_visible = os.getenv("SIDEBAR_DEFAULT_VISIBLE", "false").lower() in {
+    "1",
+    "true",
+    "yes",
+}
+initial_state = "expanded" if sidebar_visible else "collapsed"
+st.set_page_config(layout="wide", page_title="KNOWLEDGE+", initial_sidebar_state=initial_state)
 
 apply_intel_theme(st)
 
