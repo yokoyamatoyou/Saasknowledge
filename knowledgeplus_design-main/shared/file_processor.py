@@ -330,9 +330,39 @@ class FileProcessor:
 
     @staticmethod
     def extract_text_images_metadata(file_obj):
-        """Return text, images and simple metadata for DOCX or PDF files."""
+        """Return text, images and simple metadata for DOCX or PDF files.
+
+        If ``pytesseract`` is available, basic OCR is performed on embedded
+        images so that the returned text includes any visible captions.  The
+        recognized strings are stored under ``ocr_snippets`` in the metadata.
+        This keeps the implementation lightweight while capturing additional
+        context when images contain text.
+        """
         text, images = FileProcessor.extract_text_and_images(file_obj)
         meta = FileProcessor.create_metadata_from_text(text, images)
+
+        ocr_snippets: list[str] = []
+        if images and PIL_SUPPORT:
+            try:  # optional dependency
+                import pytesseract  # type: ignore
+            except Exception:  # pragma: no cover - pytesseract missing
+                pytesseract = None
+
+            if pytesseract is not None:
+                for img_b64 in images[:3]:  # limit to avoid heavy loops
+                    try:
+                        img_bytes = base64.b64decode(img_b64)
+                        img = Image.open(BytesIO(img_bytes))
+                        text_snip = pytesseract.image_to_string(img, lang="jpn+eng")
+                        if text_snip.strip():
+                            ocr_snippets.append(text_snip.strip())
+                    except Exception:  # pragma: no cover - OCR failure
+                        continue
+
+        if ocr_snippets:
+            meta["ocr_snippets"] = ocr_snippets
+            text = text + "\n" + "\n".join(ocr_snippets)
+
         return text, images, meta
 
     @classmethod

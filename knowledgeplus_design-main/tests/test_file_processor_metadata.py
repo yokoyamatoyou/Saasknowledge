@@ -5,6 +5,7 @@ sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 from PIL import Image
 import importlib
+import types
 
 # Remove stubs to load real python-docx
 STUBS_DIR = Path(__file__).resolve().parent / "stubs"
@@ -27,12 +28,22 @@ def _create_docx_with_image(tmp_path):
     return out_path
 
 
-def test_extract_text_images_metadata(tmp_path):
+def test_extract_text_images_metadata(tmp_path, monkeypatch):
     doc_path = _create_docx_with_image(tmp_path)
+
+    monkeypatch.setitem(
+        sys.modules,
+        "pytesseract",
+        types.SimpleNamespace(image_to_string=lambda i, lang=None: "ocr text"),
+    )
+
     with open(doc_path, "rb") as f:
         text, images, meta = FileProcessor.extract_text_images_metadata(f)
+
     assert "hello world" in text
+    assert "ocr text" in text
     assert len(images) == 1
     assert meta["image_count"] == 1
     assert meta["summary"].startswith("hello world")
     assert meta.get("preview_image") == images[0]
+    assert meta.get("ocr_snippets") == ["ocr text"]
