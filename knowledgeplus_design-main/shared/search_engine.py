@@ -238,6 +238,7 @@ class HybridSearchEngine:
         return loaded_embeddings
     
     def _check_chunk_embedding_consistency(self):
+        """Log differences between chunk IDs and their embeddings."""
         chunk_ids = set(c['id'] for c in self.chunks)
         embedding_ids = set(self.embeddings.keys())
         logger.info(f"整合性チェック: チャンクID数={len(chunk_ids)}, 埋め込みID数={len(embedding_ids)}")
@@ -273,6 +274,7 @@ class HybridSearchEngine:
             })
 
     def _create_tokenized_corpus_and_filter_chunks(self) -> tuple[list[list[str]], list[dict]]:
+        """Tokenize chunk text for BM25 and drop invalid entries."""
         logger.info("BM25用コーパスのトークン化とチャンクフィルタリングを開始...")
         tokenized_corpus: list[list[str]] = []
         successfully_processed_chunks: list[dict] = []
