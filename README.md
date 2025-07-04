@@ -99,3 +99,10 @@ root:
 pytest -q
 ```
 
+## Thumbnail grid
+
+The management interface shows uploaded items in a 3×3 thumbnail grid. Use
+`display_thumbnail_grid()` to edit titles and tags for each item after upload.
+See [docs/integration_plan.md](knowledgeplus_design-main/docs/integration_plan.md)
+for the design overview and additional details.
+
