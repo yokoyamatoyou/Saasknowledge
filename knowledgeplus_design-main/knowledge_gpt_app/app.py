@@ -1,3 +1,9 @@
+"""Streamlit interface for the KnowledgePlus assistant.
+
+This app unifies knowledge-base search, conversational chat and persona
+management features into a single experience.
+"""
+
 import os
 import sys
 import streamlit as st
