@@ -35,3 +35,4 @@ def test_extract_text_images_metadata(tmp_path):
     assert len(images) == 1
     assert meta["image_count"] == 1
     assert meta["summary"].startswith("hello world")
+    assert meta.get("preview_image") == images[0]

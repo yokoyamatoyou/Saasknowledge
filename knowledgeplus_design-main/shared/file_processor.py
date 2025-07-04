@@ -315,11 +315,16 @@ class FileProcessor:
         """Return minimal metadata using the given text and images.
 
         This helper generates a short summary from the beginning of the text and
-        records the number of extracted images.  It avoids heavy model calls so
-        that PDF/DOCX processing remains lightweight.
+        records the number of extracted images.  A preview of the first image is
+        also included so the UI can display a thumbnail without re-reading the
+        document.  Heavy model calls are avoided so that PDF/DOCX processing
+        remains lightweight.
         """
         summary = text.replace("\n", " ")[:100]
-        return {"summary": summary, "image_count": len(images)}
+        meta = {"summary": summary, "image_count": len(images)}
+        if images:
+            meta["preview_image"] = images[0]
+        return meta
 
     @staticmethod
     def extract_text_images_metadata(file_obj):
