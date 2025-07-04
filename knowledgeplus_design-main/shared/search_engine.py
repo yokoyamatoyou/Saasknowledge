@@ -28,7 +28,7 @@ try:
     from sudachipy import tokenizer as sudachi_tokenizer_module
     from sudachipy import dictionary as sudachi_dictionary_module
     _sudachi_tokenizer_instance_for_bm25 = sudachi_dictionary_module.Dictionary().create()
-    _SUDASHI_BM25_TOKENIZER_MODE = sudachi_tokenizer_module.Tokenizer.SplitMode.B
+    _SUDACHI_BM25_TOKENIZER_MODE = sudachi_tokenizer_module.Tokenizer.SplitMode.B
     logger.info("SudachiPy tokenizer for BM25 (knowledge_search.py) initialized successfully.")
 except ImportError:
     logger.warning("SudachiPy not found. BM25 will use a fallback regex tokenizer, which is not ideal for Japanese.")
@@ -75,7 +75,7 @@ def tokenize_text_for_bm25_internal(text_input: str) -> list[str]:
         try:
             tokens = [
                 m.normalized_form() 
-                for m in _sudachi_tokenizer_instance_for_bm25.tokenize(processed_text, _SUDASHI_BM25_TOKENIZER_MODE)
+                for m in _sudachi_tokenizer_instance_for_bm25.tokenize(processed_text, _SUDACHI_BM25_TOKENIZER_MODE)
             ]
         except Exception as e_sudachi_tokenize:
             logger.error(f"    [Tokenizer] SudachiPyでのトークン化中にエラー: {e_sudachi_tokenize}. Regexフォールバック使用。Text: {processed_text[:30]}...")
