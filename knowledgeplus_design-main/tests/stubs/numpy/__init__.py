@@ -9,6 +9,10 @@ datetime64 = int
 timedelta64 = int
 int64 = int
 float64 = float
+integer = int
+
+class busdaycalendar:
+    pass
 
 float32 = float
 
@@ -29,6 +33,11 @@ def dot(a, b):
     return sum(float(x) * float(y) for x, y in zip(a, b))
 
 
+class dtype:
+    def __init__(self, t):
+        self.type = t
+
+
 class _Linalg:
     @staticmethod
     def norm(vec):
@@ -39,7 +48,23 @@ linalg = _Linalg()
 # Provide minimal submodules so ``import numpy.random`` and
 # ``import numpy.core`` succeed in tests without installing the real
 # NumPy package.
-random = SimpleNamespace()
+class _Generator:  # minimal stub for pandas
+    pass
+
+
+class _BitGenerator:  # minimal stub for pandas
+    pass
+
+
+class _RandomState:
+    pass
+
+
+random = SimpleNamespace(
+    Generator=_Generator,
+    BitGenerator=_BitGenerator,
+    RandomState=_RandomState,
+)
 core = SimpleNamespace()
 sys.modules.setdefault(__name__ + ".random", random)
 sys.modules.setdefault(__name__ + ".core", core)
