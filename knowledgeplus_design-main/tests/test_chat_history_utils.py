@@ -27,3 +27,16 @@ def test_chat_history_lifecycle(tmp_path, monkeypatch):
 
     assert chu.delete_history(hid) is True
     assert not (tmp_path / f"{hid}.json").exists()
+
+
+def test_load_history(tmp_path, monkeypatch):
+    monkeypatch.setattr(chu, "CHAT_HISTORY_DIR", tmp_path)
+    tmp_path.mkdir(exist_ok=True)
+    hid = chu.create_history()
+    chu.append_message(hid, "user", "hi")
+
+    data = chu.load_history(hid)
+    assert data is not None
+    assert data["messages"][0]["content"] == "hi"
+
+    assert chu.load_history("missing") is None
