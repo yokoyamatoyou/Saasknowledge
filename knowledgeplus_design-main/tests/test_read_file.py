@@ -5,12 +5,22 @@ from pathlib import Path
 import sys
 import pytest
 import importlib
+STUBS_DIR = Path(__file__).resolve().parent / "stubs"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+
 sys.modules.pop('numpy', None)
+# Use real numpy and nltk by temporarily removing stub paths
+if str(STUBS_DIR) in sys.path:
+    sys.path.remove(str(STUBS_DIR))
+if str(PROJECT_ROOT) in sys.path:
+    sys.path.remove(str(PROJECT_ROOT))
 np = importlib.import_module('numpy')
+import nltk
+sys.path.insert(0, str(STUBS_DIR))
+sys.path.insert(1, str(PROJECT_ROOT))
 import numpy.random
 import numpy.core
-import nltk
-sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
+
 if not hasattr(np, "__version__"):
     np.__version__ = "1.24.0"
 
@@ -25,8 +35,23 @@ pytest.importorskip("sudachipy")
 
 
 
+def _load_app_with_real_numpy():
+    sys.modules.setdefault("pandas", types.SimpleNamespace())
+    tokenize_mod = types.ModuleType("nltk.tokenize")
+    tokenize_mod.word_tokenize = lambda t: t.split()
+    nltk_mod = types.ModuleType("nltk")
+    nltk_mod.tokenize = tokenize_mod
+    sys.modules.setdefault("nltk", nltk_mod)
+    sys.modules.setdefault("nltk.tokenize", tokenize_mod)
+    if str(STUBS_DIR) in sys.path:
+        sys.path.remove(str(STUBS_DIR))
+    app = importlib.import_module("knowledge_gpt_app.app")
+    sys.path.insert(0, str(STUBS_DIR))
+    return app
+
+
 def test_read_file_excel(monkeypatch):
-    import knowledge_gpt_app.app as kgapp
+    kgapp = _load_app_with_real_numpy()
     fake_sheet = types.SimpleNamespace(
         title="Sheet1",
         _images=[],
@@ -49,7 +74,7 @@ def test_read_file_excel(monkeypatch):
 
 
 def test_read_file_markdown_image(monkeypatch):
-    import knowledge_gpt_app.app as kgapp # Moved import inside function
+    kgapp = _load_app_with_real_numpy()  # Moved import inside function
     b64 = base64.b64encode(b"imgdata").decode("ascii")
     content = f"hello ![](data:image/png;base64,{b64})"
     buf = BytesIO(content.encode("utf-8"))
@@ -65,7 +90,7 @@ def test_read_file_markdown_image(monkeypatch):
 
 
 def test_read_file_pdf_simple(monkeypatch):
-    import knowledge_gpt_app.app as kgapp
+    kgapp = _load_app_with_real_numpy()
     from fpdf import FPDF
 
     pdf = FPDF()

@@ -17,6 +17,23 @@ sys.modules.setdefault(
     "sentence_transformers",
     types.SimpleNamespace(SentenceTransformer=lambda *a, **k: object())
 )
+
+
+def _load_app_with_real_numpy():
+    STUBS_DIR = Path(__file__).resolve().parent / "stubs"
+    sys.modules.setdefault("pandas", types.SimpleNamespace())
+    tokenize_mod = types.ModuleType("nltk.tokenize")
+    tokenize_mod.word_tokenize = lambda t: t.split()
+    nltk_mod = types.ModuleType("nltk")
+    nltk_mod.tokenize = tokenize_mod
+    sys.modules.setdefault("nltk", nltk_mod)
+    sys.modules.setdefault("nltk.tokenize", tokenize_mod)
+    if str(STUBS_DIR) in sys.path:
+        sys.path.remove(str(STUBS_DIR))
+    app = importlib.import_module("knowledge_gpt_app.app")
+    sys.path.insert(0, str(STUBS_DIR))
+    sys.path.insert(1, str(PROJECT_ROOT))
+    return app
 # Provide minimal UI module stubs so unified_app can import
 sys.modules['ui_modules.search_ui'] = types.ModuleType('ui_modules.search_ui')
 sys.modules['ui_modules.search_ui'].render_search_mode = lambda *a, **k: None
@@ -155,8 +172,10 @@ def test_refresh_search_engine_reloads_engine(monkeypatch):
             self.reindex_called = True
     monkeypatch.setattr('shared.search_engine.HybridSearchEngine', MockHybridSearchEngine)
 
-    # Import the function to test from the correct module
-    from knowledge_gpt_app.app import refresh_search_engine, get_search_engine
+    # Import the function to test using real numpy
+    app_mod = _load_app_with_real_numpy()
+    refresh_search_engine = app_mod.refresh_search_engine
+    get_search_engine = app_mod.get_search_engine
 
     # We also need to mock get_search_engine to control the engine instance
     def mock_get_search_engine(kb_name):

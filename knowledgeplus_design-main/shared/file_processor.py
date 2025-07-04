@@ -58,7 +58,9 @@ logger = logging.getLogger(__name__)
 
 class FileProcessor:
     SUPPORTED_IMAGE_TYPES = ['jpg', 'jpeg', 'png', 'bmp', 'tiff', 'webp']
-    SUPPORTED_DOCUMENT_TYPES = ['pdf']
+    SUPPORTED_DOCUMENT_TYPES = [
+        'pdf', 'docx', 'doc', 'xlsx', 'xls', 'txt'
+    ]
     SUPPORTED_CAD_TYPES = ['dxf', 'stl', 'ply', 'obj', 'step', 'stp', 'iges', 'igs', '3ds']
 
     @staticmethod
