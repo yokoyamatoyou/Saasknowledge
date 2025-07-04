@@ -21,6 +21,7 @@ import shutil
 from datetime import datetime
 import uuid
 from pathlib import Path
+from typing import Any, Dict, List
 import logging
 from nltk.tokenize import word_tokenize
 import time
@@ -527,8 +528,9 @@ def refresh_search_engine(kb_name: str) -> None:
         except Exception as e:
             logger.error(f"Failed to refresh index for '{kb_name}': {e}", exc_info=True)
 
-def list_knowledge_bases():
-    kb_list = []
+def list_knowledge_bases() -> List[Dict[str, Any]]:
+    """Return metadata dictionaries for all available knowledge bases."""
+    kb_list: List[Dict[str, Any]] = []
     if RAG_BASE_DIR.exists():
         for kb_dir_path in RAG_BASE_DIR.iterdir():
             if kb_dir_path.is_dir():

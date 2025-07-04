@@ -44,6 +44,11 @@ def load_chat_histories() -> List[Dict]:
     return histories
 
 
+def list_history_ids() -> List[str]:
+    """Return history file IDs sorted by creation time."""
+    return [h["id"] for h in load_chat_histories()]
+
+
 def load_history(history_id: str) -> Optional[Dict]:
     """Return a single chat history dict or ``None`` if unavailable."""
     path = get_history_path(history_id)
