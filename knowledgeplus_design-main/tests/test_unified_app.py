@@ -193,8 +193,8 @@ def test_safe_generate_missing_client(monkeypatch):
     mod = importlib.reload(__import__('unified_app'))
 
     result = mod.safe_generate_gpt_response('prompt')
-    assert result is None
-    assert mock_messages
+    with pytest.raises(RuntimeError):
+        next(result)
 
 def test_refresh_search_engine_reloads_engine(monkeypatch):
     pytest.importorskip('streamlit')
