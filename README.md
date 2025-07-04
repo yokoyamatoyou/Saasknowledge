@@ -50,6 +50,13 @@ You can similarly override where chat histories are stored by setting
   export CHAT_HISTORY_DIR=/path/to/chat_history
   ```
 
+The sidebar defaults to collapsed.  Set `SIDEBAR_DEFAULT_VISIBLE=true` before
+launching to keep it expanded when the app starts:
+
+  ```bash
+  export SIDEBAR_DEFAULT_VISIBLE=true
+  ```
+
 You can override the default knowledge base name by setting
 `DEFAULT_KB_NAME` before running the app:
 
