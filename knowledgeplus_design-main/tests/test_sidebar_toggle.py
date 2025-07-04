@@ -21,3 +21,15 @@ def test_sidebar_toggle_updates_state(monkeypatch):
     sidebar_toggle.render_sidebar_toggle(key="test_toggle")
     assert st.session_state.get('sidebar_visible') is True
     assert calls['rerun'] is True
+
+
+def test_sidebar_toggle_custom_width(monkeypatch):
+    captured = {}
+    monkeypatch.setattr(st, 'button', lambda *a, **k: False)
+    monkeypatch.setattr(st, 'rerun', lambda: None)
+    monkeypatch.setattr(st, 'markdown', lambda text, **k: captured.setdefault('css', text))
+    sidebar_toggle = importlib.import_module('ui_modules.sidebar_toggle')
+
+    st.session_state.clear()
+    sidebar_toggle.render_sidebar_toggle(key="toggle_w", sidebar_width="25rem")
+    assert '25rem' in captured.get('css', '')
