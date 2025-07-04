@@ -22,6 +22,14 @@ scripts/install_extra.sh  # add the heavy packages later
 When using Codex for automated contributions, run the light script first and
 install the extras separately. This avoids network errors that can lead to pull
 request failures.
+
+## Codex tips
+
+Automated commits must keep the repository clean to prevent pull request
+failures. Run `pytest -q` before submitting changes and install dependencies in
+two stages so heavy packages download separately. When running `run_app.sh` the
+process stays active waiting for connections—this is normal and should not be
+treated as an error.
 * Copy `knowledgeplus_design-main/.env.example` to `.env` and set the OpenAI key before starting:
 
   ```bash
