@@ -60,7 +60,8 @@ def render_chat_mode(safe_generate_gpt_response):
         if client:
             prompt = (
                 f"次の情報を参考にユーザーの質問に答えてください:\n{context}\n\n質問:{user_msg}"
-                if use_kb and context else user_msg
+                if use_kb and context
+                else user_msg
             )
             chat_temp = 0.2 if use_kb else float(st.session_state.get("temperature", 0.7))
             chat_persona = st.session_state.get("persona", "default")
@@ -68,40 +69,22 @@ def render_chat_mode(safe_generate_gpt_response):
             with st.chat_message("assistant"):
                 message_placeholder = st.empty()
                 full_response = ""
-                if "chat_controller" not in st.session_state or st.session_state.chat_controller is None:
-                    gen = safe_generate_gpt_response(
-                        user_msg,
-                        conversation_history=[
-                            {"role": m["role"], "content": m["content"]}
-                            for m in st.session_state["chat_history"][:-1]
-                            if m["role"] in ("user", "assistant")
-                        ],
-                        persona=chat_persona,
-                        temperature=chat_temp,
-                        response_length="普通",
-                        client=client,
-                    )
-                    if gen:
-                        for chunk in gen:
-                            full_response += chunk
-                            message_placeholder.markdown(full_response + "▌")
-                else:
-                    gen = safe_generate_gpt_response(
-                        prompt,
-                        conversation_history=[
-                            {"role": m["role"], "content": m["content"]}
-                            for m in st.session_state["chat_history"][:-1]
-                            if m["role"] in ("user", "assistant")
-                        ],
-                        persona=chat_persona,
-                        temperature=chat_temp,
-                        response_length="普通",
-                        client=client,
-                    )
-                    if gen:
-                        for chunk in gen:
-                            full_response += chunk
-                            message_placeholder.markdown(full_response + "▌")
+                gen = safe_generate_gpt_response(
+                    prompt,
+                    conversation_history=[
+                        {"role": m["role"], "content": m["content"]}
+                        for m in st.session_state["chat_history"][:-1]
+                        if m["role"] in ("user", "assistant")
+                    ],
+                    persona=chat_persona,
+                    temperature=chat_temp,
+                    response_length="普通",
+                    client=client,
+                )
+                if gen:
+                    for chunk in gen:
+                        full_response += chunk
+                        message_placeholder.markdown(full_response + "▌")
                 message_placeholder.markdown(full_response)
             answer = full_response
         else:
