@@ -234,13 +234,14 @@ class ChatController:
             return "会話の開始"
 
         try:
+            from config import TITLE_GENERATION_MODEL
             response = client.chat.completions.create(
-                model="gpt-3.5-turbo",  # タイトル生成には軽量モデルで十分
+                model=TITLE_GENERATION_MODEL,  # configurable lightweight model
                 messages=[
                     {"role": "system", "content": "以下の会話のやり取りに基づいて、この会話全体を表す簡潔なタイトルを日本語で5～10単語程度で生成してください。"},
                     {"role": "user", "content": f"会話の抜粋:\n{history_text}\n\nこの会話のタイトルは？"}
                 ],
-                temperature=0.2, # タイトルなので決定的に
+                temperature=0.2,  # タイトルなので決定的に
                 max_tokens=30    # 短いタイトルを期待
             )
             title = response.choices[0].message.content.strip()
