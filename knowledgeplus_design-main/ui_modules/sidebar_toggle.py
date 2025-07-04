@@ -1,11 +1,15 @@
+import os
 import streamlit as st
+
+
+DEFAULT_SIDEBAR_WIDTH = os.getenv("SIDEBAR_WIDTH", "18rem")
 
 
 def render_sidebar_toggle(
     key: str = "toggle_sidebar",
     collapsed_label: str = "＞＞",
     expanded_label: str = "＜＜",
-    sidebar_width: str = "18rem",
+    sidebar_width: str = DEFAULT_SIDEBAR_WIDTH,
 ) -> None:
     """Display a toggle button to collapse or expand the sidebar.
 
@@ -18,7 +22,8 @@ def render_sidebar_toggle(
     expanded_label: str
         Label shown when the sidebar is visible.
     sidebar_width: str
-        CSS width of the sidebar; allow overrides for custom layouts.
+        CSS width of the sidebar.  The default value can be overridden by
+        the ``SIDEBAR_WIDTH`` environment variable to customize layouts.
     """
     if "sidebar_visible" not in st.session_state:
         st.session_state["sidebar_visible"] = False
