@@ -44,6 +44,18 @@ def load_chat_histories() -> List[Dict]:
     return histories
 
 
+def load_history(history_id: str) -> Optional[Dict]:
+    """Return a single chat history dict or ``None`` if unavailable."""
+    path = get_history_path(history_id)
+    if not path.exists():
+        return None
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
 def create_history(settings: Optional[Dict] = None) -> str:
     """Create a new chat history file and return its ID."""
     history_id = str(uuid.uuid4())
