@@ -30,3 +30,7 @@
 - Added `extract_text_and_images()` helper in `shared/file_processor.py` to parse DOCX/PDF files and return embedded images.
 - Created `test_file_processor_extract.py` covering DOCX extraction.
 - All tests pass with `pytest -q` (34 tests).
+
+## 2025-07-08
+- Added `test_full_workflow.py` to simulate building a knowledge item and generating FAQs using stubs.
+- Verified all tests pass with `pytest -q` (40 tests).
