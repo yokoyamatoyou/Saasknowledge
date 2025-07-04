@@ -15,21 +15,20 @@ _kb_builder = KnowledgeBuilder(_file_processor,
 
 
 def get_embedding(text: str, client=None):
-    """
-    テキストから埋め込みベクトルを取得する。
+    """OpenAI埋め込みAPIを利用してテキストのベクトルを生成する。
 
     Args:
-        text: 埋め込みを生成するテキスト。
-        client: 使用する ``OpenAI`` クライアント。省略時は ``get_openai_client``
-            で取得する。
+        text: 埋め込みを計算したいテキスト。
+        client: ``openai.OpenAI`` クライアント。 ``None`` の場合は
+            :func:`get_openai_client` で自動取得する。
 
     Returns:
-        list[float] | None: 生成された埋め込みベクトル。クライアントの取得や
-        API 呼び出しが失敗した場合は ``None`` を返す。
+        list[float] | None: 生成された埋め込みベクトル。クライアント取得や
+        API 呼び出しに失敗した場合は ``None`` が返る。
 
-    この関数は ``KnowledgeBuilder`` を利用して OpenAI の埋め込み API を
-    呼び出す。 ``client`` が指定されていない場合は自動的にクライアントを
-    生成し、取得できなければ ``None`` を返す。
+    ``KnowledgeBuilder`` の内部メソッド ``_get_embedding`` を呼び出して
+    埋め込みを取得する。 ``client`` を省略するとクライアントを生成し、
+    取得できない場合やAPIエラー時は ``None`` を返す。
     """
     if client is None:
         client = get_openai_client()
@@ -47,23 +46,23 @@ def analyze_image_with_gpt4o(
     cad_metadata: Optional[dict] = None,
     client=None,
 ) -> dict:
-    """
-    GPT-4o を利用して画像を解析し、メタデータを返す。
+    """GPT-4o に画像を渡して分析結果を取得する。
 
     Args:
-        image_base64: Base64 形式の画像データ。
-        filename: 画像のファイル名。
-        cad_metadata: CAD ファイル用の追加メタデータ (任意)。
-        client: 利用する ``OpenAI`` クライアント。省略時は ``get_openai_client``
-            を呼び出す。
+        image_base64: Base64 エンコードされた画像データ。
+        filename: 解析対象ファイルの名称。
+        cad_metadata: CAD ファイルに付随するメタデータ。 ``None`` の場合は
+            通常の画像解析として扱う。
+        client: ``openai.OpenAI`` クライアント。省略時は
+            :func:`get_openai_client` で取得する。
 
     Returns:
-        dict: GPT-4o の応答を JSON としてパースした辞書。クライアント取得に
+        dict: GPT-4o から返された JSON を解析した辞書。クライアント取得に
         失敗した場合や API エラー時は ``{"error": ...}`` を返す。
 
-    画像とともに詳細なプロンプトを送信し、得られた JSON を解析して返す。
-    ``cad_metadata`` が指定されている場合は、その情報をプロンプトに含めて
-    応答に統合する。
+    画像とプロンプトを ``chat.completions`` API に送信し、モデルが生成した
+    JSON オブジェクトを辞書として返す。 ``cad_metadata`` が指定されている
+    場合はその情報を結果に統合する。
     """
     if client is None:
         client = get_openai_client()
