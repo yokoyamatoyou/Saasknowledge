@@ -106,3 +106,8 @@ The management interface shows uploaded items in a 3×3 thumbnail grid. Use
 See [docs/integration_plan.md](knowledgeplus_design-main/docs/integration_plan.md)
 for the design overview and additional details.
 
+For a deeper look at how the project evolves, check the same
+[docs/integration_plan.md](knowledgeplus_design-main/docs/integration_plan.md)
+file. It documents the phased design notes and lists key repository
+guidelines to keep contributions consistent.
+
