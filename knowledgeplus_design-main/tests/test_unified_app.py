@@ -145,6 +145,57 @@ def test_safe_generate_handles_error(monkeypatch):
     assert result is None
     assert len(mock_st_error_messages) > 0 # Check if st.error was called
 
+
+def test_safe_generate_missing_client(monkeypatch):
+    pytest.importorskip('streamlit')
+    pytest.importorskip('sudachipy')
+
+    import streamlit as st
+    mock_messages = []
+    monkeypatch.setattr(st, 'error', lambda msg: mock_messages.append(msg))
+
+    import importlib
+    monkeypatch.setattr('ui_modules.theme.apply_intel_theme', lambda *a, **k: None)
+    monkeypatch.setattr(st, 'set_page_config', lambda *a, **k: None)
+    monkeypatch.setattr(st, 'title', lambda *a, **k: None)
+    monkeypatch.setattr(
+        st,
+        'columns',
+        lambda *a, **k: (
+            types.SimpleNamespace(button=lambda *a, **k: False),
+            types.SimpleNamespace(button=lambda *a, **k: False),
+            None,
+        ),
+    )
+    sidebar = types.SimpleNamespace(radio=lambda *a, **k: 'FAQ')
+    monkeypatch.setattr(st, 'sidebar', sidebar)
+    monkeypatch.setattr(st, 'info', lambda *a, **k: None)
+
+    from shared.chat_controller import ChatController
+
+    monkeypatch.setattr(ChatController, '_get_openai_client_internal', staticmethod(lambda: None))
+
+    controller = ChatController(None)  # type: ignore[arg-type]
+
+    class MockSessionState(dict):
+        def __getattr__(self, name):
+            try:
+                return self[name]
+            except KeyError:
+                raise AttributeError(f"{type(self).__name__} has no attribute {name}")
+
+        def __setattr__(self, name, value):
+            self[name] = value
+
+    mock_session_state = MockSessionState(chat_controller=controller, search_engines={})
+    monkeypatch.setattr(st, 'session_state', mock_session_state)
+
+    mod = importlib.reload(__import__('unified_app'))
+
+    result = mod.safe_generate_gpt_response('prompt')
+    assert result is None
+    assert mock_messages
+
 def test_refresh_search_engine_reloads_engine(monkeypatch):
     pytest.importorskip('streamlit')
     pytest.importorskip('sudachipy')
