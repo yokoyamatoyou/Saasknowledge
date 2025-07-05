@@ -3,6 +3,7 @@ from pathlib import Path
 import json
 from unittest.mock import MagicMock, patch
 import numpy as np
+import logging
 
 # Adjust the import path to allow importing from shared
 import sys
@@ -167,3 +168,17 @@ def test_bm25_tokenization_internal():
 
     tokens_empty_after_processing_jp = tokenize_text_for_bm25_internal("の に は")
     assert tokens_empty_after_processing_jp == ["<bm25_all_stopwords_token>"]
+
+
+def test_missing_kb_metadata_logs_warning(tmp_path, caplog):
+    kb_dir = tmp_path / "kb_no_meta"
+    (kb_dir / "chunks").mkdir(parents=True)
+    (kb_dir / "metadata").mkdir()
+    (kb_dir / "embeddings").mkdir()
+
+    with caplog.at_level(logging.WARNING):
+        HybridSearchEngine(str(kb_dir))
+
+    assert any(
+        "メタデータファイルが見つかりません" in r.message for r in caplog.records
+    )
