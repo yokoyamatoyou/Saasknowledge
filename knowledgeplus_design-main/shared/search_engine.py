@@ -1,5 +1,6 @@
 import json
 import os
+
 # from sklearn.feature_extraction.text import TfidfVectorizer # BM25には不要
 import pickle
 
@@ -20,6 +21,7 @@ from pathlib import Path
 
 # from nltk.tokenize import word_tokenize # SudachiPyに置き換え、またはフォールバックとして保持
 from nltk.corpus import stopwords
+
 # import time # 直接は不要
 from rank_bm25 import BM25Okapi
 from shared.nltk_utils import ensure_nltk_resources
@@ -317,14 +319,15 @@ class HybridSearchEngine:
     def _load_kb_metadata(self) -> dict:
         """Return metadata describing this knowledge base.
 
-        The method looks for ``kb_metadata.json`` under ``self.kb_path`` and
-        returns the parsed JSON dictionary. If the file is missing or cannot be
-        read, an empty dictionary is returned and the error is logged.
+        The helper reads ``kb_metadata.json`` located under ``self.kb_path``.
+        No arguments are required because the directory is determined during
+        object initialization.
 
         Returns
         -------
         dict
-            Parsed metadata for the knowledge base or an empty dictionary.
+            Parsed metadata for the knowledge base or an empty dictionary if the
+            file does not exist or cannot be read.
         """
 
         metadata_file = self.kb_path / "kb_metadata.json"
@@ -335,18 +338,16 @@ class HybridSearchEngine:
             except Exception as e:
                 logger.error(f"ナレッジベースメタデータ読み込みエラー: {e}", exc_info=True)
         else:
-            logger.warning(
-                f"ナレッジベースメタデータファイルが見つかりません: {metadata_file}"
-            )
+            logger.warning(f"ナレッジベースメタデータファイルが見つかりません: {metadata_file}")
         return {}
 
     def _load_chunks(self) -> list[dict]:
         """Load chunk text and metadata from disk.
 
-        The method iterates over ``*.txt`` files in ``self.chunks_path`` and
-        pairs each one with a ``.json`` metadata file located under
-        ``self.metadata_path``. Each chunk is represented as a dictionary with
-        ``id``, ``text`` and ``metadata`` keys.
+        Chunk ``.txt`` files are read from ``self.chunks_path`` and combined
+        with their corresponding ``.json`` metadata under ``self.metadata_path``.
+        Each resulting entry is returned as a dictionary with ``id``, ``text``
+        and ``metadata`` keys.
 
         Returns
         -------
@@ -393,7 +394,7 @@ class HybridSearchEngine:
     def _load_embeddings(self) -> dict[str, list[float]]:
         """Read embedding vectors from disk keyed by chunk ID.
 
-        Embedding files are stored as ``.pkl`` objects in ``self.embeddings_path``.
+        The pickled embedding files are loaded from ``self.embeddings_path``.
         Each pickle may contain either a dictionary with an ``"embedding"`` field
         or the raw vector. The data is converted to lists of ``float`` and
         returned as a mapping from chunk ID to embedding vector.
