@@ -42,3 +42,9 @@
 - Replaced pdf2image with PyMuPDF for PDF OCR fallback.
 - Updated tests to prefer real dependencies when installed.
 - Verified all 48 tests pass with pytest.
+
+## 2025-07-11
+- Made PyMuPDF optional in `FileProcessor` so missing dependencies no longer
+  break imports.
+- Image extraction tests now skip when Pillow isn't installed.
+- Confirmed the suite runs cleanly with and without optional packages.

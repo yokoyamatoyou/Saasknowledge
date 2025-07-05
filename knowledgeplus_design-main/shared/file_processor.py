@@ -54,7 +54,12 @@ except ImportError:
     STEP_SUPPORT = False
 
 # PDF processing libraries
-import fitz  # PyMuPDF
+try:
+    import fitz  # PyMuPDF
+    PDF_IMAGE_SUPPORT = True
+except ImportError:  # pragma: no cover - optional dependency
+    fitz = None
+    PDF_IMAGE_SUPPORT = False
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +83,11 @@ class FileProcessor:
     def _encode_image_to_base64(image_file):
         """画像ファイルをbase64エンコード"""
         try:
-            if hasattr(image_file, "type") and image_file.type == "application/pdf":
+            if (
+                PDF_IMAGE_SUPPORT
+                and hasattr(image_file, "type")
+                and image_file.type == "application/pdf"
+            ):
                 data = image_file.read()
                 pdf_doc = fitz.open(stream=data, filetype="pdf")
                 page = pdf_doc.load_page(0)
@@ -337,7 +346,7 @@ class FileProcessor:
                     page_text = page.extract_text()
                     if page_text:
                         text += page_text + "\n"
-                if PIL_SUPPORT:
+                if PIL_SUPPORT and PDF_IMAGE_SUPPORT:
                     pdf_doc = fitz.open(stream=data, filetype="pdf")
                     for page in pdf_doc:
                         pix = page.get_pixmap()
