@@ -40,6 +40,7 @@ def render_chat_mode(safe_generate_gpt_response):
                     st.session_state["chat_history"].append(
                         {"role": "info", "content": advice_text}
                     )
+                    # append_message(st.session_state.current_chat_id, "info", advice_text)
                     append_message(
                         st.session_state.current_chat_id, "info", advice_text
                     )
