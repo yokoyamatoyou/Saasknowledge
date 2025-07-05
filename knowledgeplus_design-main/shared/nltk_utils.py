@@ -1,5 +1,10 @@
 import logging
-import nltk
+import importlib
+
+try:
+    nltk = importlib.import_module("nltk")
+except ModuleNotFoundError:  # pragma: no cover - fallback for minimal installs
+    nltk = importlib.import_module("nltk_stub")
 
 logger = logging.getLogger(__name__)
 
