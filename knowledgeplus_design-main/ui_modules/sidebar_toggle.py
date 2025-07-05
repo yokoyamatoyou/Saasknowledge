@@ -45,6 +45,10 @@ def render_sidebar_toggle(
             button_clicked = True
     else:
         if st.button(toggle_label, key=key, help="サイドバーを表示"):
+            st.markdown(
+                f"<style>button[id='{key}'] {{position: fixed; top: 0.5rem; left: 0.5rem; z-index: 1000;}}</style>",
+                unsafe_allow_html=True,
+            )
             button_clicked = True
 
     if button_clicked:

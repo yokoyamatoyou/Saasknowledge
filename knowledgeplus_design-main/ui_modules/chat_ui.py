@@ -20,7 +20,7 @@ def render_chat_mode(safe_generate_gpt_response):
     )
     st.session_state["use_knowledge_search"] = use_kb
 
-    chat_container = st.container(height=600)
+    chat_container = st.container(height=700)
     with chat_container:
         for msg in st.session_state["chat_history"]:
             with st.chat_message(msg["role"]):

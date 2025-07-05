@@ -54,6 +54,14 @@
         box-shadow: none !important;
     }
 
+    /* Sidebar toggle when collapsed */
+    button#toggle_sidebar {
+        position: fixed;
+        top: 0.5rem;
+        left: 0.5rem;
+        z-index: 1000;
+    }
+
     /* サブヘッダー */
     h2, h3 {
         color: var(--intel-blue) !important;
