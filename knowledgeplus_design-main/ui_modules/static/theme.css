@@ -44,6 +44,16 @@
         box-shadow: 0 4px 12px rgba(0, 113, 197, 0.1);
     }
 
+    /* Smaller header for compact layouts */
+    h1.app-title {
+        font-size: 1.25rem !important;
+        padding: 0.5rem !important;
+        margin-bottom: 1rem !important;
+        background: none !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+
     /* サブヘッダー */
     h2, h3 {
         color: var(--intel-blue) !important;

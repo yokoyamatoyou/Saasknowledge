@@ -1,28 +1,26 @@
 import streamlit as st
-from shared.openai_utils import get_openai_client
-from shared.chat_controller import ChatController
-from shared.search_engine import HybridSearchEngine
-from knowledge_gpt_app.app import search_multiple_knowledge_bases
-from shared.upload_utils import BASE_KNOWLEDGE_DIR
-from shared.chat_history_utils import append_message, update_title
-from shared.prompt_advisor import generate_prompt_advice
 from config import DEFAULT_KB_NAME
+from knowledge_gpt_app.app import search_multiple_knowledge_bases
+from shared.chat_controller import ChatController
+from shared.chat_history_utils import append_message, update_title
+from shared.openai_utils import get_openai_client
+from shared.prompt_advisor import generate_prompt_advice
+from shared.search_engine import HybridSearchEngine
+from shared.upload_utils import BASE_KNOWLEDGE_DIR
 
 
 def render_chat_mode(safe_generate_gpt_response):
     """Render the chat interface."""
     st.subheader("チャット")
     # Display current conversation title underneath the header
-    st.markdown(
-        f"### {st.session_state.get('gpt_conversation_title', '新しい会話')}"
-    )
+    st.markdown(f"### {st.session_state.get('gpt_conversation_title', '新しい会話')}")
     use_kb = st.checkbox(
         "全てのナレッジから検索する",
         value=st.session_state.get("use_knowledge_search", True),
     )
     st.session_state["use_knowledge_search"] = use_kb
 
-    chat_container = st.container(height=None)
+    chat_container = st.container(height=600)
     with chat_container:
         for msg in st.session_state["chat_history"]:
             with st.chat_message(msg["role"]):
@@ -39,21 +37,31 @@ def render_chat_mode(safe_generate_gpt_response):
                 advice_text = generate_prompt_advice(user_msg, client=client)
                 if advice_text:
                     st.info(f"💡 プロンプトアドバイス:\n{advice_text}")
-                    st.session_state["chat_history"].append({"role": "info", "content": advice_text})
-                    append_message(st.session_state.current_chat_id, "info", advice_text)
+                    st.session_state["chat_history"].append(
+                        {"role": "info", "content": advice_text}
+                    )
+                    append_message(
+                        st.session_state.current_chat_id, "info", advice_text
+                    )
 
         context = ""
         if use_kb:
-            if "chat_controller" not in st.session_state or not isinstance(st.session_state.chat_controller, ChatController):
+            if "chat_controller" not in st.session_state or not isinstance(
+                st.session_state.chat_controller, ChatController
+            ):
                 try:
-                    engine = HybridSearchEngine(str(BASE_KNOWLEDGE_DIR / DEFAULT_KB_NAME))
+                    engine = HybridSearchEngine(
+                        str(BASE_KNOWLEDGE_DIR / DEFAULT_KB_NAME)
+                    )
                     st.session_state.chat_controller = ChatController(engine)
                 except Exception as e:
                     st.error(f"ナレッジベースの初期化に失敗しました: {e}")
                     st.session_state.chat_controller = None
 
             if st.session_state.chat_controller:
-                results, _ = search_multiple_knowledge_bases(user_msg, [DEFAULT_KB_NAME])
+                results, _ = search_multiple_knowledge_bases(
+                    user_msg, [DEFAULT_KB_NAME]
+                )
                 context = "\n".join(r.get("text", "") for r in results[:3])
                 if not context:
                     st.info("ナレッジ検索で関連情報が見つかりませんでした。AIの一般的な知識で回答します。")
@@ -67,7 +75,9 @@ def render_chat_mode(safe_generate_gpt_response):
                 if use_kb and context
                 else user_msg
             )
-            chat_temp = 0.2 if use_kb else float(st.session_state.get("temperature", 0.7))
+            chat_temp = (
+                0.2 if use_kb else float(st.session_state.get("temperature", 0.7))
+            )
             chat_persona = st.session_state.get("persona", "default")
 
             with st.chat_message("assistant"):
@@ -93,7 +103,9 @@ def render_chat_mode(safe_generate_gpt_response):
             answer = full_response
         else:
             answer = "OpenAIクライアントを初期化できませんでした。"
-        st.session_state["chat_history"].append({"role": "assistant", "content": answer})
+        st.session_state["chat_history"].append(
+            {"role": "assistant", "content": answer}
+        )
         append_message(st.session_state.current_chat_id, "assistant", answer)
 
         if (
@@ -102,11 +114,16 @@ def render_chat_mode(safe_generate_gpt_response):
             and client
         ):
             current_history_for_title_gen = [
-                m for m in st.session_state.chat_history if m["role"] in ["user", "assistant"]
+                m
+                for m in st.session_state.chat_history
+                if m["role"] in ["user", "assistant"]
             ]
             if current_history_for_title_gen:
                 try:
-                    if "chat_controller" in st.session_state and st.session_state.chat_controller:
+                    if (
+                        "chat_controller" in st.session_state
+                        and st.session_state.chat_controller
+                    ):
                         new_title_val = st.session_state.chat_controller.generate_conversation_title(
                             current_history_for_title_gen, client
                         )
@@ -120,4 +137,3 @@ def render_chat_mode(safe_generate_gpt_response):
                 except Exception as e:
                     st.error(f"会話タイトル生成エラー: {e}")
         st.rerun()
-
