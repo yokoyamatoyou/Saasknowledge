@@ -34,3 +34,6 @@
 ## 2025-07-08
 - Added `test_full_workflow.py` to simulate building a knowledge item and generating FAQs using stubs.
 - Verified all tests pass with `pytest -q` (40 tests).
+
+## 2025-07-09
+- Added PyMuPDF migration instructions in docs/pymupdf_migration.md for removing the pdf2image/poppler dependency.
