@@ -23,7 +23,11 @@ import uuid
 from pathlib import Path
 from typing import Any, Dict, List
 import logging
-from nltk.tokenize import word_tokenize
+try:
+    from nltk.tokenize import word_tokenize
+except Exception:  # pragma: no cover - fall back to simple split
+    def word_tokenize(text: str):
+        return text.split()
 import time
 
 # Optional libraries for PDF/Docx OCR handling
