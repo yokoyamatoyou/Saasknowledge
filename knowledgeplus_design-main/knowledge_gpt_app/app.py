@@ -31,11 +31,7 @@ except Exception:  # pragma: no cover - fall back to simple split
 import time
 
 # Optional libraries for PDF/Docx OCR handling
-try:
-    from pdf2image import convert_from_bytes
-    PDF_SUPPORT = True
-except Exception:
-    PDF_SUPPORT = False
+import fitz  # PyMuPDF
 
 from shared.upload_utils import (
     save_processed_data,
@@ -274,16 +270,21 @@ def read_file(file):
                 temp_file.write(data)
                 temp_path = temp_file.name
             pdf_reader = PyPDF2.PdfReader(BytesIO(data))
+            ocr_doc = None
             for idx, page in enumerate(pdf_reader.pages):
                 page_text = page.extract_text()
                 if page_text:
                     content += page_text + "\n"
-                elif PDF_SUPPORT and OCR_SUPPORT:
-                    images = convert_from_bytes(data, first_page=idx + 1, last_page=idx + 1)
-                    if images:
-                        ocr_text = pytesseract.image_to_string(images[0], lang='jpn+eng')
-                        if ocr_text.strip():
-                            content += ocr_text + "\n"
+                elif OCR_SUPPORT and Image:
+                    if ocr_doc is None:
+                        ocr_doc = fitz.open(stream=data, filetype="pdf")
+                    pix = ocr_doc.load_page(idx).get_pixmap()
+                    img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                    ocr_text = pytesseract.image_to_string(img, lang='jpn+eng')
+                    if ocr_text.strip():
+                        content += ocr_text + "\n"
+            if ocr_doc is not None:
+                ocr_doc.close()
             os.unlink(temp_path)
         elif file_type == 'docx':
             with tempfile.NamedTemporaryFile(delete=False, suffix='.docx') as temp_file:

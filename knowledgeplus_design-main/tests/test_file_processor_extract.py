@@ -5,8 +5,11 @@ import io
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 import importlib
-from PIL import Image
 import pytest
+try:
+    from PIL import Image
+except Exception:
+    pytest.skip("Pillow not installed", allow_module_level=True)
 
 # Temporarily remove stub path to import real python-docx
 STUBS_DIR = Path(__file__).resolve().parent / "stubs"

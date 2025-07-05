@@ -3,9 +3,13 @@ from pathlib import Path
 
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
-from PIL import Image
 import importlib
 import types
+import pytest
+try:
+    from PIL import Image
+except Exception:
+    pytest.skip("Pillow not installed", allow_module_level=True)
 
 # Remove stubs to load real python-docx
 STUBS_DIR = Path(__file__).resolve().parent / "stubs"

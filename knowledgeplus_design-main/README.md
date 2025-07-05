@@ -17,9 +17,9 @@ scripts/install_extra.sh  # add heavy libraries like torch only when needed
 pip install -r requirements-light.txt
 pip install -r requirements-extra.txt
 ```
-The `requirements-extra.txt` file holds large libraries such as **torch** and
-**transformers**. Installing them separately after the light requirements helps
-avoid network timeouts and keeps the initial setup lightweight.
+The `requirements-extra.txt` file holds large libraries such as **torch** and **transformers**.
+Installing them separately after the light requirements helps avoid network timeouts and keeps the initial setup lightweight.
+PyMuPDF and pytesseract are also included for PDF OCR support—install them if you need to process scanned PDFs.
 
 If `rank-bm25` fails to install during the above step, upgrade `pip` and install it manually:
 
