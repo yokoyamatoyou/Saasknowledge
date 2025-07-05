@@ -54,3 +54,7 @@
 - PDF thumbnails now render via `fitz` directly.
 - Verified all 54 tests pass with `pytest -q`.
 
+## 2025-07-13
+- Added PyMuPDF to `requirements-light.txt` so CI installs it by default.
+- Updated README to note PyMuPDF is mandatory and pytesseract remains optional.
+

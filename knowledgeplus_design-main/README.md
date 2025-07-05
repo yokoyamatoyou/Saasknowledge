@@ -19,7 +19,7 @@ pip install -r requirements-extra.txt
 ```
 The `requirements-extra.txt` file holds large libraries such as **torch** and **transformers**.
 Installing them separately after the light requirements helps avoid network timeouts and keeps the initial setup lightweight.
-PyMuPDF and pytesseract are also included for PDF OCR support—install them if you need to process scanned PDFs.
+PyMuPDF is installed with the light requirements so PDF processing works out of the box. Install pytesseract as well if you need OCR for scanned PDFs.
 
 If `rank-bm25` fails to install during the above step, upgrade `pip` and install it manually:
 
