@@ -48,3 +48,9 @@
   break imports.
 - Image extraction tests now skip when Pillow isn't installed.
 - Confirmed the suite runs cleanly with and without optional packages.
+
+## 2025-07-12
+- Switched to mandatory PyMuPDF in `shared/file_processor.py` and removed old pdf2image checks.
+- PDF thumbnails now render via `fitz` directly.
+- Verified all 54 tests pass with `pytest -q`.
+
