@@ -335,7 +335,9 @@ class HybridSearchEngine:
             except Exception as e:
                 logger.error(f"ナレッジベースメタデータ読み込みエラー: {e}", exc_info=True)
         else:
-            logger.info(f"ナレッジベースメタデータファイルが見つかりません: {metadata_file}")
+            logger.warning(
+                f"ナレッジベースメタデータファイルが見つかりません: {metadata_file}"
+            )
         return {}
 
     def _load_chunks(self) -> list[dict]:
