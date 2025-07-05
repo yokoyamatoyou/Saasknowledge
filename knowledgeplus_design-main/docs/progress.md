@@ -37,3 +37,8 @@
 
 ## 2025-07-09
 - Added PyMuPDF migration instructions in docs/pymupdf_migration.md for removing the pdf2image/poppler dependency.
+
+## 2025-07-10
+- Replaced pdf2image with PyMuPDF for PDF OCR fallback.
+- Updated tests to prefer real dependencies when installed.
+- Verified all 48 tests pass with pytest.
