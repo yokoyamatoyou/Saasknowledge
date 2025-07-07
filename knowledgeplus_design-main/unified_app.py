@@ -38,7 +38,9 @@ sidebar_visible = os.getenv("SIDEBAR_DEFAULT_VISIBLE", "false").lower() in {
 }
 initial_state = "expanded" if sidebar_visible else "collapsed"
 st.set_page_config(
-    layout="wide", page_title="KNOWLEDGE+", initial_sidebar_state=initial_state
+    layout="wide",
+    page_title="ナレッジ＋",
+    initial_sidebar_state=initial_state,
 )
 
 apply_intel_theme(st)
@@ -223,7 +225,7 @@ if hasattr(sidebar, "expander"):
         )
 
 # --- Main Content Area based on Mode ---
-st.markdown("<h1 class='app-title'>KNOWLEDGE+</h1>", unsafe_allow_html=True)
+st.markdown("<h1 class='app-title'>ナレッジ＋</h1>", unsafe_allow_html=True)
 
 if st.session_state["current_mode"] == "検索":
     render_search_mode(safe_generate_gpt_response)
