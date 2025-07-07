@@ -16,7 +16,7 @@
 
     /* メインコンテナ */
     .main .block-container {
-        max-width: 850px;
+        max-width: 1200px;
         padding-top: 2rem;
         padding-bottom: 2rem;
         padding-left: 1rem;
@@ -379,7 +379,7 @@
 
     /* Main container to center content and limit width */
     .main .block-container {
-        max-width: 850px; /* Similar to Google search results width */
+        max-width: 1200px; /* Wider layout for chat area */
         padding-top: 2rem;
         padding-bottom: 2rem;
         padding-left: 1rem;
