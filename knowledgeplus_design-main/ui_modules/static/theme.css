@@ -400,6 +400,7 @@
         border-radius: 24px; /* Pill shape */
         padding: 10px 20px;
         box-shadow: none; /* Remove default Streamlit shadow */
+        background-color: transparent; /* Make input background transparent */
         transition: box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out;
     }
     [data-testid="stTextInput"] input:hover {
