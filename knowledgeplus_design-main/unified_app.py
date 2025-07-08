@@ -216,6 +216,10 @@ if hasattr(sidebar, "expander"):
         st.session_state.temperature = st.slider(
             "温度", 0.0, 1.0, float(st.session_state.get("temperature", 0.7)), 0.05
         )
+        st.session_state.use_knowledge_search = st.checkbox(
+            "全てのナレッジから検索する",
+            value=st.session_state.get("use_knowledge_search", True),
+        )
 
 if hasattr(sidebar, "expander"):
     with sidebar.expander("プロンプトアドバイス", expanded=False):

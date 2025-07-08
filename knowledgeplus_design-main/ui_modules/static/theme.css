@@ -16,7 +16,8 @@
 
     /* メインコンテナ */
     .main .block-container {
-        max-width: 1200px;
+        max-width: none;
+        width: 100%;
         padding-top: 2rem;
         padding-bottom: 2rem;
         padding-left: 1rem;
@@ -55,12 +56,22 @@
     }
 
     /* Sidebar toggle when collapsed */
-    button#toggle_sidebar {
-        position: fixed;
-        top: 0.5rem;
-        left: 0.5rem;
-        z-index: 1000;
-    }
+button#toggle_sidebar {
+    position: fixed;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 1000;
+    background: var(--intel-blue);
+    color: var(--intel-white);
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+}
+
+button#toggle_sidebar span,
+button#toggle_sidebar p {
+    background: transparent !important;
+}
 
     /* サブヘッダー */
     h2, h3 {
@@ -379,7 +390,8 @@
 
     /* Main container to center content and limit width */
     .main .block-container {
-        max-width: 1200px; /* Wider layout for chat area */
+        max-width: none; /* Use full width to avoid extra margin */
+        width: 100%;
         padding-top: 2rem;
         padding-bottom: 2rem;
         padding-left: 1rem;
