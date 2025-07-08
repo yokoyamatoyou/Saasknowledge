@@ -14,11 +14,7 @@ def render_chat_mode(safe_generate_gpt_response):
     st.subheader("チャット")
     # Display current conversation title underneath the header
     st.markdown(f"### {st.session_state.get('gpt_conversation_title', '新しい会話')}")
-    use_kb = st.checkbox(
-        "全てのナレッジから検索する",
-        value=st.session_state.get("use_knowledge_search", True),
-    )
-    st.session_state["use_knowledge_search"] = use_kb
+    use_kb = st.session_state.get("use_knowledge_search", True)
 
     chat_container = st.container(height=700)
     with chat_container:
