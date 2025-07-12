@@ -1,4 +1,3 @@
-import json
 import sys
 from pathlib import Path
 
@@ -13,4 +12,3 @@ def test_load_and_save_ui_state(tmp_path, monkeypatch):
     ui_state.save_ui_state(state)
     loaded = ui_state.load_ui_state()
     assert loaded == state
-
