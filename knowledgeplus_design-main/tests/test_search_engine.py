@@ -219,3 +219,60 @@ def test_missing_kb_metadata_logs_warning(tmp_path, caplog):
         HybridSearchEngine(str(kb_dir))
 
     assert any("メタデータファイルが見つかりません" in r.message for r in caplog.records)
+
+
+def test_corrupted_files_are_skipped(tmp_path, caplog):
+    kb_dir = tmp_path / "kb_corrupt"
+    chunks = kb_dir / "chunks"
+    metadata = kb_dir / "metadata"
+    embeds = kb_dir / "embeddings"
+    chunks.mkdir(parents=True)
+    metadata.mkdir()
+    embeds.mkdir()
+
+    # valid chunk
+    (chunks / "good.txt").write_text("valid text", encoding="utf-8")
+    with open(metadata / "good.json", "w", encoding="utf-8") as f:
+        json.dump({"filename": "good.txt"}, f)
+    with open(embeds / "good.pkl", "wb") as f:
+        pickle.dump({"embedding": [0.1]}, f)
+
+    # corrupted metadata and embedding
+    (chunks / "bad.txt").write_text("bad", encoding="utf-8")
+    (metadata / "bad.json").write_text("{broken", encoding="utf-8")
+    with open(embeds / "bad.pkl", "wb") as f:
+        f.write(b"notpickle")
+
+    with open(kb_dir / "kb_metadata.json", "w", encoding="utf-8") as f:
+        json.dump({"embedding_model": "test"}, f)
+
+    with caplog.at_level(logging.ERROR):
+        engine = HybridSearchEngine(str(kb_dir))
+
+    assert len(engine.chunks) == 1
+    assert engine.chunks[0]["id"] == "good"
+    assert list(engine.embeddings.keys()) == ["good"]
+    assert any("読み込み中にエラー" in r.message for r in caplog.records)
+
+
+def test_search_handles_openai_timeout(temp_kb_with_data, monkeypatch):
+    kb_path, _, _ = temp_kb_with_data
+    engine = HybridSearchEngine(str(kb_path))
+
+    class FailingClient:
+        def __init__(self):
+            self.embeddings = MagicMock()
+
+    failing_client = FailingClient()
+
+    def raise_timeout(**kwargs):
+        raise TimeoutError("timeout")
+
+    failing_client.embeddings.create.side_effect = raise_timeout
+
+    engine.model = None  # disable SentenceTransformer fallback
+
+    results, not_found = engine.search("query", client=failing_client)
+
+    assert results == []
+    assert not_found
