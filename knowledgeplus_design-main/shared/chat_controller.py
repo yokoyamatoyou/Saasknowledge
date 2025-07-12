@@ -6,6 +6,7 @@ from openai import OpenAI
 import logging
 from shared.search_engine import HybridSearchEngine
 from shared.openai_utils import get_openai_client
+from shared.errors import OpenAIClientError, GPTGenerationError
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -166,13 +167,13 @@ class ChatController:
             str: 応答の一部テキスト
 
         Raises:
-            RuntimeError: OpenAIクライアントの初期化に失敗した場合や、
-                応答生成中にエラーが発生した場合
+            OpenAIClientError: OpenAIクライアントの初期化に失敗した場合
+            GPTGenerationError: 応答生成中にエラーが発生した場合
         """
         if client is None:
             client = self._get_openai_client_internal()  # Call static method
             if client is None:
-                raise RuntimeError(
+                raise OpenAIClientError(
                     "OpenAIクライアントの初期化に失敗しました。APIキーを確認してください。"
                 )
 
@@ -210,7 +211,9 @@ class ChatController:
                     yield chunk.choices[0].delta.content
         except Exception as e:  # pragma: no cover - network errors may vary
             logger.error("GPT response generation failed: %s", e, exc_info=True)
-            raise RuntimeError(f"応答生成中に予期しないエラーが発生しました: {e}") from e
+            raise GPTGenerationError(
+                f"応答生成中に予期しないエラーが発生しました: {e}"
+            ) from e
 
     def generate_conversation_title(self, conversation_history, client=None):
         """
