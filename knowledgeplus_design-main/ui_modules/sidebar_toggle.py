@@ -1,6 +1,7 @@
 import os
 
 import streamlit as st
+from shared.ui_state import load_ui_state, save_ui_state
 
 DEFAULT_SIDEBAR_WIDTH = os.getenv("SIDEBAR_WIDTH", "18rem")
 # Allow the initial visibility to be configured so different deployments
@@ -34,7 +35,15 @@ def render_sidebar_toggle(
         the ``SIDEBAR_WIDTH`` environment variable to customize layouts.
     """
     if "sidebar_visible" not in st.session_state:
-        st.session_state["sidebar_visible"] = DEFAULT_SIDEBAR_VISIBLE
+        params = st.experimental_get_query_params()
+        if "sidebar" in params:
+            st.session_state["sidebar_visible"] = (
+                params["sidebar"][0].lower() in {"1", "true", "yes"}
+            )
+        else:
+            st.session_state["sidebar_visible"] = load_ui_state().get(
+                "sidebar_visible", DEFAULT_SIDEBAR_VISIBLE
+            )
 
     toggle_label = (
         collapsed_label if not st.session_state.sidebar_visible else expanded_label
@@ -54,6 +63,10 @@ def render_sidebar_toggle(
 
     if button_clicked:
         st.session_state.sidebar_visible = not st.session_state.sidebar_visible
+        st.experimental_set_query_params(
+            sidebar="1" if st.session_state.sidebar_visible else "0"
+        )
+        save_ui_state({"sidebar_visible": st.session_state.sidebar_visible})
         st.rerun()
 
     margin = "0" if st.session_state.sidebar_visible else f"-{sidebar_width}"
@@ -66,6 +79,21 @@ def render_sidebar_toggle(
             width: {sidebar_width};
         }}
         </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # Optional keyboard shortcut Ctrl+Shift+S to toggle the sidebar
+    st.markdown(
+        f"""
+        <script>
+        document.addEventListener('keydown', function(e) {{
+            if (e.ctrlKey && e.shiftKey && e.code === 'KeyS') {{
+                const btn = window.parent.document.getElementById('{key}');
+                if (btn) btn.click();
+            }}
+        }});
+        </script>
         """,
         unsafe_allow_html=True,
     )
