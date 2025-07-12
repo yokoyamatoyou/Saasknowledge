@@ -1,14 +1,11 @@
 import streamlit as st
-from shared.openai_utils import get_openai_client
-from knowledge_gpt_app.app import (
-    semantic_chunking,
-    refresh_search_engine,
-    read_file as app_read_file,
-)
-from shared.file_processor import FileProcessor
-from ui_modules.thumbnail_editor import display_thumbnail_grid
-from core.faq_utils import generate_faq
 from config import DEFAULT_KB_NAME
+from core.faq_utils import generate_faq
+from knowledge_gpt_app.app import read_file as app_read_file
+from knowledge_gpt_app.app import refresh_search_engine, semantic_chunking
+from shared.file_processor import FileProcessor
+from shared.openai_utils import get_openai_client
+from ui_modules.thumbnail_editor import display_thumbnail_grid
 
 
 def render_management_mode():
@@ -19,14 +16,20 @@ def render_management_mode():
     with tabs[0]:
         st.divider()
         with st.expander("ナレッジを追加する", expanded=True):
-            process_mode = st.radio("処理モード", ["個別処理", "まとめて処理"],
-                                   help="ファイルを個別に処理するか、まとめて処理するかを選択します。")
-            index_mode = st.radio("インデックス更新", ["自動(処理後)", "手動"],
-                                  help="ファイル処理後に検索インデックスを自動で更新するか、手動で更新するかを選択します。")
+            process_mode = st.radio(
+                "処理モード", ["個別処理", "まとめて処理"], help="ファイルを個別に処理するか、まとめて処理するかを選択します。"
+            )
+            index_mode = st.radio(
+                "インデックス更新",
+                ["自動(処理後)", "手動"],
+                help="ファイル処理後に検索インデックスを自動で更新するか、手動で更新するかを選択します。",
+            )
 
             files = st.file_uploader(
                 "ファイルを選択",
-                type=FileProcessor.SUPPORTED_IMAGE_TYPES + FileProcessor.SUPPORTED_DOCUMENT_TYPES + FileProcessor.SUPPORTED_CAD_TYPES,
+                type=FileProcessor.SUPPORTED_IMAGE_TYPES
+                + FileProcessor.SUPPORTED_DOCUMENT_TYPES
+                + FileProcessor.SUPPORTED_CAD_TYPES,
                 accept_multiple_files=process_mode == "まとめて処理",
                 help="サポートされている画像、ドキュメント、CADファイルをアップロードします。",
             )
@@ -50,7 +53,8 @@ def render_management_mode():
                                     client,
                                     original_filename=file.name,
                                     original_bytes=file.getvalue(),
-                                    refresh=index_mode == "自動(処理後)" and process_mode == "個別処理",
+                                    refresh=index_mode == "自動(処理後)"
+                                    and process_mode == "個別処理",
                                 )
 
                 if process_mode == "まとめて処理" and index_mode == "自動(処理後)":
@@ -67,18 +71,29 @@ def render_management_mode():
         display_thumbnail_grid(DEFAULT_KB_NAME)
 
     with tabs[1]:
-        kb_name = st.text_input("Knowledge base name", value=DEFAULT_KB_NAME,
-                             help="FAQを生成するナレッジベースの名前を入力します。")
-        max_tokens = st.number_input("Max tokens per chunk", 100, 2000, 1000, 100,
-                                 help="チャンクあたりの最大トークン数を設定します。")
-        pairs = st.number_input("Pairs per chunk", 1, 10, 3, 1,
-                             help="各チャンクから生成するQ&Aペアの数を設定します。")
-        if st.button("◎ FAQ生成", key="generate_faqs_btn", type="primary",
-                    help="設定に基づいてFAQを生成し、ナレッジベースに保存します。"):
+        kb_name = st.text_input(
+            "Knowledge base name",
+            value=DEFAULT_KB_NAME,
+            help="FAQを生成するナレッジベースの名前を入力します。",
+        )
+        max_tokens = st.number_input(
+            "Max tokens per chunk", 100, 2000, 1000, 100, help="チャンクあたりの最大トークン数を設定します。"
+        )
+        pairs = st.number_input(
+            "Pairs per chunk", 1, 10, 3, 1, help="各チャンクから生成するQ&Aペアの数を設定します。"
+        )
+        if st.button(
+            "◎ FAQ生成",
+            key="generate_faqs_btn",
+            type="primary",
+            help="設定に基づいてFAQを生成し、ナレッジベースに保存します。",
+        ):
             client = get_openai_client()
             if not client:
                 st.error("OpenAIクライアントの取得に失敗しました。")
             else:
                 with st.spinner("FAQを生成中..."):
-                    count = generate_faq(kb_name, int(max_tokens), int(pairs), client=client)
+                    count = generate_faq(
+                        kb_name, int(max_tokens), int(pairs), client=client
+                    )
                 st.success(f"{count}件のFAQを生成しました。")

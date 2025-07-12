@@ -2,16 +2,18 @@ import json
 import logging
 from typing import Optional
 
-from shared.openai_utils import get_openai_client
-from shared.kb_builder import KnowledgeBuilder
 from shared.file_processor import FileProcessor
+from shared.kb_builder import KnowledgeBuilder
+from shared.openai_utils import get_openai_client
 
 logger = logging.getLogger(__name__)
 
 _file_processor = FileProcessor()
-_kb_builder = KnowledgeBuilder(_file_processor,
-                               get_openai_client_func=get_openai_client,
-                               refresh_search_engine_func=None)
+_kb_builder = KnowledgeBuilder(
+    _file_processor,
+    get_openai_client_func=get_openai_client,
+    refresh_search_engine_func=None,
+)
 
 
 def get_embedding(text: str, client=None):
@@ -129,7 +131,10 @@ JSON形式で返してください。日本語で回答してください。
                         {"type": "text", "text": prompt},
                         {
                             "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{image_base64}", "detail": "high"},
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}",
+                                "detail": "high",
+                            },
                         },
                     ],
                 }

@@ -1,10 +1,12 @@
 """Logging utilities shared by the Streamlit apps."""
 
 import logging
-from logging import FileHandler, StreamHandler, Formatter
+from logging import FileHandler, Formatter, StreamHandler
 
 
-def configure_logging(log_file: str = "rag_tool.log", level: int = logging.INFO) -> None:
+def configure_logging(
+    log_file: str = "rag_tool.log", level: int = logging.INFO
+) -> None:
     """Configure the root logger once with uniform handlers.
 
     Parameters

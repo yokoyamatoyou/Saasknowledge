@@ -1,13 +1,11 @@
 """Utility functions for initializing OpenAI clients."""
 
 import logging
+from typing import List, Optional
 
-from typing import Optional, List
-
-from config import EMBEDDING_MODEL, EMBEDDING_DIMENSIONS
+from config import EMBEDDING_DIMENSIONS, EMBEDDING_MODEL
 
 from .upload_utils import ensure_openai_key
-from .errors import OpenAIClientError
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +38,7 @@ try:
     def get_openai_client() -> Optional["OpenAI"]:
         """Return a cached OpenAI client or ``None`` if initialization fails."""
         return _create_client()
+
 except Exception:  # pragma: no cover - Streamlit not available
 
     def get_openai_client() -> Optional["OpenAI"]:

@@ -1,15 +1,18 @@
-import pytest
-from pathlib import Path
-import json
 import io
-from unittest.mock import MagicMock, patch
+import json
 
 # Adjust the import path to allow importing from shared
 import sys
+from pathlib import Path
+from unittest.mock import MagicMock
+
+import pytest
+
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
-from shared.kb_builder import KnowledgeBuilder
-from shared.file_processor import FileProcessor
+from shared.file_processor import FileProcessor  # noqa: E402
+from shared.kb_builder import KnowledgeBuilder  # noqa: E402
+
 
 # Mock for OpenAI client
 class MockOpenAIClient:
@@ -17,10 +20,12 @@ class MockOpenAIClient:
         self.embeddings = MagicMock()
         self.chat = MagicMock()
 
+
 # Mock for OpenAI embeddings create method
 class MockEmbeddingsResponse:
     def __init__(self, embedding_vectors):
         self.data = [MagicMock(embedding=v) for v in embedding_vectors]
+
 
 @pytest.fixture
 def mock_openai_client():
@@ -44,9 +49,11 @@ def mock_openai_client():
     )
     return client
 
+
 @pytest.fixture
 def mock_refresh_search_engine():
     return MagicMock()
+
 
 @pytest.fixture
 def mock_file_processor():
@@ -55,9 +62,15 @@ def mock_file_processor():
     processor.process_file.return_value = ("dummy_base64_image", {"file_type": "mock"})
     return processor
 
+
 @pytest.fixture
-def kb_builder_instance(mock_file_processor, mock_openai_client, mock_refresh_search_engine):
-    return KnowledgeBuilder(mock_file_processor, lambda: mock_openai_client, mock_refresh_search_engine)
+def kb_builder_instance(
+    mock_file_processor, mock_openai_client, mock_refresh_search_engine
+):
+    return KnowledgeBuilder(
+        mock_file_processor, lambda: mock_openai_client, mock_refresh_search_engine
+    )
+
 
 @pytest.fixture
 def temp_kb_dir(tmp_path):
@@ -70,9 +83,10 @@ def temp_kb_dir(tmp_path):
     (kb_dir / "files").mkdir(parents=True)
     return kb_dir
 
+
 def test_build_from_file_image(kb_builder_instance, temp_kb_dir, monkeypatch):
     # Mock save_processed_data to use the temporary directory
-    monkeypatch.setattr('shared.upload_utils.BASE_KNOWLEDGE_DIR', temp_kb_dir.parent)
+    monkeypatch.setattr("shared.upload_utils.BASE_KNOWLEDGE_DIR", temp_kb_dir.parent)
 
     # Create a dummy image file
     dummy_image_content = b"dummy_image_bytes"
@@ -83,7 +97,7 @@ def test_build_from_file_image(kb_builder_instance, temp_kb_dir, monkeypatch):
         "image_type": "写真",
         "main_content": "これはテスト画像です",
         "keywords": ["テスト", "画像"],
-        "description_for_search": "テスト用の画像"
+        "description_for_search": "テスト用の画像",
     }
     user_additions = {"title": "テスト画像", "additional_keywords": ["追加"]}
     cad_metadata = None
@@ -103,19 +117,19 @@ def test_build_from_file_image(kb_builder_instance, temp_kb_dir, monkeypatch):
     # Verify files are created in the temporary knowledge base directory
     item_id = saved_item["id"]
     assert (temp_kb_dir / "chunks" / f"{item_id}.txt").exists()
-    assert (temp_kb_dir / "embeddings" / f"{item_id}.pkl").exists() # Should be .pkl
+    assert (temp_kb_dir / "embeddings" / f"{item_id}.pkl").exists()  # Should be .pkl
     assert (temp_kb_dir / "metadata" / f"{item_id}.json").exists()
     assert (temp_kb_dir / "images" / f"{item_id}.jpg").exists()
     assert (temp_kb_dir / "files" / f"{item_id}_info.json").exists()
 
     # Verify content of chunk file
-    with open(temp_kb_dir / "chunks" / f"{item_id}.txt", 'r', encoding='utf-8') as f:
+    with open(temp_kb_dir / "chunks" / f"{item_id}.txt", "r", encoding="utf-8") as f:
         chunk_text = f.read()
         assert "画像タイプ: 写真" in chunk_text
         assert "主要内容: これはテスト画像です" in chunk_text
 
     # Verify content of metadata file
-    with open(temp_kb_dir / "metadata" / f"{item_id}.json", 'r', encoding='utf-8') as f:
+    with open(temp_kb_dir / "metadata" / f"{item_id}.json", "r", encoding="utf-8") as f:
         metadata_data = json.load(f)
         assert metadata_data["display_metadata"]["title"] == "テスト画像"
         assert "テスト" in metadata_data["display_metadata"]["keywords"]

@@ -1,9 +1,9 @@
 import argparse
-from pathlib import Path
 import logging
+from pathlib import Path
 
-from shared.search_engine import HybridSearchEngine
 from shared.logging_utils import configure_logging
+from shared.search_engine import HybridSearchEngine
 
 configure_logging()
 logger = logging.getLogger(__name__)

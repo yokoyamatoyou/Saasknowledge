@@ -1,5 +1,5 @@
-import logging
 import importlib
+import logging
 
 try:
     nltk = importlib.import_module("nltk")
@@ -24,7 +24,9 @@ def ensure_nltk_resources() -> bool:
             try:
                 if resource in ["punkt", "stopwords"]:
                     nltk.data.find(
-                        f"tokenizers/{resource}" if resource == "punkt" else f"corpora/{resource}"
+                        f"tokenizers/{resource}"
+                        if resource == "punkt"
+                        else f"corpora/{resource}"
                     )
                 elif resource == "averaged_perceptron_tagger":
                     nltk.data.find(f"taggers/{resource}")

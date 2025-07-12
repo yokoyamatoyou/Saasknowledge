@@ -1,11 +1,11 @@
+import sys
 import types
 from pathlib import Path
-import sys
-import pytest
 
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
-from shared.prompt_advisor import generate_prompt_advice
+from shared.prompt_advisor import generate_prompt_advice  # noqa: E402
+
 
 class MockClient:
     def __init__(self, text):
@@ -13,10 +13,15 @@ class MockClient:
         self.chat = types.SimpleNamespace(
             completions=types.SimpleNamespace(
                 create=lambda **k: types.SimpleNamespace(
-                    choices=[types.SimpleNamespace(message=types.SimpleNamespace(content=self._text))]
+                    choices=[
+                        types.SimpleNamespace(
+                            message=types.SimpleNamespace(content=self._text)
+                        )
+                    ]
                 )
             )
         )
+
 
 def test_generate_prompt_advice_returns_text():
     client = MockClient("- improved")
@@ -26,7 +31,6 @@ def test_generate_prompt_advice_returns_text():
 
 def test_generate_prompt_advice_uses_openai(monkeypatch):
     """generate_prompt_advice should call OpenAI when no client is supplied."""
-    import openai
     from shared import prompt_advisor
 
     advice = "use more detail"
@@ -36,9 +40,11 @@ def test_generate_prompt_advice_uses_openai(monkeypatch):
             self.chat = types.SimpleNamespace(
                 completions=types.SimpleNamespace(
                     create=lambda **_: types.SimpleNamespace(
-                        choices=[types.SimpleNamespace(
-                            message=types.SimpleNamespace(content=advice)
-                        )]
+                        choices=[
+                            types.SimpleNamespace(
+                                message=types.SimpleNamespace(content=advice)
+                            )
+                        ]
                     )
                 )
             )

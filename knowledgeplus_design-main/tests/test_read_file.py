@@ -1,25 +1,25 @@
-import types
 import base64
+import importlib
+import sys
+import types
 from io import BytesIO
 from pathlib import Path
-import sys
+
 import pytest
-import importlib
+
 STUBS_DIR = Path(__file__).resolve().parent / "stubs"
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-sys.modules.pop('numpy', None)
+sys.modules.pop("numpy", None)
 # Use real numpy and nltk by temporarily removing stub paths
 if str(STUBS_DIR) in sys.path:
     sys.path.remove(str(STUBS_DIR))
 if str(PROJECT_ROOT) in sys.path:
     sys.path.remove(str(PROJECT_ROOT))
-np = importlib.import_module('numpy')
-import nltk
+np = importlib.import_module("numpy")
+
 sys.path.insert(0, str(STUBS_DIR))
 sys.path.insert(1, str(PROJECT_ROOT))
-import numpy.random
-import numpy.core
 
 if not hasattr(np, "__version__"):
     np.__version__ = "1.24.0"
@@ -27,12 +27,11 @@ if not hasattr(np, "__version__"):
 # Stub heavy dependencies before importing the app
 sys.modules.setdefault(
     "sentence_transformers",
-    types.SimpleNamespace(SentenceTransformer=lambda *a, **k: object())
+    types.SimpleNamespace(SentenceTransformer=lambda *a, **k: object()),
 )
 
 pytest.importorskip("streamlit")
 pytest.importorskip("sudachipy")
-
 
 
 def _load_app_with_real_numpy():
@@ -63,7 +62,9 @@ def test_read_file_excel(monkeypatch):
         return fake_wb
 
     monkeypatch.setattr(kgapp, "EXCEL_SUPPORT", True)
-    monkeypatch.setattr(kgapp, "openpyxl", types.SimpleNamespace(load_workbook=fake_load))
+    monkeypatch.setattr(
+        kgapp, "openpyxl", types.SimpleNamespace(load_workbook=fake_load)
+    )
 
     buf = BytesIO(b"dummy")
     buf.name = "test.xlsx"
@@ -82,7 +83,11 @@ def test_read_file_markdown_image(monkeypatch):
 
     monkeypatch.setattr(kgapp, "OCR_SUPPORT", True)
     monkeypatch.setattr(kgapp, "Image", types.SimpleNamespace(open=lambda b: b))
-    monkeypatch.setattr(kgapp, "pytesseract", types.SimpleNamespace(image_to_string=lambda i, lang=None: "ocr"))
+    monkeypatch.setattr(
+        kgapp,
+        "pytesseract",
+        types.SimpleNamespace(image_to_string=lambda i, lang=None: "ocr"),
+    )
 
     text = kgapp.read_file(buf)
     assert "hello" in text
@@ -104,4 +109,3 @@ def test_read_file_pdf_simple(monkeypatch):
 
     text = kgapp.read_file(buf)
     assert "simple text" in text
-

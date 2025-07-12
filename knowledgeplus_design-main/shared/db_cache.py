@@ -1,10 +1,9 @@
-import os
-import sqlite3
-import pickle
 import json
+import os
+import pickle
+import sqlite3
 from pathlib import Path
 from typing import Dict, List
-
 
 
 def _db_path(kb_name_or_path: str | Path) -> Path:
@@ -13,6 +12,7 @@ def _db_path(kb_name_or_path: str | Path) -> Path:
         kb_dir = path
     else:
         from . import upload_utils
+
         kb_dir = upload_utils.BASE_KNOWLEDGE_DIR / path
     kb_dir.mkdir(parents=True, exist_ok=True)
     return kb_dir / "kb_cache.db"

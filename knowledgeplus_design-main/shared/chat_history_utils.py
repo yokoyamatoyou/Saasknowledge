@@ -31,13 +31,15 @@ def load_chat_histories() -> List[Dict]:
         try:
             with open(path, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            histories.append({
-                "id": path.stem,
-                "title": data.get("title", "会話"),
-                "created_at": data.get("created_at"),
-                "settings": data.get("settings", {}),
-                "messages": data.get("messages", []),
-            })
+            histories.append(
+                {
+                    "id": path.stem,
+                    "title": data.get("title", "会話"),
+                    "created_at": data.get("created_at"),
+                    "settings": data.get("settings", {}),
+                    "messages": data.get("messages", []),
+                }
+            )
         except Exception:
             continue
     histories.sort(key=lambda h: h.get("created_at", ""), reverse=True)

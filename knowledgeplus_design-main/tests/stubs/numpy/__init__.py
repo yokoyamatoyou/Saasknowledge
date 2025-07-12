@@ -11,14 +11,18 @@ int64 = int
 float64 = float
 integer = int
 
+
 class busdaycalendar:
     pass
 
+
 float32 = float
+
 
 class ndarray(list):
     def flatten(self):
         return self
+
     def tolist(self):
         return list(self)
 
@@ -43,7 +47,9 @@ class _Linalg:
     def norm(vec):
         return math.sqrt(sum(float(v) * float(v) for v in vec))
 
+
 linalg = _Linalg()
+
 
 # Provide minimal submodules so ``import numpy.random`` and
 # ``import numpy.core`` succeed in tests without installing the real

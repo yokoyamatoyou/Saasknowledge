@@ -1,9 +1,8 @@
 import json
-import pickle
 import os
+import pickle
 from pathlib import Path
-from typing import Dict, Any
-
+from typing import Any, Dict
 
 # Base directory for all knowledge bases. Allow override via environment variable
 _default_base = Path(__file__).resolve().parent.parent / "knowledge_base"
@@ -70,6 +69,7 @@ def save_processed_data(
         paths["embedding_path"] = str(emb_path)
         try:
             from . import db_cache
+
             db_cache.save_embedding(kb_name, chunk_id, embedding)
         except Exception:
             pass

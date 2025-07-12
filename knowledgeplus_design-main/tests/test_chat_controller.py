@@ -1,10 +1,11 @@
+import sys
 import types
 from pathlib import Path
-import sys
-sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
-import pytest
 
-from shared.chat_controller import ChatController
+sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
+import pytest  # noqa: E402
+from shared.chat_controller import ChatController  # noqa: E402
+
 
 class DummyClient:
     def __init__(self, text: str):
@@ -12,7 +13,11 @@ class DummyClient:
         self.chat = types.SimpleNamespace(
             completions=types.SimpleNamespace(
                 create=lambda **k: types.SimpleNamespace(
-                    choices=[types.SimpleNamespace(message=types.SimpleNamespace(content=self._text))]
+                    choices=[
+                        types.SimpleNamespace(
+                            message=types.SimpleNamespace(content=self._text)
+                        )
+                    ]
                 )
             )
         )
@@ -43,5 +48,6 @@ def test_generate_gpt_response_raises_without_client(monkeypatch):
 
     gen = controller.generate_gpt_response("hello", conversation_history=[])
     from shared.errors import OpenAIClientError
+
     with pytest.raises(OpenAIClientError):
         next(gen)

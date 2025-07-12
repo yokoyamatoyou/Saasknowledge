@@ -1,8 +1,9 @@
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
+
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
-from shared import chat_history_utils as chu
+from shared import chat_history_utils as chu  # noqa: E402
 
 
 def test_chat_history_lifecycle(tmp_path, monkeypatch):

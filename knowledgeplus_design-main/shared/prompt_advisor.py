@@ -1,5 +1,6 @@
 import logging
 from typing import Optional
+
 from openai import OpenAI
 
 from .upload_utils import ensure_openai_key
@@ -10,7 +11,9 @@ logger = logging.getLogger(__name__)
 PROMPT_ADVICE_MODEL = "gpt-4o-mini"
 
 
-def generate_prompt_advice(user_prompt: str, client: Optional[OpenAI] = None) -> Optional[str]:
+def generate_prompt_advice(
+    user_prompt: str, client: Optional[OpenAI] = None
+) -> Optional[str]:
     """Return improved prompt suggestions using a lightweight GPT model."""
     if not user_prompt:
         return None
@@ -27,7 +30,10 @@ def generate_prompt_advice(user_prompt: str, client: Optional[OpenAI] = None) ->
             model=PROMPT_ADVICE_MODEL,
             messages=[
                 {"role": "system", "content": "ユーザープロンプトを明確にするアドバイスを日本語で箇条書きで返してください。"},
-                {"role": "user", "content": f"以下のプロンプトを改善してください:\n\n---\n{user_prompt}\n---"},
+                {
+                    "role": "user",
+                    "content": f"以下のプロンプトを改善してください:\n\n---\n{user_prompt}\n---",
+                },
             ],
             temperature=0.0,
             max_tokens=400,
