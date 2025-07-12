@@ -2,7 +2,7 @@ import streamlit as st
 from ui_modules.document_card import render_document_card
 from shared.openai_utils import get_openai_client
 from knowledge_gpt_app.app import list_knowledge_bases, search_multiple_knowledge_bases
-from config import DEFAULT_KB_NAME
+from config import DEFAULT_KB_NAME, HYBRID_VECTOR_WEIGHT
 
 
 def render_search_mode(safe_generate_gpt_response):
@@ -14,11 +14,26 @@ def render_search_mode(safe_generate_gpt_response):
         help="ナレッジベースから情報を検索します。",
     )
 
+    vec_weight = st.slider(
+        "ベクトル重み",
+        0.0,
+        1.0,
+        HYBRID_VECTOR_WEIGHT,
+        0.05,
+        help="ハイブリッド検索におけるベクトルスコアの比率。BM25の重みは自動で補完されます。",
+    )
+    bm25_weight = 1.0 - vec_weight
+
     col1, col2, _ = st.columns([1, 1, 4])
     if col1.button("検索", type="primary", help="入力されたキーワードでナレッジベースを検索します。"):
         st.session_state["search_executed"] = True
         kb_names = [kb["name"] for kb in list_knowledge_bases()]
-        st.session_state["results"], _ = search_multiple_knowledge_bases(query, kb_names)
+        st.session_state["results"], _ = search_multiple_knowledge_bases(
+            query,
+            kb_names,
+            vector_weight=vec_weight,
+            bm25_weight=bm25_weight,
+        )
         st.session_state["last_query"] = query
     if col2.button("クリア", help="検索ボックスと結果をクリアします。"):
         st.session_state["search_executed"] = False

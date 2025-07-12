@@ -12,3 +12,8 @@ DEFAULT_KB_NAME = os.getenv("DEFAULT_KB_NAME", "default_kb")
 # environment variable so deployments can switch to a different provider
 # such as Gemini.
 TITLE_GENERATION_MODEL = os.getenv("TITLE_MODEL", "gpt-3.5-turbo")
+
+# Default weights for the hybrid search engine. They can be overridden via
+# HYBRID_VECTOR_WEIGHT and HYBRID_BM25_WEIGHT environment variables.
+HYBRID_VECTOR_WEIGHT = float(os.getenv("HYBRID_VECTOR_WEIGHT", "0.7"))
+HYBRID_BM25_WEIGHT = float(os.getenv("HYBRID_BM25_WEIGHT", "0.3"))

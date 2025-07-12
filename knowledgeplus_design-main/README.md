@@ -56,6 +56,9 @@ streamlit run app.py
 会話タイトルを生成するモデルは `TITLE_MODEL` で上書きできます。たとえば `gpt-4o-mini` を使いたい場合は `export TITLE_MODEL=gpt-4o-mini` のように設定します。
 これらの値は `upload_utils` や `chat_history_utils`、`chat_controller` などのモジュール読み込み時に適用されます。アプリを起動する前に環境変数を設定しておくと、アップロードされたファイルや会話履歴、ペルソナ設定が指定したディレクトリに保存されます。
 
+ハイブリッド検索の重みは `HYBRID_VECTOR_WEIGHT` と `HYBRID_BM25_WEIGHT` で
+調整できます。値の合計は 1.0 になるよう設定してください。
+
 ## ✨ 主な機能
 
 *   **検索中心のUI**: Googleのようなシンプルで直感的なインターフェースで、必要な情報に素早くアクセスできます。

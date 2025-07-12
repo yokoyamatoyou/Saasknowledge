@@ -918,7 +918,15 @@ def expand_search_query(query, client=None):
         logger.error(f"クエリ拡張エラー: {e}", exc_info=True)
         return query
 
-def search_multiple_knowledge_bases(query, kb_names, top_k=5, threshold=0.15, client=None):
+def search_multiple_knowledge_bases(
+    query,
+    kb_names,
+    top_k=5,
+    threshold=0.15,
+    vector_weight=None,
+    bm25_weight=None,
+    client=None,
+):
     all_results = []
     not_found_overall = True
     if client is None:
@@ -934,7 +942,14 @@ def search_multiple_knowledge_bases(query, kb_names, top_k=5, threshold=0.15, cl
         engine = get_search_engine(kb_name)
         if engine:
             try:
-                results_for_kb, not_found_for_kb = engine.search(query, top_k=top_k, threshold=threshold, client=client)
+                results_for_kb, not_found_for_kb = engine.search(
+                    query,
+                    top_k=top_k,
+                    threshold=threshold,
+                    vector_weight=vector_weight,
+                    bm25_weight=bm25_weight,
+                    client=client,
+                )
                 if not not_found_for_kb and results_for_kb:
                     for r in results_for_kb: r['kb_name'] = kb_name
                     all_results.extend(results_for_kb)

@@ -64,6 +64,15 @@ You can override the default knowledge base name by setting
   export DEFAULT_KB_NAME=my_kb
   ```
 
+You can tune the default blend between vector similarity and keyword search by
+setting `HYBRID_VECTOR_WEIGHT` and `HYBRID_BM25_WEIGHT` before launching the
+app.  The values should sum to 1.0:
+
+  ```bash
+  export HYBRID_VECTOR_WEIGHT=0.7
+  export HYBRID_BM25_WEIGHT=0.3
+  ```
+
 These variables are evaluated when helper modules such as
 `upload_utils` and `chat_history_utils` are imported. Set them before
 running the application or tests so that all uploads and chat logs are
