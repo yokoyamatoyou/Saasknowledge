@@ -34,3 +34,19 @@ def test_analyze_image_with_gpt4o_missing_client(monkeypatch):
     monkeypatch.setattr(mm_builder_utils, "get_openai_client", lambda: None)
     result = mm_builder_utils.analyze_image_with_gpt4o("b64", "file.png")
     assert result == {"error": "OpenAIクライアントが利用できません"}
+
+
+def test_get_embedding_handles_timeout(monkeypatch):
+    """get_embedding should return None if the OpenAI call times out."""
+
+    class DummyClient:
+        def __init__(self):
+            def raise_timeout(**_):
+                raise TimeoutError("timeout")
+
+            self.embeddings = types.SimpleNamespace(create=raise_timeout)
+
+    monkeypatch.setattr(mm_builder_utils, "get_openai_client", lambda: DummyClient())
+
+    result = mm_builder_utils.get_embedding("hello")
+    assert result is None

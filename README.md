@@ -137,6 +137,10 @@ root:
 pytest -q
 ```
 
+The suite now includes checks that malformed chunk files are ignored by
+`HybridSearchEngine` and that embedding requests handle OpenAI timeouts
+gracefully.
+
 ## Thumbnail grid
 
 The management interface shows uploaded items in a 3×3 thumbnail grid. Use

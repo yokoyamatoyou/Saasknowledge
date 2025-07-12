@@ -219,3 +219,37 @@ def test_missing_kb_metadata_logs_warning(tmp_path, caplog):
         HybridSearchEngine(str(kb_dir))
 
     assert any("メタデータファイルが見つかりません" in r.message for r in caplog.records)
+
+
+def test_malformed_chunk_skipped(tmp_path):
+    """Engine should ignore unreadable chunk files without crashing."""
+    kb_dir = tmp_path / "mal_kb"
+    chunks = kb_dir / "chunks"
+    meta = kb_dir / "metadata"
+    embeds = kb_dir / "embeddings"
+    chunks.mkdir(parents=True)
+    meta.mkdir()
+    embeds.mkdir()
+
+    # valid chunk
+    (chunks / "good.txt").write_text("hello", encoding="utf-8")
+    (meta / "good.json").write_text("{}", encoding="utf-8")
+    with open(embeds / "good.pkl", "wb") as f:
+        import pickle
+
+        pickle.dump({"embedding": [0.1]}, f)
+
+    # malformed chunk file that cannot be read as UTF-8
+    with open(chunks / "bad.txt", "wb") as f:
+        f.write(b"\xff\xfe\xfa")
+    (meta / "bad.json").write_text("{}", encoding="utf-8")
+    with open(embeds / "bad.pkl", "wb") as f:
+        import pickle
+
+        pickle.dump({"embedding": [0.2]}, f)
+
+    engine = HybridSearchEngine(str(kb_dir))
+
+    ids = [c["id"] for c in engine.chunks]
+    assert "good" in ids
+    assert "bad" not in ids
