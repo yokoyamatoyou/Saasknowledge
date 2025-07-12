@@ -1,8 +1,9 @@
-from shared.file_processor import FileProcessor
-from pathlib import Path
 import ast
+from pathlib import Path
 
-KB_APP_PATH = Path(__file__).resolve().parents[1] / 'mm_kb_builder' / 'app.py'
+from shared.file_processor import FileProcessor
+
+KB_APP_PATH = Path(__file__).resolve().parents[1] / "mm_kb_builder" / "app.py"
 source = KB_APP_PATH.read_text(encoding="utf-8")
 module = ast.parse(source)
 
@@ -22,6 +23,7 @@ for node in module.body:
                 break
     if ASSIGNED_FROM_FILEPROCESSOR:
         break
+
 
 def test_supported_document_types():
     assert "docx" in FileProcessor.SUPPORTED_DOCUMENT_TYPES

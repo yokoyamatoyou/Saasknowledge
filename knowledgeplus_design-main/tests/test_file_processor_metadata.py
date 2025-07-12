@@ -1,11 +1,12 @@
+import importlib
 import sys
+import types
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
-import importlib
-import types
-import pytest
 try:
     from PIL import Image
 except Exception:
@@ -18,7 +19,7 @@ if str(STUBS_DIR) in sys.path:
 docx = importlib.import_module("docx")
 sys.path.insert(0, str(STUBS_DIR))
 
-from shared.file_processor import FileProcessor
+from shared.file_processor import FileProcessor  # noqa: E402
 
 
 def _create_docx_with_image(tmp_path):

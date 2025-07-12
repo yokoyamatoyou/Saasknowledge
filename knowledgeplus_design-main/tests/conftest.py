@@ -7,8 +7,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 # Prefer real libraries when available. The lightweight stubs are kept for
 # environments without optional dependencies installed.
 try:  # pragma: no cover - environment check
-    import numpy  # noqa: F401
     import nltk  # noqa: F401
+    import numpy  # noqa: F401
+
     USE_STUBS = False
 except Exception:  # pragma: no cover - fallback to stubs
     USE_STUBS = True

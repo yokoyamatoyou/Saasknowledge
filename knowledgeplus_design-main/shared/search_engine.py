@@ -7,12 +7,13 @@ import pickle
 import numpy as np
 from config import (
     DEFAULT_KB_NAME,
+    EMBEDDING_BATCH_SIZE,
     EMBEDDING_DIMENSIONS,
     EMBEDDING_MODEL,
-    HYBRID_VECTOR_WEIGHT,
     HYBRID_BM25_WEIGHT,
-    EMBEDDING_BATCH_SIZE,
+    HYBRID_VECTOR_WEIGHT,
 )
+
 from . import db_cache
 
 try:
@@ -33,7 +34,7 @@ from nltk.corpus import stopwords
 # import time # 直接は不要
 from rank_bm25 import BM25Okapi
 from shared.nltk_utils import ensure_nltk_resources
-from shared.openai_utils import get_openai_client, get_embeddings_batch
+from shared.openai_utils import get_embeddings_batch, get_openai_client
 
 logger = logging.getLogger(__name__)
 
@@ -450,7 +451,9 @@ class HybridSearchEngine:
                         emb_vector, dtype=np.float32
                     ).tolist()
                     try:
-                        db_cache.save_embedding(self.kb_path, chunk_id, loaded_embeddings[chunk_id])
+                        db_cache.save_embedding(
+                            self.kb_path, chunk_id, loaded_embeddings[chunk_id]
+                        )
                     except Exception:
                         pass
             except Exception as e:
@@ -581,7 +584,10 @@ class HybridSearchEngine:
                     else:
                         loaded_from_file = True
                         try:
-                            for cid, toks in zip(saved_data["processed_chunk_ids"], saved_data["tokenized_corpus"]):
+                            for cid, toks in zip(
+                                saved_data["processed_chunk_ids"],
+                                saved_data["tokenized_corpus"],
+                            ):
                                 db_cache.save_token_list(self.kb_path, cid, toks)
                         except Exception:
                             pass
@@ -615,7 +621,10 @@ class HybridSearchEngine:
                         f"  トークン化済みコーパスを保存しました: {self.tokenized_corpus_file_path}"
                     )
                     try:
-                        for cid, toks in zip(data_to_save["processed_chunk_ids"], data_to_save["tokenized_corpus"]):
+                        for cid, toks in zip(
+                            data_to_save["processed_chunk_ids"],
+                            data_to_save["tokenized_corpus"],
+                        ):
                             db_cache.save_token_list(self.kb_path, cid, toks)
                     except Exception:
                         pass

@@ -1,10 +1,11 @@
 import json
-from pathlib import Path
 import sys
+from pathlib import Path
+
 import pytest
+
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
-from shared import upload_utils
-from shared import db_cache
+from shared import db_cache, upload_utils  # noqa: E402
 
 
 def test_save_processed_data_paths(tmp_path, monkeypatch):
@@ -63,6 +64,7 @@ def test_save_processed_data_version(tmp_path, monkeypatch):
         original_bytes=b"b",
     )
     assert Path(third["original_file_path"]) != Path(first["original_file_path"])
+
 
 def test_save_user_metadata(tmp_path, monkeypatch):
     monkeypatch.setattr(upload_utils, "BASE_KNOWLEDGE_DIR", tmp_path)

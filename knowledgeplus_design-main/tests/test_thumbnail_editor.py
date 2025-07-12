@@ -1,5 +1,5 @@
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -7,10 +7,9 @@ sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 pytest.importorskip("streamlit")
 
-import streamlit as st
-
-from shared import upload_utils
-from ui_modules import thumbnail_editor as te
+import streamlit as st  # noqa: E402
+from shared import upload_utils  # noqa: E402
+from ui_modules import thumbnail_editor as te  # noqa: E402
 
 
 def _compute_snippet(text: str) -> str:
@@ -36,7 +35,7 @@ def _create_items(tmp_dir: Path, count: int):
         meta_path = Path(paths["metadata_path"])
         new_meta = meta_path.with_name(f"metadata_{meta_path.name}")
         meta_path.rename(new_meta)
-        ids.append(new_meta.stem) # IDをファイル名から取得するように変更
+        ids.append(new_meta.stem)  # IDをファイル名から取得するように変更
     return kb, ids, texts
 
 

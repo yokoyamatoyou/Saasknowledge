@@ -1,8 +1,8 @@
 import streamlit as st
-from ui_modules.document_card import render_document_card
-from shared.openai_utils import get_openai_client
+from config import HYBRID_VECTOR_WEIGHT
 from knowledge_gpt_app.app import list_knowledge_bases, search_multiple_knowledge_bases
-from config import DEFAULT_KB_NAME, HYBRID_VECTOR_WEIGHT
+from shared.openai_utils import get_openai_client
+from ui_modules.document_card import render_document_card
 
 
 def render_search_mode(safe_generate_gpt_response):
@@ -50,9 +50,7 @@ def render_search_mode(safe_generate_gpt_response):
                 client = get_openai_client()
                 if client:
                     context = "\n".join(r.get("text", "") for r in results[:3])
-                    prompt = (
-                        f"次の情報から質問『{st.session_state.get('last_query','')}』への要約回答を生成してください:\n{context}"
-                    )
+                    prompt = f"次の情報から質問『{st.session_state.get('last_query','')}』への要約回答を生成してください:\n{context}"
                     st.write("AIが要約を生成中...")
                     summary_placeholder = st.empty()
                     full_summary = ""

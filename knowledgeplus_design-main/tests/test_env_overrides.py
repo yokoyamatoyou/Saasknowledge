@@ -1,6 +1,7 @@
 import importlib
-from pathlib import Path
 import sys
+from pathlib import Path
+
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 
@@ -10,7 +11,8 @@ def test_directory_overrides(tmp_path, monkeypatch):
     monkeypatch.setenv("KNOWLEDGE_BASE_DIR", str(kb_dir))
     monkeypatch.setenv("CHAT_HISTORY_DIR", str(hist_dir))
 
-    from shared import upload_utils, chat_history_utils
+    from shared import chat_history_utils, upload_utils
+
     importlib.reload(upload_utils)
     importlib.reload(chat_history_utils)
 

@@ -1,13 +1,9 @@
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 import streamlit as st
-
 from shared import upload_utils
-from shared.upload_utils import (
-    save_user_metadata,
-    list_metadata_items,
-)
+from shared.upload_utils import list_metadata_items, save_user_metadata
 
 BASE_KNOWLEDGE_DIR = upload_utils.BASE_KNOWLEDGE_DIR
 
@@ -67,7 +63,13 @@ def display_thumbnail_grid(kb_name: str) -> None:
         cols = st.columns(3)
         for col, item in zip(cols, row):
             with col:
-                st.button(item.get("snippet", "(no text)"), key=f"sel_{item['id']}", on_click=lambda iid=item['id']: st.session_state.update({"current_editing_id": iid}))
+                st.button(
+                    item.get("snippet", "(no text)"),
+                    key=f"sel_{item['id']}",
+                    on_click=lambda iid=item["id"]: st.session_state.update(
+                        {"current_editing_id": iid}
+                    ),
+                )
 
     edit_id = st.session_state.get("current_editing_id")
     if edit_id:
@@ -76,9 +78,16 @@ def display_thumbnail_grid(kb_name: str) -> None:
             st.markdown("---")
             st.subheader(f"Edit metadata for {edit_id}")
             title = st.text_input("Title", value=target["meta"].get("title", ""))
-            tags = st.text_input("Tags (comma separated)", value=",".join(target["meta"].get("tags", [])))
+            tags = st.text_input(
+                "Tags (comma separated)", value=",".join(target["meta"].get("tags", []))
+            )
             if st.button("Save", key=f"save_{edit_id}"):
-                save_user_metadata(kb_name, edit_id, title, [t.strip() for t in tags.split(",") if t.strip()])
+                save_user_metadata(
+                    kb_name,
+                    edit_id,
+                    title,
+                    [t.strip() for t in tags.split(",") if t.strip()],
+                )
                 st.success("Saved metadata")
                 st.session_state.current_editing_id = None
                 st.rerun()
