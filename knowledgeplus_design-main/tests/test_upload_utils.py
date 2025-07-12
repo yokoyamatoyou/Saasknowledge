@@ -4,6 +4,7 @@ import sys
 import pytest
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 from shared import upload_utils
+from shared import db_cache
 
 
 def test_save_processed_data_paths(tmp_path, monkeypatch):
@@ -21,6 +22,20 @@ def test_save_processed_data_paths(tmp_path, monkeypatch):
     meta = json.loads(Path(paths["metadata_path"]).read_text(encoding="utf-8"))
     assert meta["paths"]["chunk_path"] == paths["chunk_path"]
     assert "original_file_path" in meta["paths"]
+
+
+def test_save_processed_data_stores_embedding_in_db(tmp_path, monkeypatch):
+    monkeypatch.setattr(upload_utils, "BASE_KNOWLEDGE_DIR", tmp_path)
+    embed = [0.3, 0.4]
+    upload_utils.save_processed_data(
+        "kb",
+        "123",
+        chunk_text="x",
+        embedding=embed,
+        metadata={},
+    )
+    loaded = db_cache.load_embeddings("kb")
+    assert loaded == {"123": embed}
 
 
 def test_save_processed_data_version(tmp_path, monkeypatch):
