@@ -20,7 +20,6 @@ from typing import Any, Dict, List
 
 import docx
 import pandas as pd
-import PyPDF2
 import streamlit as st
 from config import DEFAULT_KB_NAME, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL
 from sudachipy import dictionary, tokenizer
@@ -39,6 +38,7 @@ import time
 import fitz  # PyMuPDF
 import pytesseract
 from generate_faq import generate_faqs_from_chunks
+from shared.file_processor import FileProcessor
 from shared.logging_utils import configure_logging
 from shared.openai_utils import get_openai_client
 from shared.upload_utils import BASE_KNOWLEDGE_DIR as SHARED_KB_DIR
@@ -260,12 +260,10 @@ def read_file(file):
     file_type = file.name.split(".")[-1].lower()
     try:
         if file_type == "pdf":
-            data = file.read()
-            file.seek(0)
+            pdf_reader, data = FileProcessor.load_pdf(file)
             with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as temp_file:
                 temp_file.write(data)
                 temp_path = temp_file.name
-            pdf_reader = PyPDF2.PdfReader(BytesIO(data))
             ocr_doc = None
             for idx, page in enumerate(pdf_reader.pages):
                 page_text = page.extract_text()
