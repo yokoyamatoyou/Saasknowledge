@@ -2,7 +2,9 @@
 
 import logging
 
-from typing import Optional
+from typing import Optional, List
+
+from config import EMBEDDING_MODEL, EMBEDDING_DIMENSIONS
 
 from .upload_utils import ensure_openai_key
 from .errors import OpenAIClientError
@@ -43,3 +45,24 @@ except Exception:  # pragma: no cover - Streamlit not available
     def get_openai_client() -> Optional["OpenAI"]:
         """Return an OpenAI client or ``None`` if initialization fails."""
         return _create_client()
+
+
+def get_embeddings_batch(
+    texts: List[str],
+    client,
+    model: str = EMBEDDING_MODEL,
+    dimensions: int = EMBEDDING_DIMENSIONS,
+) -> List[List[float]]:
+    """Return embeddings for ``texts`` using a single API call."""
+    if client is None or not texts:
+        return []
+    try:
+        response = client.embeddings.create(
+            model=model,
+            input=texts,
+            dimensions=dimensions,
+        )
+        return [d.embedding for d in response.data]
+    except Exception as e:  # pragma: no cover - network issues
+        logger.error("Batch embedding error: %s", e)
+        return []

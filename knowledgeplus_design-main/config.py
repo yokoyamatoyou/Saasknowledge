@@ -2,6 +2,7 @@ import os
 
 EMBEDDING_MODEL = "text-embedding-3-large"
 EMBEDDING_DIMENSIONS = 3072
+EMBEDDING_BATCH_SIZE = int(os.getenv("EMBEDDING_BATCH_SIZE", "10"))
 
 # Default knowledge base name can be overridden via the environment
 # to simplify customization in different deployments.
