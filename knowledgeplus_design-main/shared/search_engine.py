@@ -6,6 +6,7 @@ import pickle
 
 import numpy as np
 from config import DEFAULT_KB_NAME, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL
+from . import db_cache
 
 try:
     from sentence_transformers import SentenceTransformer
@@ -289,6 +290,8 @@ class HybridSearchEngine:
         """Reload all chunks and embeddings and rebuild the BM25 index."""
         logger.info("Re-indexing knowledge base by forcing a rebuild...")
 
+        db_cache.clear_cache(self.kb_path)
+
         # Force rebuild by removing cached index files
         if self.bm25_index_file_path.exists():
             try:
@@ -406,7 +409,10 @@ class HybridSearchEngine:
         """
 
         logger.info("埋め込みベクトルを読み込み中...")
-        loaded_embeddings = {}
+        loaded_embeddings = db_cache.load_embeddings(self.kb_path)
+        if loaded_embeddings:
+            logger.info(f"    DB cache hit: {len(loaded_embeddings)} embeddings")
+            return loaded_embeddings
         if not self.embeddings_path.exists():
             logger.info(f"埋め込みディレクトリが見つかりません: {self.embeddings_path}")
             return {}
@@ -427,6 +433,10 @@ class HybridSearchEngine:
                     loaded_embeddings[chunk_id] = np.array(
                         emb_vector, dtype=np.float32
                     ).tolist()
+                    try:
+                        db_cache.save_embedding(self.kb_path, chunk_id, loaded_embeddings[chunk_id])
+                    except Exception:
+                        pass
             except Exception as e:
                 logger.error(f"埋め込みファイル '{emb_file_path.name}' の読み込み中にエラー: {e}")
         logger.info(f"    _load_embeddings 完了。ロードされた埋め込み数: {len(loaded_embeddings)}")
@@ -513,8 +523,23 @@ class HybridSearchEngine:
         return tokenized_corpus, successfully_processed_chunks
 
     def _load_or_build_bm25_index(self) -> typing.Union[BM25Okapi, None]:
+        loaded_from_cache = False
+        token_map = db_cache.load_token_lists(self.kb_path)
+        if token_map:
+            tokenized = []
+            filtered = []
+            for c in self.chunks:
+                toks = token_map.get(c["id"])
+                if toks:
+                    tokenized.append(toks)
+                    filtered.append(c)
+            if tokenized:
+                self.tokenized_corpus_for_bm25 = tokenized
+                self.chunks = filtered
+                loaded_from_cache = True
+
         loaded_from_file = False
-        if self.tokenized_corpus_file_path.exists():
+        if not loaded_from_cache and self.tokenized_corpus_file_path.exists():
             logger.info(f"トークン化済みコーパスをファイルからロード中: {self.tokenized_corpus_file_path}")
             try:
                 with open(self.tokenized_corpus_file_path, "rb") as f:
@@ -539,12 +564,17 @@ class HybridSearchEngine:
                         self.tokenized_corpus_for_bm25 = None
                     else:
                         loaded_from_file = True
+                        try:
+                            for cid, toks in zip(saved_data["processed_chunk_ids"], saved_data["tokenized_corpus"]):
+                                db_cache.save_token_list(self.kb_path, cid, toks)
+                        except Exception:
+                            pass
                 else:
                     logger.warning("  警告: トークン化済みコーパスファイルの形式が不正。再構築します。")
             except Exception as e:
                 logger.info(f"  トークン化済みコーパスのロード失敗: {e}. 再構築します。")
 
-        if not loaded_from_file:
+        if not (loaded_from_file or loaded_from_cache):
             logger.info("トークン化済みコーパスを生成・保存します...")
             logger.info(
                 f"    _load_or_build_bm25_index: self.chunks (before filter) = {len(self.chunks)}"
@@ -568,6 +598,11 @@ class HybridSearchEngine:
                     logger.info(
                         f"  トークン化済みコーパスを保存しました: {self.tokenized_corpus_file_path}"
                     )
+                    try:
+                        for cid, toks in zip(data_to_save["processed_chunk_ids"], data_to_save["tokenized_corpus"]):
+                            db_cache.save_token_list(self.kb_path, cid, toks)
+                    except Exception:
+                        pass
                 except Exception as e:
                     logger.info(f"  トークン化済みコーパスの保存失敗: {e}")
             elif not self.chunks:

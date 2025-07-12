@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from typing import Dict, Any
 
+
 # Base directory for all knowledge bases. Allow override via environment variable
 _default_base = Path(__file__).resolve().parent.parent / "knowledge_base"
 BASE_KNOWLEDGE_DIR = Path(os.getenv("KNOWLEDGE_BASE_DIR", _default_base))
@@ -67,6 +68,11 @@ def save_processed_data(
         with open(emb_path, "wb") as f:
             pickle.dump({"embedding": embedding}, f)
         paths["embedding_path"] = str(emb_path)
+        try:
+            from . import db_cache
+            db_cache.save_embedding(kb_name, chunk_id, embedding)
+        except Exception:
+            pass
 
     if image_bytes is not None:
         img_path = dirs["images"] / f"{chunk_id}.jpg"
