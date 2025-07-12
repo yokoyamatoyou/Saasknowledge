@@ -193,7 +193,8 @@ def test_safe_generate_missing_client(monkeypatch):
     mod = importlib.reload(__import__('unified_app'))
 
     result = mod.safe_generate_gpt_response('prompt')
-    with pytest.raises(RuntimeError):
+    from shared.errors import OpenAIClientError
+    with pytest.raises(OpenAIClientError):
         next(result)
 
 def test_refresh_search_engine_reloads_engine(monkeypatch):

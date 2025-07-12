@@ -42,5 +42,6 @@ def test_generate_gpt_response_raises_without_client(monkeypatch):
     )
 
     gen = controller.generate_gpt_response("hello", conversation_history=[])
-    with pytest.raises(RuntimeError):
+    from shared.errors import OpenAIClientError
+    with pytest.raises(OpenAIClientError):
         next(gen)
