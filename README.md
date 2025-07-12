@@ -73,6 +73,13 @@ app.  The values should sum to 1.0:
   export HYBRID_BM25_WEIGHT=0.3
   ```
 
+Embedding requests are sent in batches of 10 by default. Adjust the batch size
+using `EMBEDDING_BATCH_SIZE` if you need to tune API throughput:
+
+  ```bash
+  export EMBEDDING_BATCH_SIZE=5
+  ```
+
 These variables are evaluated when helper modules such as
 `upload_utils` and `chat_history_utils` are imported. Set them before
 running the application or tests so that all uploads and chat logs are

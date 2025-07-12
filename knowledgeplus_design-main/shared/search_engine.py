@@ -11,6 +11,7 @@ from config import (
     EMBEDDING_MODEL,
     HYBRID_VECTOR_WEIGHT,
     HYBRID_BM25_WEIGHT,
+    EMBEDDING_BATCH_SIZE,
 )
 from . import db_cache
 
@@ -32,7 +33,7 @@ from nltk.corpus import stopwords
 # import time # 直接は不要
 from rank_bm25 import BM25Okapi
 from shared.nltk_utils import ensure_nltk_resources
-from shared.openai_utils import get_openai_client
+from shared.openai_utils import get_openai_client, get_embeddings_batch
 
 logger = logging.getLogger(__name__)
 
@@ -698,6 +699,30 @@ class HybridSearchEngine:
                 f"  OpenAI API埋め込みエラー: model={model_name}, text(先頭30字)='{text[:30]}...' Error: {e_openai_emb}"
             )
             return None
+
+    def get_embeddings_from_openai(
+        self,
+        texts: list[str],
+        model_name: typing.Union[str, None] = None,
+        client=None,
+        batch_size: int = EMBEDDING_BATCH_SIZE,
+    ) -> list[list[float]]:
+        """Return embeddings for multiple texts using batch requests."""
+        if model_name is None:
+            model_name = self.embedding_model
+        if client is None:
+            client = get_openai_client()
+            if client is None:
+                logger.warning(
+                    "  警告 (get_embeddings_from_openai): OpenAIクライアントを取得できません。"
+                )
+                return []
+        results: list[list[float]] = []
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
+            vecs = get_embeddings_batch(batch, client, model_name, EMBEDDING_DIMENSIONS)
+            results.extend(vecs)
+        return results
 
     def search(
         self,

@@ -9,7 +9,13 @@ import streamlit as st
 from openai import OpenAI
 import json
 
-from config import DEFAULT_KB_NAME, EMBEDDING_MODEL, EMBEDDING_DIMENSIONS
+from config import (
+    DEFAULT_KB_NAME,
+    EMBEDDING_MODEL,
+    EMBEDDING_DIMENSIONS,
+    EMBEDDING_BATCH_SIZE,
+)
+from shared.openai_utils import get_embeddings_batch
 from shared.file_processor import FileProcessor
 from shared import upload_utils
 from shared.upload_utils import save_processed_data
@@ -121,31 +127,43 @@ class KnowledgeBuilder:
         related_topics = analysis_result.get('related_topics', [])
         if related_topics:
             chunk_parts.append(f"関連トピック: {', '.join(related_topics)}")
-        
+
         return "\n".join(chunk_parts)
+
+    def _get_embeddings_batch(
+        self,
+        texts: list[str],
+        client,
+        dimensions: int = EMBEDDING_DIMENSIONS,
+        batch_size: int = EMBEDDING_BATCH_SIZE,
+    ) -> list[list[float] | None]:
+        """Return embeddings for the provided texts in batches."""
+        if client is None:
+            return []
+        results: list[list[float] | None] = []
+        for i in range(0, len(texts), batch_size):
+            batch = texts[i : i + batch_size]
+            vectors = get_embeddings_batch(batch, client, EMBEDDING_MODEL, dimensions)
+            if vectors:
+                results.extend(vectors)
+            else:
+                results.extend([None] * len(batch))
+        return results
 
     def _get_embedding(self, text, client, dimensions=EMBEDDING_DIMENSIONS):
         """テキストの埋め込みベクトルを生成"""
         if client is None:
             return None
-        
+
         try:
             if not text or not text.strip():
                 return None
-                
-            # モデルのトークン上限を考慮して長さを調整
+
             if len(text) > 30000:
                 text = text[:30000]
-            
-            # dimensionsパラメータ対応（コスト効率化）
-            params = {
-                "model": EMBEDDING_MODEL,
-                "input": text,
-                "dimensions": dimensions,
-            }
-                
-            response = client.embeddings.create(**params)
-            return response.data[0].embedding
+
+            result = self._get_embeddings_batch([text], client, dimensions)[0]
+            return result
         except Exception as e:
             logger.error(f"埋め込みベクトル生成エラー: {e}")
             return None

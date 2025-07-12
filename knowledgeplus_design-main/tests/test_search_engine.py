@@ -18,14 +18,20 @@ class MockOpenAIClient:
 
 # Mock for OpenAI embeddings create method
 class MockEmbeddingsResponse:
-    def __init__(self, embedding_vector):
-        self.data = [MagicMock(embedding=embedding_vector)]
+    def __init__(self, embedding_vectors):
+        self.data = [MagicMock(embedding=v) for v in embedding_vectors]
 
 @pytest.fixture
 def mock_openai_client():
     client = MockOpenAIClient()
     # Mock a consistent embedding for testing
-    client.embeddings.create.return_value = MockEmbeddingsResponse([0.5] * 1536) 
+    def create(**kwargs):
+        inputs = kwargs.get("input")
+        if not isinstance(inputs, list):
+            inputs = [inputs]
+        return MockEmbeddingsResponse([[0.5] * 1536 for _ in inputs])
+
+    client.embeddings.create.side_effect = create
     return client
 
 @pytest.fixture
