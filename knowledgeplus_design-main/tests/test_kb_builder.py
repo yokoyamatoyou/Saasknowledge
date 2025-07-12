@@ -137,3 +137,29 @@ def test_build_from_file_image(kb_builder_instance, temp_kb_dir, monkeypatch):
 
     # Verify refresh_search_engine was called
     kb_builder_instance.refresh_search_engine.assert_called_once_with(temp_kb_dir.name)
+
+
+def test_build_from_file_openai_failure(kb_builder_instance, temp_kb_dir, monkeypatch):
+    monkeypatch.setattr("shared.upload_utils.BASE_KNOWLEDGE_DIR", temp_kb_dir.parent)
+
+    def fail_batch(*args, **kwargs):
+        raise TimeoutError("timeout")
+
+    monkeypatch.setattr("shared.kb_builder.get_embeddings_batch", fail_batch)
+
+    dummy_image_content = b"bytes"
+    uploaded_file = io.BytesIO(dummy_image_content)
+    uploaded_file.name = "file.png"
+
+    analysis_result = {"image_type": "写真", "main_content": "テスト"}
+    user_additions = {}
+
+    result = kb_builder_instance.build_from_file(
+        uploaded_file,
+        analysis=analysis_result,
+        image_base64="b64",
+        user_additions=user_additions,
+        cad_metadata=None,
+    )
+
+    assert result is None
