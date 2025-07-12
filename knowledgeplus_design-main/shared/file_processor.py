@@ -100,6 +100,17 @@ class FileProcessor:
             return None
 
     @staticmethod
+    def load_pdf(file_obj):
+        """Return ``PyPDF2.PdfReader`` and raw bytes for ``file_obj``."""
+        if not PDF_TEXT_SUPPORT:
+            raise ImportError("PyPDF2 is required for PDF support")
+
+        data = file_obj.read()
+        file_obj.seek(0)
+        reader = PyPDF2.PdfReader(BytesIO(data))
+        return reader, data
+
+    @staticmethod
     def _process_dxf_file(dxf_file):
         """DXFファイルを処理して画像とメタデータを生成"""
         if not DXF_SUPPORT:
