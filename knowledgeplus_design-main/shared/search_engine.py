@@ -1,5 +1,4 @@
 import json
-import os
 
 # from sklearn.feature_extraction.text import TfidfVectorizer # BM25には不要
 import pickle
