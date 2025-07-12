@@ -5,7 +5,13 @@ import os
 import pickle
 
 import numpy as np
-from config import DEFAULT_KB_NAME, EMBEDDING_DIMENSIONS, EMBEDDING_MODEL
+from config import (
+    DEFAULT_KB_NAME,
+    EMBEDDING_DIMENSIONS,
+    EMBEDDING_MODEL,
+    HYBRID_VECTOR_WEIGHT,
+    HYBRID_BM25_WEIGHT,
+)
 from . import db_cache
 
 try:
@@ -239,6 +245,15 @@ def tokenize_text_for_bm25_internal(text_input: str) -> list[str]:
     if not tokens:
         return TokenList(["<bm25_empty_after_stopwords_token>"])
     return TokenList(tokens)
+
+
+def compute_hybrid_weights(num_chunks: int) -> tuple[float, float]:
+    """Return vector and BM25 weights based on corpus size."""
+    if num_chunks < 50:
+        return 0.9, 0.1
+    if num_chunks > 1000:
+        return 0.6, 0.4
+    return HYBRID_VECTOR_WEIGHT, HYBRID_BM25_WEIGHT
 
 
 class HybridSearchEngine:
@@ -689,10 +704,12 @@ class HybridSearchEngine:
         query: str,
         top_k: int = 5,
         threshold: float = 0.15,
-        vector_weight: float = 0.7,
-        bm25_weight: float = 0.3,
+        vector_weight: float | None = None,
+        bm25_weight: float | None = None,
         client=None,
     ) -> tuple[list[dict], bool]:
+        if vector_weight is None or bm25_weight is None:
+            vector_weight, bm25_weight = compute_hybrid_weights(len(self.chunks))
         logger.info(
             f"検索実行: クエリ='{query}', top_k={top_k}, threshold={threshold}, vec_w={vector_weight}, bm25_w={bm25_weight}"
         )
