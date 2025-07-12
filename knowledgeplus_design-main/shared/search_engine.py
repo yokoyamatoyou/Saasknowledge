@@ -1,5 +1,4 @@
 import json
-import os
 
 # from sklearn.feature_extraction.text import TfidfVectorizer # BM25には不要
 import pickle
@@ -932,22 +931,6 @@ def search_knowledge_base(
             exc_info=True,
         )
         return [], True
-
-
-def get_openai_client_for_kb_search():
-    try:
-        from openai import OpenAI
-
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            logger.warning(
-                "警告 (get_openai_client_for_kb_search): OPENAI_API_KEYが環境変数に設定されていません。"
-            )
-            return None
-        return OpenAI(api_key=api_key)
-    except Exception as e:
-        logger.error(f"OpenAIクライアント初期化エラー (get_openai_client_for_kb_search): {e}")
-        return None
 
 
 if __name__ == "__main__":
