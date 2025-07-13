@@ -51,8 +51,9 @@ You can similarly override where chat histories are stored by setting
   export CHAT_HISTORY_DIR=/path/to/chat_history
   ```
 
-The sidebar defaults to collapsed.  Set `SIDEBAR_DEFAULT_VISIBLE=true` before
-launching to keep it expanded when the app starts:
+The sidebar defaults to collapsed. Use the `<<` or `>>` button to expand or
+collapse it. Set `SIDEBAR_DEFAULT_VISIBLE=true` before launching to keep the
+sidebar open when the app starts:
 
   ```bash
   export SIDEBAR_DEFAULT_VISIBLE=true
