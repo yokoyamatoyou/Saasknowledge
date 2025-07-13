@@ -8,6 +8,7 @@ To keep pull requests stable when using Codex, install dependencies in two steps
 * Add advanced features later with `pip install -r knowledgeplus_design-main/requirements-extra.txt`.
 * Or run the helper scripts: `scripts/install_light.sh` first and `scripts/install_extra.sh` when you need the heavy libraries.
 * A combined `scripts/install_full.sh` exists but installing everything in one step may trigger network errors, so the two-step approach is recommended.
+* PDF export requires the Japanese font `ipaexg.ttf` placed in the repository root. See `knowledgeplus_design-main/README.md` for details.
 
 ### Handling large dependencies
 
