@@ -10,7 +10,7 @@ This repository contains two related Streamlit applications:
 
 - **knowledge_gpt_app** – a knowledge retrieval chatbot powered by GPT.
 - **mm_kb_builder** – tools for building multimodal knowledge bases.
-Example metadata lives under `mm_kb_builder/multimodal_data`, but images are omitted from version control.
+Example metadata previously lived under `mm_kb_builder/multimodal_data`. Place any knowledge bases under the repository root `knowledge_base/` directory instead. Images remain omitted from version control.
 
 Each folder includes its own `requirements.txt`. A consolidated list of
 all dependencies is provided at the repository root for convenience.
