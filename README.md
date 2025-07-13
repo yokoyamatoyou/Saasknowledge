@@ -81,6 +81,13 @@ using `EMBEDDING_BATCH_SIZE` if you need to tune API throughput:
   export EMBEDDING_BATCH_SIZE=5
   ```
 
+Automatic chat titles use `gpt-3.5-turbo` by default. Set `TITLE_MODEL` to
+override the model used for title generation:
+
+  ```bash
+  export TITLE_MODEL=gpt-4o-mini
+  ```
+
 These variables are evaluated when helper modules such as
 `upload_utils` and `chat_history_utils` are imported. Set them before
 running the application or tests so that all uploads and chat logs are
