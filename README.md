@@ -107,7 +107,8 @@ same files from a mirror or copy them locally before launching the app.
 
 ## Pre-commit
 
-Set up git hooks so code style checks run automatically:
+Set up git hooks so code style checks run automatically. The hooks run
+`black`, `ruff` and `isort` to keep formatting and imports consistent:
 
 ```bash
 pip install pre-commit
