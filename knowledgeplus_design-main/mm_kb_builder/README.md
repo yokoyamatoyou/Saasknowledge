@@ -20,4 +20,4 @@ Processed data will be stored under `knowledge_base/<kb_name>/` where
 `<kb_name>` defaults to the value of `DEFAULT_KB_NAME` defined in
 `config.py`.
 
-Sample metadata for a demo knowledge base is under `multimodal_data/`. The accompanying images are not tracked in git; copy any example images into `multimodal_data/<kb_name>/images/` before running the app.
+Sample metadata previously lived under `mm_kb_builder/multimodal_data`. With the unified layout place any example files under `knowledge_base/<kb_name>/` before running the app. Images remain untracked by git.
