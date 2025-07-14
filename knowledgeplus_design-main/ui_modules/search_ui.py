@@ -24,7 +24,7 @@ def render_search_mode(safe_generate_gpt_response):
     )
     bm25_weight = 1.0 - vec_weight
 
-    col1, col2, _ = st.columns([1, 1, 4])
+    col1, col2 = st.columns(2)
     if col1.button("検索", type="primary", help="入力されたキーワードでナレッジベースを検索します。"):
         st.session_state["search_executed"] = True
         kb_names = [kb["name"] for kb in list_knowledge_bases()]
