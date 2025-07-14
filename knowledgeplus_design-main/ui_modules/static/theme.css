@@ -139,21 +139,19 @@ button#toggle_sidebar p {
 
     /* プライマリボタン */
     .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, var(--intel-blue) 0%, var(--intel-dark-blue) 100%);
-        color: var(--intel-white);
+        background-color: #5f6368;
+        color: #ffffff;
         border: none;
         border-radius: 6px;
-        padding: 0.75rem 2rem;
+        padding: 0.75rem 1.5rem;
         font-weight: 600;
-        font-size: 1rem;
         transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0, 113, 197, 0.2);
     }
 
     .stButton > button[kind="primary"]:hover {
-        background: linear-gradient(135deg, var(--intel-dark-blue) 0%, var(--intel-blue) 100%);
+        background-color: #3c4043;
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 113, 197, 0.3);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     /* セカンダリボタン */
@@ -426,20 +424,18 @@ button#toggle_sidebar p {
 
     /* Primary Button styling - Google Blue */
     [data-testid="stButton"] > button {
-        background-color: #1a73e8; /* Google Blue 500 */
-        color: #FFFFFF; /* White text */
-        border-radius: 4px;
+        background-color: #5f6368;
+        color: #ffffff;
         border: none;
-        padding: 10px 24px;
-        font-weight: 500;
-        transition: background-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        border-radius: 6px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
     }
     [data-testid="stButton"] > button:hover {
-        background-color: #1765cc; /* Darker blue on hover */
-        box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-    }
-    [data-testid="stButton"] > button:active {
-        background-color: #145cb8; /* Even darker on active */
+        background-color: #3c4043;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     /* Secondary Button styling */
