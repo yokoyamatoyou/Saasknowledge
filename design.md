@@ -16,13 +16,13 @@
 
 **\# 修正箇所の特定**
 
-対象ファイル内の display\_search\_ui 関数に問題のコードが存在します。
+対象ファイル内の render\_search\_mode 関数に問題のコードが存在します。
 
 **問題のコードブロック:**
 
 Python
 
-def display\_search\_ui():  
+def render\_search\_mode():  
     """検索UIを表示する"""  
     \# （...中略...）  
       
@@ -63,7 +63,7 @@ col1, col2 \= st.columns(2)
 
 **\#\# ステップ2: 修正後のコード全体像**
 
-以下が display\_search\_ui 関数の修正後の理想的な状態です。このコードに書き換えてください。
+以下が render\_search\_mode 関数の修正後の理想的な状態です。このコードに書き換えてください。
 
 Python
 
@@ -73,7 +73,7 @@ import streamlit as st
 from services.search\_service import search\_and\_display  
 from state\_management.session\_state import get\_session\_state
 
-def display\_search\_ui():  
+def render\_search\_mode():  
     """検索UIを表示する"""  
     state \= get\_session\_state()
 
