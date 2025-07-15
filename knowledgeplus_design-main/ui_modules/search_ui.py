@@ -1,41 +1,91 @@
 import streamlit as st
-from config import HYBRID_VECTOR_WEIGHT
+from config import HYBRID_BM25_WEIGHT, HYBRID_VECTOR_WEIGHT
 from knowledge_gpt_app.app import list_knowledge_bases, search_multiple_knowledge_bases
 from shared.openai_utils import get_openai_client
 from ui_modules.document_card import render_document_card
 
 
 def render_search_mode(safe_generate_gpt_response):
-    """Render the search interface."""
+    """Refactored search interface with a clean layout and simplified controls."""
+
+    # Apply custom CSS for buttons
+    st.markdown(
+        """
+    <style>
+        div.stButton > button[kind="primary"] {
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            width: 100%;
+        }
+        div.stButton > button[kind="primary"]:hover {
+            background-color: #0056b3;
+            color: white;
+        }
+        div.stButton > button[kind="secondary"] {
+            background-color: #6c757d;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            width: 100%;
+        }
+        div.stButton > button[kind="secondary"]:hover {
+            background-color: #5a6268;
+            color: white;
+        }
+    </style>
+    """,
+        unsafe_allow_html=True,
+    )
+
+    # Main search input
     query = st.text_input(
         "main_search_box",
         placeholder="🔍 キーワードで検索、またはAIへの質問を入力...",
         label_visibility="collapsed",
-        help="ナレッジベースから情報を検索します。",
     )
 
-    vec_weight = st.slider(
-        "ベクトル重み",
-        0.0,
-        1.0,
-        HYBRID_VECTOR_WEIGHT,
-        0.05,
-        help="ハイブリッド検索におけるベクトルスコアの比率。BM25の重みは自動で補完されます。",
-    )
-    bm25_weight = 1.0 - vec_weight
-
+    # Create two columns for the buttons
     col1, col2 = st.columns(2)
-    if col1.button("検索", type="primary", help="入力されたキーワードでナレッジベースを検索します。"):
+
+    # "Execute" button
+    if col1.button(
+        "実行",
+        type="primary",
+        help="入力されたキーワードでナレッジベースを検索します。",
+    ):
         st.session_state["search_executed"] = True
-        kb_names = [kb["name"] for kb in list_knowledge_bases()]
-        st.session_state["results"], _ = search_multiple_knowledge_bases(
-            query,
-            kb_names,
-            vector_weight=vec_weight,
-            bm25_weight=bm25_weight,
-        )
+        try:
+            kb_names = [kb["name"] for kb in list_knowledge_bases()]
+            if kb_names:
+                st.session_state["results"], _ = search_multiple_knowledge_bases(
+                    query,
+                    kb_names,
+                    vector_weight=HYBRID_VECTOR_WEIGHT,
+                    bm25_weight=HYBRID_BM25_WEIGHT,
+                )
+            else:
+                st.session_state["results"] = []
+                st.warning("検索可能なナレッジベースがありません。")
+        except Exception as e:
+            st.error(f"検索中にエラーが発生しました: {e}")
+            st.session_state["results"] = []
+
         st.session_state["last_query"] = query
-    if col2.button("クリア", help="検索ボックスと結果をクリアします。"):
+
+    # "Reset" button
+    if col2.button(
+        "リセット",
+        type="secondary",
+        help="検索ボックスと結果をクリアします。",
+    ):
         st.session_state["search_executed"] = False
         st.session_state["results"] = []
         st.session_state["last_query"] = ""
