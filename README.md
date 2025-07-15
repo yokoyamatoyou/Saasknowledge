@@ -51,18 +51,18 @@ You can similarly override where chat histories are stored by setting
   export CHAT_HISTORY_DIR=/path/to/chat_history
   ```
 
-The sidebar defaults to collapsed. Use the `<<` or `>>` button to expand or
-collapse it. Set `SIDEBAR_DEFAULT_VISIBLE=true` before launching to keep the
-sidebar open when the app starts:
+The sidebar defaults to expanded. Use the `<<` or `>>` button to collapse or
+expand it. Set `SIDEBAR_DEFAULT_VISIBLE=false` before launching if you prefer
+the sidebar hidden at startup:
 
   ```bash
-  export SIDEBAR_DEFAULT_VISIBLE=true
+  export SIDEBAR_DEFAULT_VISIBLE=false
   ```
 
 The last sidebar state is saved to `chat_history/sidebar_state.json`. If the
 sidebar keeps reappearing, delete this file or start the app with
-`SIDEBAR_DEFAULT_VISIBLE=false` to reset it. The default value is `false` so
-omitting the variable collapses the sidebar at startup.
+`SIDEBAR_DEFAULT_VISIBLE=false` to reset it. The default value is `true` so
+omitting the variable keeps the sidebar visible when the app starts.
 
 You can override the default knowledge base name by setting
 `DEFAULT_KB_NAME` before running the app:

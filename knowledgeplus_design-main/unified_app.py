@@ -31,7 +31,8 @@ except Exception as e:
     st.stop()
 
 # Global page config and styling
-sidebar_visible = os.getenv("SIDEBAR_DEFAULT_VISIBLE", "false").lower() in {
+# Default to showing the sidebar unless explicitly disabled
+sidebar_visible = os.getenv("SIDEBAR_DEFAULT_VISIBLE", "true").lower() in {
     "1",
     "true",
     "yes",
