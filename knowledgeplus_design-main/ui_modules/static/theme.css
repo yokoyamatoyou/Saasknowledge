@@ -217,6 +217,11 @@ button#toggle_sidebar p {
         background-color: var(--intel-blue);
     }
 
+    .stCheckbox > label svg {
+        stroke: #000 !important;
+        color: #000 !important; /* fallback */
+    }
+
     /* エキスパンダー */
     .streamlit-expanderHeader {
         background: var(--intel-light-gray);
