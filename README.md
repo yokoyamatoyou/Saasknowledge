@@ -59,6 +59,11 @@ sidebar open when the app starts:
   export SIDEBAR_DEFAULT_VISIBLE=true
   ```
 
+The last sidebar state is saved to `chat_history/sidebar_state.json`. If the
+sidebar keeps reappearing, delete this file or start the app with
+`SIDEBAR_DEFAULT_VISIBLE=false` to reset it. The default value is `false` so
+omitting the variable collapses the sidebar at startup.
+
 You can override the default knowledge base name by setting
 `DEFAULT_KB_NAME` before running the app:
 

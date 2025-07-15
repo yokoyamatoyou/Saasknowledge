@@ -31,6 +31,8 @@ run_app.bat           # Windows
 export SIDEBAR_DEFAULT_VISIBLE=true
 ```
 
+サイドバーの状態は `chat_history/sidebar_state.json` に保存されます。折りたたんでも再表示される場合は、このファイルを削除するか `SIDEBAR_DEFAULT_VISIBLE=false` を設定して起動してください。デフォルト値は `false` です。
+
 ## 保存先ディレクトリの変更
 
 デフォルトでは `knowledge_base/` にファイルやメタデータが保存されます。保存場所を変更する場合は以下の環境変数を設定してください。
