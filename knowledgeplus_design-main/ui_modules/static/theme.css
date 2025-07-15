@@ -521,3 +521,10 @@ button#toggle_sidebar p {
 div[data-testid="stButton"] button p {
     background-color: transparent !important;
 }
+
+/* ボタン内部要素全体の背景色を透明にする */
+div[data-testid="stButton"] button *,
+div[data-testid="stDownloadButton"] * {
+    background-color: transparent !important;
+    color: inherit !important;
+}
