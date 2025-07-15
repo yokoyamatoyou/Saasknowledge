@@ -421,19 +421,62 @@ class FileProcessor:
 
     @classmethod
     def process_file(cls, file):
+        """Return a normalized representation of ``file``.
+
+        The return value is a dictionary compatible with
+        :meth:`KnowledgeBuilder.build_and_save_knowledge`.  It contains a
+        ``type`` key describing the detected file type and either a ``text``
+        field for document content or an ``image_base64`` field for image data.
+        CAD metadata is returned under ``metadata`` when applicable.
+        """
+
         file_extension = Path(file.name).suffix.lower().replace(".", "")
 
         if file_extension in cls.SUPPORTED_IMAGE_TYPES:
-            return cls._encode_image_to_base64(file), None
-        elif file_extension in cls.SUPPORTED_DOCUMENT_TYPES:
-            return cls._encode_image_to_base64(file), None  # PDFs are treated as images
-        elif file_extension == "dxf":
-            return cls._process_dxf_file(file)
-        elif file_extension == "stl":
-            return cls._process_stl_file(file)
-        elif file_extension in ["step", "stp"]:
-            return cls._process_step_file(file)
-        elif file_extension in ["ply", "obj"] and STL_SUPPORT:
-            return cls._process_stl_file(file)
-        else:
-            return None, {"error": f"未対応のファイル形式です: {file_extension}"}
+            image_b64 = cls._encode_image_to_base64(file)
+            return {"type": "image", "image_base64": image_b64, "metadata": None}
+
+        if file_extension in {"pdf", "docx"}:
+            text, images, meta = cls.extract_text_images_metadata(file)
+            if text.strip():
+                return {
+                    "type": "document",
+                    "text": text,
+                    "images": images,
+                    "metadata": meta,
+                }
+
+            image_b64 = cls._encode_image_to_base64(file)
+            meta["file_type"] = "image_file"
+            return {
+                "type": "image",
+                "image_base64": image_b64,
+                "metadata": meta,
+            }
+
+        if file_extension in cls.SUPPORTED_DOCUMENT_TYPES:
+            try:
+                text = file.read().decode("utf-8", errors="replace")
+            finally:
+                file.seek(0)
+            meta = cls.create_metadata_from_text(text, [])
+            return {"type": "document", "text": text, "images": [], "metadata": meta}
+
+        if file_extension == "dxf":
+            image_b64, cad_meta = cls._process_dxf_file(file)
+            return {"type": "cad", "image_base64": image_b64, "metadata": cad_meta}
+        if file_extension == "stl":
+            image_b64, cad_meta = cls._process_stl_file(file)
+            return {"type": "cad", "image_base64": image_b64, "metadata": cad_meta}
+        if file_extension in ["step", "stp"]:
+            image_b64, cad_meta = cls._process_step_file(file)
+            return {"type": "cad", "image_base64": image_b64, "metadata": cad_meta}
+        if file_extension in ["ply", "obj"] and STL_SUPPORT:
+            image_b64, cad_meta = cls._process_stl_file(file)
+            return {"type": "cad", "image_base64": image_b64, "metadata": cad_meta}
+
+        return {
+            "type": "unsupported",
+            "image_base64": None,
+            "metadata": {"error": f"未対応のファイル形式です: {file_extension}"},
+        }
