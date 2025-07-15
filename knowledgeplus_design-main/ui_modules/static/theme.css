@@ -513,6 +513,8 @@ button#toggle_sidebar p {
   `!important` を使用して、他のスタイルルールよりもこのルールが優先されるようにします。
 */
 
-div[data-testid="stButton"] button p {
+div[data-testid="stButton"] button p,
+div[data-testid="stButton"] button span {
     background-color: transparent !important;
+    color: inherit !important;
 }
