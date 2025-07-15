@@ -7,6 +7,7 @@ from ui_modules.document_card import render_document_card
 
 def render_search_mode(safe_generate_gpt_response):
     """Refactored search interface with a clean layout and simplified controls."""
+    st.subheader("ナレッジ検索")
 
     # Apply custom CSS for buttons
     st.markdown(
