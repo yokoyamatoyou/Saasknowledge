@@ -18,6 +18,7 @@ def test_sidebar_toggle_updates_state(tmp_path, monkeypatch):
     monkeypatch.setattr(sidebar_toggle, "SIDEBAR_STATE_PATH", tmp_path / "state.json")
 
     st.session_state.clear()
+    st.session_state["sidebar_visible"] = False
     sidebar_toggle.render_sidebar_toggle(key="test_toggle")
     assert st.session_state.get("sidebar_visible") is True
     assert calls["rerun"] is True

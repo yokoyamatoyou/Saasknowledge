@@ -25,13 +25,13 @@ run_app.bat           # Windows
 
 起動後、ブラウザから表示されるインターフェースで PDF、Word、画像、CAD などのファイルをアップロードし、ナレッジベースを構築できます。チャット画面ではアップロードしたドキュメントの内容を参照しながら質問が可能です。
 
-デフォルトではサイドバーは折りたたまれた状態で起動します。常に表示させたい場合は起動前に次の環境変数を設定してください。
+デフォルトではサイドバーは表示された状態で起動します。折りたたんだ状態で開始したい場合は起動前に次の環境変数を設定してください。
 
 ```bash
-export SIDEBAR_DEFAULT_VISIBLE=true
+export SIDEBAR_DEFAULT_VISIBLE=false
 ```
 
-サイドバーの状態は `chat_history/sidebar_state.json` に保存されます。折りたたんでも再表示される場合は、このファイルを削除するか `SIDEBAR_DEFAULT_VISIBLE=false` を設定して起動してください。デフォルト値は `false` です。
+サイドバーの状態は `chat_history/sidebar_state.json` に保存されます。再表示されたくない場合は、このファイルを削除するか `SIDEBAR_DEFAULT_VISIBLE=false` を設定して起動してください。デフォルト値は `true` です。
 
 ## 保存先ディレクトリの変更
 

@@ -33,7 +33,8 @@ DEFAULT_SIDEBAR_WIDTH = os.getenv("SIDEBAR_WIDTH", "18rem")
 # Allow the initial visibility to be configured so different deployments
 # can start with the sidebar expanded or collapsed. The value is treated
 # as a boolean where "1", "true" or "yes" enable the sidebar.
-DEFAULT_SIDEBAR_VISIBLE = os.getenv("SIDEBAR_DEFAULT_VISIBLE", "false").lower() in {
+# Start with the sidebar expanded unless the environment variable is set to disable it
+DEFAULT_SIDEBAR_VISIBLE = os.getenv("SIDEBAR_DEFAULT_VISIBLE", "true").lower() in {
     "1",
     "true",
     "yes",
