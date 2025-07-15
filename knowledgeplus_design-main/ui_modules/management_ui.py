@@ -1,11 +1,17 @@
+import logging
+import time
+
 import streamlit as st
 from config import DEFAULT_KB_NAME
 from core.faq_utils import generate_faq
-from knowledge_gpt_app.app import read_file as app_read_file
-from knowledge_gpt_app.app import refresh_search_engine, semantic_chunking
+from core.mm_builder_utils import analyze_image_with_gpt4o
+from knowledge_gpt_app.app import refresh_search_engine
 from shared.file_processor import FileProcessor
+from shared.kb_builder import KnowledgeBuilder
 from shared.openai_utils import get_openai_client
 from ui_modules.thumbnail_editor import display_thumbnail_grid
+
+logger = logging.getLogger(__name__)
 
 
 def render_management_mode():
@@ -25,11 +31,18 @@ def render_management_mode():
                 help="ファイル処理後に検索インデックスを自動で更新するか、手動で更新するかを選択します。",
             )
 
+            file_processor = FileProcessor()
+            kb_builder = KnowledgeBuilder(
+                file_processor,
+                get_openai_client_func=get_openai_client,
+                refresh_search_engine_func=refresh_search_engine,
+            )
+
             files = st.file_uploader(
                 "ファイルを選択",
-                type=FileProcessor.SUPPORTED_IMAGE_TYPES
-                + FileProcessor.SUPPORTED_DOCUMENT_TYPES
-                + FileProcessor.SUPPORTED_CAD_TYPES,
+                type=file_processor.SUPPORTED_IMAGE_TYPES
+                + file_processor.SUPPORTED_DOCUMENT_TYPES
+                + file_processor.SUPPORTED_CAD_TYPES,
                 accept_multiple_files=process_mode == "まとめて処理",
                 help="サポートされている画像、ドキュメント、CADファイルをアップロードします。",
             )
@@ -37,30 +50,67 @@ def render_management_mode():
             if files:
                 if not isinstance(files, list):
                     files = [files]
-                for file in files:
-                    with st.spinner(f"ファイルを解析中: {file.name}..."):
-                        text = app_read_file(file)
-                    with st.spinner(f"ベクトル化しています: {file.name}..."):
-                        if text:
-                            client = get_openai_client()
-                            if client:
-                                semantic_chunking(
-                                    text,
-                                    15,
-                                    "C",
-                                    "auto",
-                                    DEFAULT_KB_NAME,
-                                    client,
-                                    original_filename=file.name,
-                                    original_bytes=file.getvalue(),
-                                    refresh=index_mode == "自動(処理後)"
-                                    and process_mode == "個別処理",
+
+                if st.button("選択したファイルの処理を開始", type="primary"):
+                    progress_bar = st.progress(0, "処理を開始します...")
+                    start_time = time.time()
+
+                    original_refresh = kb_builder.refresh_search_engine
+                    if process_mode == "まとめて処理" or index_mode == "手動":
+                        kb_builder.refresh_search_engine = lambda *_: None
+
+                    for i, uploaded_file in enumerate(files):
+                        file_name = uploaded_file.name
+                        progress_text = f"({i+1}/{len(files)}) {file_name} を処理中..."
+                        progress_bar.progress((i + 1) / len(files), text=progress_text)
+
+                        try:
+                            with st.spinner(progress_text):
+                                image_b64, cad_meta = file_processor.process_file(
+                                    uploaded_file
                                 )
 
-                if process_mode == "まとめて処理" and index_mode == "自動(処理後)":
-                    refresh_search_engine(DEFAULT_KB_NAME)
+                                if not image_b64:
+                                    st.error(f"ファイルの処理に失敗しました: {file_name}")
+                                    logger.error(
+                                        f"File processing failed for {file_name}"
+                                    )
+                                    continue
 
-                st.toast("アップロード完了")
+                                analysis = analyze_image_with_gpt4o(
+                                    image_b64, uploaded_file.name, cad_meta
+                                )
+
+                                kb_builder.build_from_file(
+                                    uploaded_file,
+                                    analysis=analysis,
+                                    image_base64=image_b64,
+                                    user_additions={},
+                                    cad_metadata=cad_meta,
+                                )
+
+                                st.success(f"✓ ナレッジを追加しました: {file_name}")
+                                logger.info(
+                                    f"Successfully added knowledge for {file_name}"
+                                )
+                        except Exception as e:
+                            st.error(f"処理中に予期せぬエラーが発生しました ({file_name}): {e}")
+                            logger.error(
+                                f"Unhandled error processing {file_name}: {e}",
+                                exc_info=True,
+                            )
+
+                    kb_builder.refresh_search_engine = original_refresh
+
+                    if process_mode == "まとめて処理" and index_mode == "自動(処理後)":
+                        with st.spinner("検索エンジン更新中..."):
+                            refresh_search_engine(DEFAULT_KB_NAME)
+
+                    end_time = time.time()
+                    total_time = end_time - start_time
+                    progress_bar.progress(
+                        1.0, f"全ての処理が完了しました！ (合計時間: {total_time:.2f}秒)"
+                    )
 
             if index_mode == "手動":
                 if st.button("検索インデックス更新"):
