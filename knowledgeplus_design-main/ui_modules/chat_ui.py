@@ -1,5 +1,5 @@
 import streamlit as st
-from config import DEFAULT_KB_NAME, HYBRID_VECTOR_WEIGHT
+from config import DEFAULT_KB_NAME, HYBRID_BM25_WEIGHT, HYBRID_VECTOR_WEIGHT
 from knowledge_gpt_app.app import search_multiple_knowledge_bases
 from shared.chat_controller import ChatController
 from shared.chat_history_utils import append_message, update_title
@@ -11,20 +11,14 @@ from shared.upload_utils import BASE_KNOWLEDGE_DIR
 
 def render_chat_mode(safe_generate_gpt_response):
     """Render the chat interface."""
-    st.subheader("チャット")
+    st.subheader("chatGPT")
     # Display current conversation title underneath the header
     st.markdown(f"### {st.session_state.get('gpt_conversation_title', '新しい会話')}")
     use_kb = st.session_state.get("use_knowledge_search", True)
 
-    vec_weight = st.slider(
-        "ベクトル重み",
-        0.0,
-        1.0,
-        HYBRID_VECTOR_WEIGHT,
-        0.05,
-        help="チャット時のハイブリッド検索で使用するベクトルスコアの比率。",
-    )
-    bm25_weight = 1.0 - vec_weight
+    # Use configured search weights without showing the slider
+    vec_weight = HYBRID_VECTOR_WEIGHT
+    bm25_weight = HYBRID_BM25_WEIGHT
 
     chat_container = st.container(height=700)
     with chat_container:

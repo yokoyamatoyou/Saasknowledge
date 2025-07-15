@@ -118,11 +118,11 @@ if "current_chat_id" not in st.session_state:
         st.session_state["current_chat_id"] = create_history({})
 
 # --- Sidebar Navigation ---
-# Use a key to persist selection and add emoji icons
+# Use a key to persist selection and keep labels consistent across screens
 mode_options = {
-    "検索": "検索",
+    "チャット": "chatGPT",
+    "検索": "ナレッジ検索",
     "管理": "管理",
-    "チャット": "チャット",
 }
 
 selected_mode_display = st.sidebar.radio(

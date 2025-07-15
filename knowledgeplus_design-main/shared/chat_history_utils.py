@@ -42,7 +42,9 @@ def load_chat_histories() -> List[Dict]:
             )
         except Exception:
             continue
-    histories.sort(key=lambda h: h.get("created_at", ""), reverse=True)
+    # ``created_at`` may be ``None`` if older history files are missing
+    # the field. Use an empty string fallback so sorting does not error.
+    histories.sort(key=lambda h: h.get("created_at") or "", reverse=True)
     return histories
 
 
