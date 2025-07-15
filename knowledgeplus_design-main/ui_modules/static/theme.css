@@ -499,3 +499,20 @@ button#toggle_sidebar p {
         flex: 1; /* Allow chat history to take available vertical space */
         overflow-y: auto; /* Enable scrolling for chat history */
     }
+
+/* ========================================= */
+/* ボタンテキスト背景の修正                 */
+/* ========================================= */
+
+/*
+  説明:
+  Streamlitのボタンコンポーネント(data-testid="stButton")内部の
+  ボタン要素(`button`)に含まれる段落(`p`)タグに対して、
+  背景色を透明(`transparent`)にするためのスタイルです。
+  これにより、テキストの背景が消え、ボタンのデザインが正常に表示されます。
+  `!important` を使用して、他のスタイルルールよりもこのルールが優先されるようにします。
+*/
+
+div[data-testid="stButton"] button p {
+    background-color: transparent !important;
+}
