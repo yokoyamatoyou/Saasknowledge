@@ -1,16 +1,18 @@
-import sys
 import io
+import sys
 import types
 from pathlib import Path
 
 import pytest
 
-sys.modules.setdefault("knowledge_gpt_app.app", types.SimpleNamespace(refresh_search_engine=lambda *a, **k: None))
+sys.modules.setdefault(
+    "knowledge_gpt_app.app",
+    types.SimpleNamespace(refresh_search_engine=lambda *a, **k: None),
+)
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 pytest.importorskip("streamlit")
 import streamlit as st  # noqa: E402
-
 from ui_modules import management_ui  # noqa: E402
 
 
@@ -60,7 +62,9 @@ def test_render_management_mode_mixed_files(monkeypatch):
     def fake_process_file(cls, uploaded_file):
         return (f"b64_{uploaded_file.name}", {})
 
-    monkeypatch.setattr(management_ui.FileProcessor, "process_file", classmethod(fake_process_file))
+    monkeypatch.setattr(
+        management_ui.FileProcessor, "process_file", classmethod(fake_process_file)
+    )
 
     analysis_calls = []
 
@@ -78,7 +82,9 @@ def test_render_management_mode_mixed_files(monkeypatch):
             self.results = []
             builders.append(self)
 
-        def build_from_file(self, uploaded_file, analysis, image_base64, user_additions, cad_metadata):
+        def build_from_file(
+            self, uploaded_file, analysis, image_base64, user_additions, cad_metadata
+        ):
             item = {"filename": uploaded_file.name, "stats": {"vector_dimensions": 1}}
             self.calls.append(uploaded_file.name)
             self.results.append(item)
