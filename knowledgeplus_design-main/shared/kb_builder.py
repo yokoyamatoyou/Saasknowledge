@@ -3,6 +3,8 @@ import json
 import logging
 import uuid
 from datetime import datetime
+from io import BytesIO
+from typing import Optional
 
 import streamlit as st
 from config import (
@@ -29,6 +31,39 @@ class KnowledgeBuilder:
         self.file_processor = file_processor
         self.get_openai_client = get_openai_client_func
         self.refresh_search_engine = refresh_search_engine_func
+
+    # --------------------------------------------------
+    # Embedding helpers
+    # --------------------------------------------------
+    @staticmethod
+    def generate_image_embedding(image_bytes: bytes) -> Optional[list[float]]:
+        """Return an embedding vector for the given image bytes."""
+        try:
+            from PIL import Image  # type: ignore
+
+            img = Image.open(BytesIO(image_bytes))
+        except Exception as e:
+            logger.error("画像読み込みエラー: %s", e)
+            return None
+
+        try:
+            from core import mm_builder_utils
+
+            return mm_builder_utils.get_image_embedding(img)
+        except Exception as e:  # pragma: no cover - heavy deps may be missing
+            logger.error("画像埋め込み生成エラー: %s", e)
+            return None
+
+    @staticmethod
+    def generate_text_embedding(text: str) -> Optional[list[float]]:
+        """Return an embedding vector for ``text`` using the default model."""
+        try:
+            from core import mm_builder_utils
+
+            return mm_builder_utils.get_embedding(text)
+        except Exception as e:  # pragma: no cover - openai unavailable
+            logger.error("テキスト埋め込み生成エラー: %s", e)
+            return None
 
     def build_from_file(
         self, uploaded_file, analysis, image_base64, user_additions, cad_metadata
