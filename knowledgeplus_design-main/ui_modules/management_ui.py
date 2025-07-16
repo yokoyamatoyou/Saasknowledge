@@ -67,7 +67,8 @@ def render_management_mode():
                         try:
                             with st.spinner(progress_text):
                                 processed_data = file_processor.process_file(
-                                    uploaded_file
+                                    uploaded_file,
+                                    builder=kb_builder,
                                 )
                                 proc_type = processed_data.get("type")
                                 image_b64 = processed_data.get("image_base64")

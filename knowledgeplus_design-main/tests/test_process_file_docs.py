@@ -5,6 +5,7 @@ from pathlib import Path
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 from shared.file_processor import FileProcessor  # noqa: E402
+from shared.kb_builder import KnowledgeBuilder  # noqa: E402
 
 
 def _create_text_pdf():
@@ -60,7 +61,8 @@ def _create_image_docx(tmp_path):
 
 def test_process_file_text_pdf():
     buf = _create_text_pdf()
-    result = FileProcessor.process_file(buf)
+    builder = KnowledgeBuilder(FileProcessor(), lambda: None, lambda *_: None)
+    result = FileProcessor.process_file(buf, builder=builder)
     assert result["type"] == "document"
     assert "hello pdf" in result["text"]
     assert result["images"]
@@ -68,7 +70,8 @@ def test_process_file_text_pdf():
 
 def test_process_file_image_pdf(tmp_path):
     buf = _create_image_pdf(tmp_path)
-    result = FileProcessor.process_file(buf)
+    builder = KnowledgeBuilder(FileProcessor(), lambda: None, lambda *_: None)
+    result = FileProcessor.process_file(buf, builder=builder)
     assert result["type"] == "image"
     assert result["metadata"]["file_type"] == "image_file"
     assert result["image_base64"]
@@ -77,7 +80,8 @@ def test_process_file_image_pdf(tmp_path):
 def test_process_file_text_docx(tmp_path):
     path = _create_text_docx(tmp_path)
     with open(path, "rb") as f:
-        result = FileProcessor.process_file(f)
+        builder = KnowledgeBuilder(FileProcessor(), lambda: None, lambda *_: None)
+        result = FileProcessor.process_file(f, builder=builder)
     assert result["type"] == "document"
     assert "hello docx" in result["text"]
 
@@ -85,7 +89,8 @@ def test_process_file_text_docx(tmp_path):
 def test_process_file_image_docx(tmp_path):
     path = _create_image_docx(tmp_path)
     with open(path, "rb") as f:
-        result = FileProcessor.process_file(f)
+        builder = KnowledgeBuilder(FileProcessor(), lambda: None, lambda *_: None)
+        result = FileProcessor.process_file(f, builder=builder)
     assert result["type"] == "image"
     assert result["metadata"]["file_type"] == "image_file"
     assert result["image_base64"]

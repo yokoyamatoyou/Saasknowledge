@@ -31,12 +31,22 @@ class KnowledgeBuilder:
         self.file_processor = file_processor
         self.get_openai_client = get_openai_client_func
         self.refresh_search_engine = refresh_search_engine_func
+        try:
+            from core import mm_builder_utils
+
+            (
+                self.clip_model,
+                self.clip_processor,
+            ) = mm_builder_utils.load_model_and_processor()
+        except Exception as e:  # pragma: no cover - heavy deps may be missing
+            logger.error("CLIPモデル読み込みエラー: %s", e)
+            self.clip_model = None
+            self.clip_processor = None
 
     # --------------------------------------------------
     # Embedding helpers
     # --------------------------------------------------
-    @staticmethod
-    def generate_image_embedding(image_bytes: bytes) -> Optional[list[float]]:
+    def generate_image_embedding(self, image_bytes: bytes) -> Optional[list[float]]:
         """Return an embedding vector for the given image bytes."""
         try:
             from PIL import Image  # type: ignore
@@ -49,13 +59,14 @@ class KnowledgeBuilder:
         try:
             from core import mm_builder_utils
 
-            return mm_builder_utils.get_image_embedding(img)
+            return mm_builder_utils.get_image_embedding(
+                img, model=self.clip_model, processor=self.clip_processor
+            )
         except Exception as e:  # pragma: no cover - heavy deps may be missing
             logger.error("画像埋め込み生成エラー: %s", e)
             return None
 
-    @staticmethod
-    def generate_text_embedding(text: str) -> Optional[list[float]]:
+    def generate_text_embedding(self, text: str) -> Optional[list[float]]:
         """Return an embedding vector for ``text`` using the default model."""
         try:
             from core import mm_builder_utils

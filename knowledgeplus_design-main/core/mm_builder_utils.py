@@ -10,13 +10,6 @@ from shared.openai_utils import get_openai_client
 
 logger = logging.getLogger(__name__)
 
-_file_processor = FileProcessor()
-_kb_builder = KnowledgeBuilder(
-    _file_processor,
-    get_openai_client_func=get_openai_client,
-    refresh_search_engine_func=None,
-)
-
 
 def get_embedding(text: str, client=None):
     """OpenAI埋め込みAPIを利用してテキストのベクトルを生成する。
@@ -195,3 +188,12 @@ def get_image_embedding(image, model=None, processor=None) -> list[float]:
         features = features.cpu()
     vector = features[0].tolist()
     return vector[: config.EMBEDDING_DIM]
+
+
+# Initialize a default KnowledgeBuilder for convenience
+_file_processor = FileProcessor()
+_kb_builder = KnowledgeBuilder(
+    _file_processor,
+    get_openai_client_func=get_openai_client,
+    refresh_search_engine_func=None,
+)

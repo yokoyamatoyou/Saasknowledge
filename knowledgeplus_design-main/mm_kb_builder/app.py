@@ -160,7 +160,8 @@ with tab1:
                     is_cad_file = file_extension in SUPPORTED_CAD_TYPES
 
                     image_base64, cad_metadata = _file_processor.process_file(
-                        uploaded_file
+                        uploaded_file,
+                        builder=_kb_builder,
                     )
 
                     if image_base64 is None:
