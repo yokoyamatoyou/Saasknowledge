@@ -159,10 +159,20 @@ with tab1:
                     file_extension = uploaded_file.name.split(".")[-1].lower()
                     is_cad_file = file_extension in SUPPORTED_CAD_TYPES
 
-                    image_base64, cad_metadata = _file_processor.process_file(
+                    processed = _file_processor.process_file(
                         uploaded_file,
                         builder=_kb_builder,
                     )
+                    image_base64 = processed.get("image_base64")
+                    cad_metadata = processed.get("metadata")
+                    proc_type = processed.get("type")
+
+                    if proc_type not in ("image", "cad"):
+                        st.warning(
+                            f"{uploaded_file.name} はこの画面では処理できないファイル形式です"
+                        )
+                        progress_bar.progress((i + 1) / len(uploaded_files))
+                        continue
 
                     if image_base64 is None:
                         st.error(
