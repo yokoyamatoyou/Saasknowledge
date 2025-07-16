@@ -108,9 +108,7 @@ def render_management_mode():
                                         f"Unsupported file type for {file_name}"
                                     )
                         except Exception as e:
-                            st.error(
-                                f"処理中に予期せぬエラーが発生しました ({file_name}): {e}"
-                            )
+                            st.error(f"処理中に予期せぬエラーが発生しました ({file_name}): {e}")
                             logger.error(
                                 f"Unhandled error processing {file_name}: {e}",
                                 exc_info=True,
