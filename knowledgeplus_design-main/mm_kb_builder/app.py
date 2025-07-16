@@ -592,25 +592,23 @@ with tab3:
                     search_top_k = st.selectbox("表示件数", [5, 10, 15, 20], index=1)
 
                 if search_query and st.button("⌕ 検索実行", type="primary"):
-                    client = get_openai_client()
-                    if client:
-                        with st.spinner("検索中..."):
-                            # クエリのベクトル化
-                            query_embedding = _kb_builder._get_embedding(
-                                search_query, client, dimensions=embedding_dims
-                            )
+                    with st.spinner("検索中..."):
+                        # クエリのベクトル化
+                        query_embedding = _kb_builder._get_embedding(
+                            search_query, dimensions=embedding_dims
+                        )
 
-                            if query_embedding is not None:
-                                # 類似度計算（分離構造対応）
-                                similarities = []
+                        if query_embedding is not None:
+                            # 類似度計算（分離構造対応）
+                            similarities = []
 
-                                for metadata_file in metadata_files:
-                                    try:
-                                        # メタデータ読み込み
-                                        with open(
-                                            metadata_file, "r", encoding="utf-8"
-                                        ) as f:
-                                            metadata = json.load(f)
+                            for metadata_file in metadata_files:
+                                try:
+                                    # メタデータ読み込み
+                                    with open(
+                                        metadata_file, "r", encoding="utf-8"
+                                    ) as f:
+                                        metadata = json.load(f)
 
                                         item_id = metadata["id"]
 

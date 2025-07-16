@@ -8,6 +8,7 @@ import streamlit as st
 from config import (
     DEFAULT_KB_NAME,
     EMBEDDING_BATCH_SIZE,
+    EMBEDDING_DIM,
     EMBEDDING_DIMENSIONS,
     EMBEDDING_MODEL,
 )
@@ -29,17 +30,21 @@ class KnowledgeBuilder:
         self.file_processor = file_processor
         self.get_openai_client = get_openai_client_func
         self.refresh_search_engine = refresh_search_engine_func
+        # Defer CLIP model loading to avoid circular imports
+        self.clip_model = None
+        self.clip_processor = None
+
+    def _ensure_clip_model(self):
+        if self.clip_model is None or self.clip_processor is None:
+            from core import mm_builder_utils
+
+            self.clip_model, self.clip_processor = mm_builder_utils.load_model_and_processor()
 
     def build_from_file(
         self, uploaded_file, analysis, image_base64, user_additions, cad_metadata
     ):
-        client = self.get_openai_client()
-        if not client:
-            st.error("OpenAIクライアントに接続できません")
-            return None
-
         search_chunk = self._create_comprehensive_search_chunk(analysis, user_additions)
-        embedding = self._get_embedding(search_chunk, client)
+        embedding = self._get_embedding(search_chunk)
 
         if embedding is None:
             st.error("埋め込みベクトルの生成に失敗しました。")
@@ -154,11 +159,9 @@ class KnowledgeBuilder:
                 results.extend([None] * len(batch))
         return results
 
-    def _get_embedding(self, text, client, dimensions=EMBEDDING_DIMENSIONS):
-        """テキストの埋め込みベクトルを生成"""
-        if client is None:
-            return None
-
+    def _get_embedding(self, text, client=None, dimensions=EMBEDDING_DIM):
+        """Return a CLIP text embedding for ``text``."""
+        self._ensure_clip_model()
         try:
             if not text or not text.strip():
                 return None
@@ -166,10 +169,31 @@ class KnowledgeBuilder:
             if len(text) > 30000:
                 text = text[:30000]
 
-            result = self._get_embeddings_batch([text], client, dimensions)[0]
+            inputs = self.clip_processor(
+                text=[text], return_tensors="pt", padding=True, truncation=True
+            )
+            features = self.clip_model.get_text_features(**inputs)
+            if hasattr(features, "detach"):
+                features = features.detach()
+            if hasattr(features, "cpu"):
+                features = features.cpu()
+            result = features[0].tolist()[:dimensions]
             return result
-        except Exception as e:
+        except Exception as e:  # pragma: no cover - GPU/torch errors
             logger.error(f"埋め込みベクトル生成エラー: {e}")
+            return None
+
+    def generate_image_embedding(self, image_path):
+        """Return an image embedding using the cached CLIP model."""
+        try:
+            self._ensure_clip_model()
+            from core import mm_builder_utils
+
+            return mm_builder_utils.get_image_embedding(
+                image_path, model=self.clip_model, processor=self.clip_processor
+            )
+        except Exception as e:  # pragma: no cover - I/O errors
+            logger.error(f"画像埋め込み生成エラー: {e}")
             return None
 
     def _save_unified_knowledge_item(
