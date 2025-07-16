@@ -38,6 +38,10 @@ def test_process_image_saves_embedding(tmp_path, monkeypatch):
     assert len(files) == 1
     data = pickle.loads(files[0].read_bytes())
     assert data["embedding"] == [0.1, 0.2]
+    chunk_dir = tmp_path / "kb1" / "chunks"
+    chunks = list(chunk_dir.glob("*.txt"))
+    assert len(chunks) == 1
+    assert chunks[0].read_text(encoding="utf-8") == "img.png"
 
 
 def test_process_document_saves_embedding(tmp_path, monkeypatch):
