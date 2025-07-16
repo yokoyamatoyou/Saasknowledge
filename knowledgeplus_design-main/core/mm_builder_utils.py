@@ -19,26 +19,15 @@ _kb_builder = KnowledgeBuilder(
 
 
 def get_embedding(text: str, client=None):
-    """OpenAI埋め込みAPIを利用してテキストのベクトルを生成する。
+    """Return a text embedding vector for ``text``.
 
-    Args:
-        text: 埋め込みを計算したいテキスト。
-        client: ``openai.OpenAI`` クライアント。 ``None`` の場合は
-            :func:`get_openai_client` で自動取得する。
-
-    Returns:
-        list[float] | None: 生成された埋め込みベクトル。クライアント取得や
-        API 呼び出しに失敗した場合は ``None`` が返る。
-
-    ``KnowledgeBuilder`` の内部メソッド ``_get_embedding`` を呼び出して
-    埋め込みを取得する。 ``client`` を省略するとクライアントを生成し、
-    取得できない場合やAPIエラー時は ``None`` を返す。
+    The ``KnowledgeBuilder`` now relies on a local CLIP model, so this helper
+    no longer requires an OpenAI client. The optional ``client`` argument is
+    accepted for backward compatibility but ignored.
     """
-    if client is None:
-        client = get_openai_client()
-        if client is None:
-            return None
-    return _kb_builder._get_embedding(text, client)
+
+    # ``client`` is ignored but kept for API compatibility
+    return _kb_builder._get_embedding(text)
 
 
 GPT4O_MODEL = "gpt-4.1"
