@@ -1,14 +1,12 @@
 import json
 import logging
-from typing import Optional
-
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 
+import config
 from shared.file_processor import FileProcessor
 from shared.kb_builder import KnowledgeBuilder
 from shared.openai_utils import get_openai_client
-import config
 
 logger = logging.getLogger(__name__)
 

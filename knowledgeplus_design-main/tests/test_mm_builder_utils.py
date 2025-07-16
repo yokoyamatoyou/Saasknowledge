@@ -105,7 +105,6 @@ def test_get_image_embedding(monkeypatch):
         def __getitem__(self, idx):
             return DummyList(self.vec)
 
-
     class DummyList(list):
         def tolist(self):
             return list(self)
