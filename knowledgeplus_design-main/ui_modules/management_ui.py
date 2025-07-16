@@ -66,9 +66,11 @@ def render_management_mode():
 
                         try:
                             with st.spinner(progress_text):
-                                image_b64, cad_meta = file_processor.process_file(
+                                processed_data = file_processor.process_file(
                                     uploaded_file
                                 )
+                                image_b64 = processed_data.get("image_base64")
+                                cad_meta = processed_data.get("metadata")
 
                                 if not image_b64:
                                     st.error(f"ファイルの処理に失敗しました: {file_name}")
