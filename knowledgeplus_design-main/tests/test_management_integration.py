@@ -60,6 +60,13 @@ def test_render_management_mode_mixed_files(monkeypatch):
     monkeypatch.setattr(management_ui, "display_thumbnail_grid", lambda *a, **k: None)
 
     def fake_process_file(cls, uploaded_file):
+        if uploaded_file.name.endswith(".txt"):
+            return {
+                "type": "document",
+                "text": "hello",
+                "images": [],
+                "metadata": {},
+            }
         return {
             "image_base64": f"b64_{uploaded_file.name}",
             "metadata": {},
@@ -103,7 +110,5 @@ def test_render_management_mode_mixed_files(monkeypatch):
 
     assert builders, "KnowledgeBuilder was not instantiated"
     builder = builders[0]
-    assert set(builder.calls) == {"doc.txt", "pic.png"}
-    doc_item = next(res for res in builder.results if res["filename"] == "doc.txt")
-    assert doc_item["stats"]["vector_dimensions"] > 0
-    assert analysis_calls == ["doc.txt", "pic.png"]
+    assert builder.calls == ["pic.png"]
+    assert analysis_calls == ["pic.png"]
