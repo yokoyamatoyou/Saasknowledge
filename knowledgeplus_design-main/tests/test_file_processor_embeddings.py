@@ -26,13 +26,14 @@ def _make_png():
 
 def test_process_image_saves_embedding(tmp_path, monkeypatch):
     monkeypatch.setattr(upload_utils, "BASE_KNOWLEDGE_DIR", tmp_path)
+    builder = KnowledgeBuilder(FileProcessor(), lambda: None, lambda *_: None)
     monkeypatch.setattr(
-        KnowledgeBuilder,
+        builder,
         "generate_image_embedding",
-        staticmethod(lambda b: [0.1, 0.2]),
+        lambda b: [0.1, 0.2],
     )
     buf = _make_png()
-    FileProcessor.process_file(buf, kb_name="kb1")
+    FileProcessor.process_file(buf, kb_name="kb1", builder=builder)
     emb_dir = tmp_path / "kb1" / "embeddings"
     files = list(emb_dir.glob("*.pkl"))
     assert len(files) == 1
@@ -46,14 +47,11 @@ def test_process_image_saves_embedding(tmp_path, monkeypatch):
 
 def test_process_document_saves_embedding(tmp_path, monkeypatch):
     monkeypatch.setattr(upload_utils, "BASE_KNOWLEDGE_DIR", tmp_path)
-    monkeypatch.setattr(
-        KnowledgeBuilder,
-        "generate_text_embedding",
-        staticmethod(lambda t: [0.5]),
-    )
+    builder = KnowledgeBuilder(FileProcessor(), lambda: None, lambda *_: None)
+    monkeypatch.setattr(builder, "generate_text_embedding", lambda t: [0.5])
     buf = io.BytesIO(b"hello world")
     buf.name = "note.txt"
-    FileProcessor.process_file(buf, kb_name="kb2")
+    FileProcessor.process_file(buf, kb_name="kb2", builder=builder)
     emb_dir = tmp_path / "kb2" / "embeddings"
     files = list(emb_dir.glob("*.pkl"))
     assert len(files) == 1

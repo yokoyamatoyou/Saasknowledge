@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import base64
 import io
 import logging
@@ -6,6 +8,7 @@ import tempfile
 import uuid
 from io import BytesIO
 from pathlib import Path
+from typing import Optional
 
 import fitz  # PyMuPDF
 
@@ -422,7 +425,12 @@ class FileProcessor:
         return text, images, meta
 
     @classmethod
-    def process_file(cls, file, kb_name: str = DEFAULT_KB_NAME):
+    def process_file(
+        cls,
+        file,
+        kb_name: str = DEFAULT_KB_NAME,
+        builder: Optional[KnowledgeBuilder] = None,
+    ):
         """Return a normalized representation of ``file``.
 
         The return value is a dictionary compatible with
@@ -438,14 +446,16 @@ class FileProcessor:
             image_b64 = cls._encode_image_to_base64(file)
             try:
                 from shared import upload_utils
-                from shared.kb_builder import (  # local import to avoid cycle
-                    KnowledgeBuilder,
-                )
+                from shared.kb_builder import KnowledgeBuilder  # local import
 
                 file.seek(0)
                 img_bytes = file.read()
                 file.seek(0)
-                embedding = KnowledgeBuilder.generate_image_embedding(img_bytes)
+                if builder is None:
+                    builder = KnowledgeBuilder(
+                        cls(), lambda: None, refresh_search_engine_func=None
+                    )
+                embedding = builder.generate_image_embedding(img_bytes)
                 if embedding is not None:
                     chunk_id = str(uuid.uuid4())
                     chunk_text = Path(file.name).name
@@ -467,7 +477,11 @@ class FileProcessor:
                     from shared import upload_utils
                     from shared.kb_builder import KnowledgeBuilder  # local import
 
-                    embedding = KnowledgeBuilder.generate_text_embedding(text)
+                    if builder is None:
+                        builder = KnowledgeBuilder(
+                            cls(), lambda: None, refresh_search_engine_func=None
+                        )
+                    embedding = builder.generate_text_embedding(text)
                     if embedding is not None:
                         chunk_id = str(uuid.uuid4())
                         upload_utils.save_processed_data(
@@ -505,7 +519,11 @@ class FileProcessor:
                 from shared import upload_utils
                 from shared.kb_builder import KnowledgeBuilder
 
-                embedding = KnowledgeBuilder.generate_text_embedding(text)
+                if builder is None:
+                    builder = KnowledgeBuilder(
+                        cls(), lambda: None, refresh_search_engine_func=None
+                    )
+                embedding = builder.generate_text_embedding(text)
                 if embedding is not None:
                     chunk_id = str(uuid.uuid4())
                     upload_utils.save_processed_data(
