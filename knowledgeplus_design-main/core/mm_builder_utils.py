@@ -11,7 +11,6 @@ from shared.openai_utils import get_openai_client
 logger = logging.getLogger(__name__)
 
 
-
 def get_embedding(text: str, client=None):
     """OpenAI埋め込みAPIを利用してテキストのベクトルを生成する。
 

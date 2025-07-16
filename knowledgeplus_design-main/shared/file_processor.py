@@ -8,7 +8,10 @@ import tempfile
 import uuid
 from io import BytesIO
 from pathlib import Path
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:  # pragma: no cover - imported for type hints only
+    from shared.kb_builder import KnowledgeBuilder
 
 import fitz  # PyMuPDF
 
@@ -429,7 +432,7 @@ class FileProcessor:
         cls,
         file,
         kb_name: str = DEFAULT_KB_NAME,
-        builder: Optional[KnowledgeBuilder] = None,
+        builder: Optional["KnowledgeBuilder"] = None,
     ):
         """Return a normalized representation of ``file``.
 

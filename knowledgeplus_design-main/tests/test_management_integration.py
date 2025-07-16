@@ -60,7 +60,7 @@ def test_render_management_mode_mixed_files(monkeypatch):
 
     monkeypatch.setattr(management_ui, "display_thumbnail_grid", lambda *a, **k: None)
 
-    def fake_process_file(cls, uploaded_file):
+    def fake_process_file(cls, uploaded_file, *, builder=None):
         if uploaded_file.name.endswith(".txt"):
             return {"type": "document", "text": "hello", "metadata": {}}
         return {
