@@ -154,7 +154,8 @@ pytest -q
 
 The suite now includes checks that malformed chunk files are ignored by
 `HybridSearchEngine` and that embedding requests handle OpenAI timeouts
-gracefully.
+gracefully. A PNG upload test dynamically generates a tiny image in memory to
+confirm that `KnowledgeBuilder` processes image uploads correctly.
 
 ## Thumbnail grid
 
