@@ -20,6 +20,11 @@ pip install -r requirements-extra.txt
 The `requirements-extra.txt` file holds large libraries such as **torch** and **transformers**.
 Installing them separately after the light requirements helps avoid network timeouts and keeps the initial setup lightweight.
 PyMuPDF is installed with the light requirements so PDF processing works out of the box. Install pytesseract as well if you need OCR for scanned PDFs.
+Other critical packages like **opencv-python**, `ezdxf` and `trimesh` are included in `requirements.txt` so CAD and image files work properly. Install everything together with:
+
+```bash
+pip install -r requirements.txt
+```
 
 If `rank-bm25` fails to install during the above step, upgrade `pip` and install it manually:
 
@@ -67,6 +72,13 @@ streamlit run app.py
 *   **ハイブリッド検索**: ベクトル検索とキーワード検索（BM25）を組み合わせることで、高精度な検索結果を提供します。
 *   **AIチャット**: ナレッジベースの情報を参照しながら、AIと対話形式で質問応答が可能です。
 *   **FAQ生成**: 既存のナレッジベースから自動でFAQ（よくある質問と回答）を生成します。
+
+### マルチモーダルアップロードの流れ
+
+1. 「ナレッジベース構築」タブで **個別処理** または **まとめて処理** を選択します。
+2. ドキュメントと画像を同じアップローダーにドラッグ＆ドロップします。
+3. **選択したファイルの処理を開始** ボタンを押すと、すべてのファイルが一度に処理され、
+   まとめて処理時は終了後にインデックスが自動更新されます。
 
 ## 🏗️ アーキテクチャ
 

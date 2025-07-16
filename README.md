@@ -9,6 +9,11 @@ To keep pull requests stable when using Codex, install dependencies in two steps
 * Or run the helper scripts: `scripts/install_light.sh` first and `scripts/install_extra.sh` when you need the heavy libraries.
 * A combined `scripts/install_full.sh` exists but installing everything in one step may trigger network errors, so the two-step approach is recommended.
 * PDF export requires the Japanese font `ipaexg.ttf` placed in the repository root. See `knowledgeplus_design-main/README.md` for details.
+* Critical packages such as **PyMuPDF** (imported as `fitz`), **pytesseract**, **opencv-python**, `ezdxf` and `trimesh` are listed in `knowledgeplus_design-main/requirements.txt`. Install them all at once with:
+
+  ```bash
+  pip install -r knowledgeplus_design-main/requirements.txt
+  ```
 
 ### Handling large dependencies
 
@@ -155,7 +160,15 @@ pytest -q
 The suite now includes checks that malformed chunk files are ignored by
 `HybridSearchEngine` and that embedding requests handle OpenAI timeouts
 gracefully. A PNG upload test dynamically generates a tiny image in memory to
-confirm that `KnowledgeBuilder` processes image uploads correctly.
+
+## Multimodal upload workflow
+
+1. Choose **個別処理** or **まとめて処理** in the management tab.
+2. Drag & drop documents and images into the uploader.
+3. Click **選択したファイルの処理を開始** to process everything with a single button.
+   The search index refreshes automatically when batch mode completes.
+
+## Thumbnail grid
 
 ## Thumbnail grid
 
