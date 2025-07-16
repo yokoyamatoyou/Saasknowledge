@@ -1,7 +1,9 @@
 import json
 import logging
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Tuple
 
+import config
 from shared.file_processor import FileProcessor
 from shared.kb_builder import KnowledgeBuilder
 from shared.openai_utils import get_openai_client
@@ -150,3 +152,46 @@ JSON形式で返してください。日本語で回答してください。
     except Exception as e:
         logger.error(f"GPT-4o画像解析エラー: {e}")
         return {"error": f"画像解析中にエラーが発生しました: {e}"}
+
+
+# --- CLIP model utilities ---
+_clip_model = None
+_clip_processor = None
+
+
+def load_model_and_processor() -> Tuple[object, object]:
+    """Load and cache the CLIP model and processor.
+
+    Returns the model and processor instances. They are loaded lazily from
+    ``config.MULTIMODAL_MODEL`` and cached for future calls.
+    """
+    global _clip_model, _clip_processor
+    if _clip_model is None or _clip_processor is None:
+        from transformers import CLIPModel, CLIPProcessor
+
+        _clip_model = CLIPModel.from_pretrained(config.MULTIMODAL_MODEL)
+        _clip_processor = CLIPProcessor.from_pretrained(config.MULTIMODAL_MODEL)
+    return _clip_model, _clip_processor
+
+
+def get_image_embedding(image, model=None, processor=None) -> list[float]:
+    """Return an embedding vector for ``image`` using the CLIP model."""
+
+    if model is None or processor is None:
+        model, processor = load_model_and_processor()
+
+    if isinstance(image, (str, Path)):
+        from PIL import Image
+
+        img = Image.open(image)
+    else:
+        img = image
+
+    inputs = processor(images=img, return_tensors="pt")
+    features = model.get_image_features(**inputs)
+    if hasattr(features, "detach"):
+        features = features.detach()
+    if hasattr(features, "cpu"):
+        features = features.cpu()
+    vector = features[0].tolist()
+    return vector[: config.EMBEDDING_DIM]
