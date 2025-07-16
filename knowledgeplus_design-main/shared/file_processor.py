@@ -448,8 +448,12 @@ class FileProcessor:
                 embedding = KnowledgeBuilder.generate_image_embedding(img_bytes)
                 if embedding is not None:
                     chunk_id = str(uuid.uuid4())
+                    chunk_text = Path(file.name).name
                     upload_utils.save_processed_data(
-                        kb_name, chunk_id, embedding=embedding
+                        kb_name,
+                        chunk_id,
+                        chunk_text=chunk_text,
+                        embedding=embedding,
                     )
             except Exception as e:  # pragma: no cover - optional deps missing
                 logger.error("画像ベクトル保存エラー: %s", e)
