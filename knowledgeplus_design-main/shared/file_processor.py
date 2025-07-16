@@ -3,6 +3,7 @@ import io
 import logging
 import os
 import tempfile
+import uuid
 from io import BytesIO
 from pathlib import Path
 
@@ -30,6 +31,7 @@ except ImportError:  # pragma: no cover - optional
     PDF_TEXT_SUPPORT = False
 
 import streamlit as st
+from config import DEFAULT_KB_NAME
 
 # CAD processing libraries
 try:
@@ -420,7 +422,7 @@ class FileProcessor:
         return text, images, meta
 
     @classmethod
-    def process_file(cls, file):
+    def process_file(cls, file, kb_name: str = DEFAULT_KB_NAME):
         """Return a normalized representation of ``file``.
 
         The return value is a dictionary compatible with
@@ -434,11 +436,46 @@ class FileProcessor:
 
         if file_extension in cls.SUPPORTED_IMAGE_TYPES:
             image_b64 = cls._encode_image_to_base64(file)
+            try:
+                from shared import upload_utils
+                from shared.kb_builder import (  # local import to avoid cycle
+                    KnowledgeBuilder,
+                )
+
+                file.seek(0)
+                img_bytes = file.read()
+                file.seek(0)
+                embedding = KnowledgeBuilder.generate_image_embedding(img_bytes)
+                if embedding is not None:
+                    chunk_id = str(uuid.uuid4())
+                    upload_utils.save_processed_data(
+                        kb_name, chunk_id, embedding=embedding
+                    )
+            except Exception as e:  # pragma: no cover - optional deps missing
+                logger.error("画像ベクトル保存エラー: %s", e)
+
             return {"type": "image", "image_base64": image_b64, "metadata": None}
 
         if file_extension in {"pdf", "docx"}:
             text, images, meta = cls.extract_text_images_metadata(file)
             if text.strip():
+                try:
+                    from shared import upload_utils
+                    from shared.kb_builder import KnowledgeBuilder  # local import
+
+                    embedding = KnowledgeBuilder.generate_text_embedding(text)
+                    if embedding is not None:
+                        chunk_id = str(uuid.uuid4())
+                        upload_utils.save_processed_data(
+                            kb_name,
+                            chunk_id,
+                            chunk_text=text,
+                            embedding=embedding,
+                            metadata=meta,
+                        )
+                except Exception as e:  # pragma: no cover - optional deps missing
+                    logger.error("文書ベクトル保存エラー: %s", e)
+
                 return {
                     "type": "document",
                     "text": text,
@@ -460,6 +497,23 @@ class FileProcessor:
             finally:
                 file.seek(0)
             meta = cls.create_metadata_from_text(text, [])
+            try:
+                from shared import upload_utils
+                from shared.kb_builder import KnowledgeBuilder
+
+                embedding = KnowledgeBuilder.generate_text_embedding(text)
+                if embedding is not None:
+                    chunk_id = str(uuid.uuid4())
+                    upload_utils.save_processed_data(
+                        kb_name,
+                        chunk_id,
+                        chunk_text=text,
+                        embedding=embedding,
+                        metadata=meta,
+                    )
+            except Exception as e:  # pragma: no cover - optional deps missing
+                logger.error("文書ベクトル保存エラー: %s", e)
+
             return {"type": "document", "text": text, "images": [], "metadata": meta}
 
         if file_extension == "dxf":
