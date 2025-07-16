@@ -130,6 +130,8 @@ graph TD
 ## 🧪 テストの実行
 
 自動テストスイートは `pytest` で実行できます。
+`numpy` や `PyMuPDF` などテストに必要なライブラリは、リポジトリ直下の
+`scripts/install_tests.sh` でまとめてインストールできます。
 
 ```bash
 pytest -q

@@ -44,6 +44,8 @@ export SIDEBAR_DEFAULT_VISIBLE=false
 ## テスト
 
 自動テストは `pytest -q` で実行できます。開発前に `scripts/install_light.sh` を実行して必要な依存パッケージを導入してください。
+テストのみを実行したい場合は、`numpy` や `PyMuPDF` など必須ライブラリだけを
+インストールする `scripts/install_tests.sh` も利用できます。
 
 ## 参考
 

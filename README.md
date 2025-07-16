@@ -20,7 +20,6 @@ To keep pull requests stable when using Codex, install dependencies in two steps
 Libraries such as **torch** and **transformers** can be several hundred
 megabytes. Installing them separately helps avoid network timeouts. Run the
 light requirements first and then fetch the extras only when needed:
-
 ```bash
 scripts/install_light.sh
 scripts/install_extra.sh  # add the heavy packages later
@@ -139,9 +138,16 @@ pre-commit install
 Before running `pytest`, install the minimal dependencies required for the test
 suite. The helper script below pulls in packages such as **Pillow**, which the
 tests rely on:
-
 ```bash
 scripts/install_light.sh
+```
+
+If you only want to run the tests without setting up the full application,
+use the optional script below. It installs `numpy`, `PyMuPDF` and other
+libraries required by the test suite:
+
+```bash
+scripts/install_tests.sh
 ```
 
 If certain tests depend on heavier libraries, you can also run:
