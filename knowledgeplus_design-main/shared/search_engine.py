@@ -9,6 +9,7 @@ from config import (
     EMBEDDING_BATCH_SIZE,
     EMBEDDING_DIMENSIONS,
     EMBEDDING_MODEL,
+    EMBEDDING_DIM,
     HYBRID_BM25_WEIGHT,
     HYBRID_VECTOR_WEIGHT,
 )
@@ -34,6 +35,7 @@ from nltk.corpus import stopwords
 from rank_bm25 import BM25Okapi
 from shared.nltk_utils import ensure_nltk_resources
 from shared.openai_utils import get_embeddings_batch, get_openai_client
+from core import mm_builder_utils
 
 logger = logging.getLogger(__name__)
 
@@ -301,6 +303,14 @@ class HybridSearchEngine:
         else:
             logger.info("SentenceTransformer が利用できないためバックアップモデルを読み込みません")
             self.model = None
+
+        try:
+            self.clip_model, self.clip_processor = mm_builder_utils.load_model_and_processor()
+            logger.info("CLIPモデルを読み込みました")
+        except Exception as e_clip:
+            logger.error(f"CLIPモデル読み込みエラー: {e_clip}")
+            self.clip_model = None
+            self.clip_processor = None
 
     def reindex(self) -> None:
         """Reload all chunks and embeddings and rebuild the BM25 index."""
@@ -732,6 +742,26 @@ class HybridSearchEngine:
             results.extend(vecs)
         return results
 
+    def get_clip_text_embedding(self, text: str) -> typing.Union[list[float], None]:
+        """Return an embedding vector for ``text`` using the CLIP text encoder."""
+        if not text or not isinstance(text, str) or len(text.strip()) == 0:
+            return None
+        if self.clip_model is None or self.clip_processor is None:
+            logger.warning("CLIPモデルが読み込まれていないため、テキストをベクトル化できません")
+            return None
+        try:
+            inputs = self.clip_processor(text=[text], return_tensors="pt", padding=True, truncation=True)
+            features = self.clip_model.get_text_features(**inputs)
+            if hasattr(features, "detach"):
+                features = features.detach()
+            if hasattr(features, "cpu"):
+                features = features.cpu()
+            vec = features[0].tolist()
+            return vec[:EMBEDDING_DIM]
+        except Exception as e:
+            logger.error(f"CLIPテキスト埋め込みエラー: {e}")
+            return None
+
     def search(
         self,
         query: str,
@@ -750,21 +780,23 @@ class HybridSearchEngine:
             logger.warning("  警告: 有効なチャンクデータが存在しません (BM25処理後)。検索を中止します。")
             return [], True
 
-        query_vector = self.get_embedding_from_openai(query, client=client)
+        query_vector = self.get_clip_text_embedding(query)
         if query_vector is None:
-            if self.model:
-                logger.info(
-                    "  OpenAI APIでのベクトル化失敗。バックアップモデル (SentenceTransformer) を使用します。"
-                )
-                try:
-                    query_vector = self.model.encode(query).tolist()
-                    logger.info(f"    バックアップベクトル化成功: dim={len(query_vector)}")
-                except Exception as e_st_encode:
-                    logger.error(f"    バックアップベクトル化エラー: {e_st_encode}")
+            query_vector = self.get_embedding_from_openai(query, client=client)
+            if query_vector is None:
+                if self.model:
+                    logger.info(
+                        "  OpenAI APIでのベクトル化失敗。バックアップモデル (SentenceTransformer) を使用します。"
+                    )
+                    try:
+                        query_vector = self.model.encode(query).tolist()
+                        logger.info(f"    バックアップベクトル化成功: dim={len(query_vector)}")
+                    except Exception as e_st_encode:
+                        logger.error(f"    バックアップベクトル化エラー: {e_st_encode}")
+                        return [], True
+                else:
+                    logger.info("  クエリをベクトル化できませんでした (CLIP/OpenAI失敗、バックアップモデルなし)。")
                     return [], True
-            else:
-                logger.info("  クエリをベクトル化できませんでした (OpenAI失敗、バックアップモデルなし)。")
-                return [], True
 
         vector_scores: dict[str, float] = {}
         for chunk_data in self.chunks:
@@ -870,28 +902,34 @@ class HybridSearchEngine:
 
         output_results: list[dict] = []
         for r_final_item in final_filtered_results:
+            meta = r_final_item["chunk"]["metadata"]
+            ctype = "image" if meta.get("paths", {}).get("image_path") else "text"
             output_results.append(
                 {
                     "id": r_final_item["chunk"]["id"],
                     "text": r_final_item["chunk"]["text"],
-                    "metadata": r_final_item["chunk"]["metadata"],
+                    "metadata": meta,
                     "similarity": float(r_final_item["similarity"]),
                     "vector_score": float(r_final_item["vector_score"]),
                     "bm25_score": float(r_final_item["bm25_score"]),
+                    "content_type": ctype,
                 }
             )
         is_not_found = len(output_results) == 0
         if is_not_found and hybrid_scores_data and top_k > 0:
             logger.info("    閾値を超える結果がないため、最も類似度の高い結果を1件返します (閾値未満の可能性あり)。")
             best_match_item = hybrid_scores_data[0]
+            b_meta = best_match_item["chunk"]["metadata"]
+            b_ctype = "image" if b_meta.get("paths", {}).get("image_path") else "text"
             output_results = [
                 {
                     "id": best_match_item["chunk"]["id"],
                     "text": best_match_item["chunk"]["text"],
-                    "metadata": best_match_item["chunk"]["metadata"],
+                    "metadata": b_meta,
                     "similarity": float(best_match_item["similarity"]),
                     "vector_score": float(best_match_item["vector_score"]),
                     "bm25_score": float(best_match_item["bm25_score"]),
+                    "content_type": b_ctype,
                 }
             ]
             is_not_found = False
