@@ -936,7 +936,7 @@ def search_knowledge_base(
 if __name__ == "__main__":
     logger.info("knowledge_search.py を直接実行します (テストモード)")
     script_dir = Path(__file__).resolve().parent
-    default_test_kb_relative_path = f"../knowledge_base/{DEFAULT_KB_NAME}"
+    default_test_kb_relative_path = f"../../knowledge_base/{DEFAULT_KB_NAME}"
     test_kb_full_path = (script_dir / default_test_kb_relative_path).resolve()
     logger.info(f"テスト用ナレッジベースのパス: {test_kb_full_path}")
     if not test_kb_full_path.exists() or not test_kb_full_path.is_dir():

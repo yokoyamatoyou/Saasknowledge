@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any, Dict
 
 # Base directory for all knowledge bases. Allow override via environment variable
-_default_base = Path(__file__).resolve().parent.parent / "knowledge_base"
+_default_base = Path(__file__).resolve().parents[2] / "knowledge_base"
 BASE_KNOWLEDGE_DIR = Path(os.getenv("KNOWLEDGE_BASE_DIR", _default_base))
 BASE_KNOWLEDGE_DIR.mkdir(parents=True, exist_ok=True)
 

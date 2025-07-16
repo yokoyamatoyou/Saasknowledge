@@ -35,7 +35,7 @@ export SIDEBAR_DEFAULT_VISIBLE=false
 
 ## 保存先ディレクトリの変更
 
-デフォルトでは `knowledge_base/` にファイルやメタデータが保存されます。保存場所を変更する場合は以下の環境変数を設定してください。
+デフォルトではリポジトリのルートにある `knowledge_base/` フォルダにファイルやメタデータが保存されます。保存場所を変更する場合は以下の環境変数を設定してください。
 
 - `KNOWLEDGE_BASE_DIR` – ナレッジベースの保存先
 - `CHAT_HISTORY_DIR` – チャット履歴の保存先
