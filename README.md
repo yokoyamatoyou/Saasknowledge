@@ -38,7 +38,7 @@ treated as an error.
   ```
   - Optionally edit `KNOWLEDGE_BASE_DIR` and `CHAT_HISTORY_DIR` in `.env` to change where data is stored.
 
-You can also override the default `knowledge_base/` directory location by setting `KNOWLEDGE_BASE_DIR` before running the app:
+The application stores data under `knowledge_base/` at the repository root by default. You can override this location by setting `KNOWLEDGE_BASE_DIR` before running the app:
 
   ```bash
   export KNOWLEDGE_BASE_DIR=/path/to/storage
