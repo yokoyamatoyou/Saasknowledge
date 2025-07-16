@@ -63,19 +63,28 @@ def test_get_embedding_returns_clip_vector(monkeypatch):
             return DummyFeatures(expected)
 
     class DummyProcessor:
-        def __call__(self, text=None, return_tensors="pt", padding=True, truncation=True):
+        def __call__(
+            self, text=None, return_tensors="pt", padding=True, truncation=True
+        ):
             return {"dummy": True}
 
-    monkeypatch.setattr(mm_builder_utils, "load_model_and_processor", lambda: (DummyModel(), DummyProcessor()))
+    monkeypatch.setattr(
+        mm_builder_utils,
+        "load_model_and_processor",
+        lambda: (DummyModel(), DummyProcessor()),
+    )
 
     from shared.kb_builder import KnowledgeBuilder
 
+    original_kb = mm_builder_utils._kb_builder
     mm_builder_utils._kb_builder = KnowledgeBuilder(
         mm_builder_utils._file_processor, lambda: None, None
     )
 
     result = mm_builder_utils.get_embedding("hello")
     assert result == expected
+
+    mm_builder_utils._kb_builder = original_kb
 
 
 def test_load_model_and_processor_caches(monkeypatch):
@@ -113,6 +122,9 @@ def test_load_model_and_processor_caches(monkeypatch):
     assert p1 is p2
     assert calls["model"] == 1
     assert calls["processor"] == 1
+
+    mm_builder_utils._clip_model = None
+    mm_builder_utils._clip_processor = None
 
 
 def test_get_image_embedding(monkeypatch):

@@ -610,53 +610,47 @@ with tab3:
                                     ) as f:
                                         metadata = json.load(f)
 
-                                        item_id = metadata["id"]
+                                    item_id = metadata["id"]
 
-                                        # 対応するベクトルファイル読み込み
-                                        embedding_file = (
-                                            embeddings_dir / f"{item_id}.json"
-                                        )
-                                        if embedding_file.exists():
-                                            with open(
-                                                embedding_file, "r", encoding="utf-8"
-                                            ) as f:
-                                                embedding_data = json.load(f)
+                                    # 対応するベクトルファイル読み込み
+                                    embedding_file = embeddings_dir / f"{item_id}.json"
+                                    if embedding_file.exists():
+                                        with open(
+                                            embedding_file, "r", encoding="utf-8"
+                                        ) as f:
+                                            embedding_data = json.load(f)
 
-                                            doc_embedding = embedding_data.get("vector")
-                                            if doc_embedding is not None and len(
-                                                doc_embedding
-                                            ) == len(query_embedding):
-                                                # コサイン類似度計算
-                                                similarity = np.dot(
-                                                    query_embedding, doc_embedding
-                                                ) / (
-                                                    np.linalg.norm(query_embedding)
-                                                    * np.linalg.norm(doc_embedding)
-                                                )
+                                        doc_embedding = embedding_data.get("vector")
+                                        if doc_embedding is not None and len(
+                                            doc_embedding
+                                        ) == len(query_embedding):
+                                            # コサイン類似度計算
+                                            similarity = np.dot(
+                                                query_embedding, doc_embedding
+                                            ) / (
+                                                np.linalg.norm(query_embedding)
+                                                * np.linalg.norm(doc_embedding)
+                                            )
 
-                                                # チャンクデータも読み込み（検索結果表示用）
-                                                chunk_file = (
-                                                    chunks_dir / f"{item_id}.json"
-                                                )
-                                                chunk_data = {}
-                                                if chunk_file.exists():
-                                                    with open(
-                                                        chunk_file,
-                                                        "r",
-                                                        encoding="utf-8",
-                                                    ) as f:
-                                                        chunk_data = json.load(f)
+                                            # チャンクデータも読み込み（検索結果表示用）
+                                            chunk_file = chunks_dir / f"{item_id}.json"
+                                            chunk_data = {}
+                                            if chunk_file.exists():
+                                                with open(
+                                                    chunk_file, "r", encoding="utf-8"
+                                                ) as f:
+                                                    chunk_data = json.load(f)
 
-                                                similarities.append(
-                                                    {
-                                                        "metadata": metadata,
-                                                        "chunk_data": chunk_data,
-                                                        "embedding_data": embedding_data,
-                                                        "similarity": similarity,
-                                                    }
-                                                )
-                                    except Exception as e:
-                                        logger.error(f"検索エラー {metadata_file}: {e}")
+                                            similarities.append(
+                                                {
+                                                    "metadata": metadata,
+                                                    "chunk_data": chunk_data,
+                                                    "embedding_data": embedding_data,
+                                                    "similarity": similarity,
+                                                }
+                                            )
+                                except Exception as e:
+                                    logger.error(f"検索エラー {metadata_file}: {e}")
 
                                 # 類似度順でソート
                                 similarities.sort(
@@ -814,8 +808,6 @@ with tab3:
                                     st.info("検索結果が見つかりませんでした。検索語を変更してみてください。")
                             else:
                                 st.error("× 検索クエリのベクトル化に失敗しました")
-                    else:
-                        st.error("× OpenAIクライアントに接続できません")
         else:
             st.info("ナレッジベースにデータがありません")
     else:

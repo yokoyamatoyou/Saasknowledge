@@ -38,7 +38,10 @@ class KnowledgeBuilder:
         if self.clip_model is None or self.clip_processor is None:
             from core import mm_builder_utils
 
-            self.clip_model, self.clip_processor = mm_builder_utils.load_model_and_processor()
+            (
+                self.clip_model,
+                self.clip_processor,
+            ) = mm_builder_utils.load_model_and_processor()
 
     def build_from_file(
         self, uploaded_file, analysis, image_base64, user_additions, cad_metadata
