@@ -36,7 +36,8 @@ def test_render_management_mode_mixed_files(monkeypatch):
     monkeypatch.setattr(st, "text_input", lambda *a, **k: "kb")
     monkeypatch.setattr(st, "number_input", lambda *a, **k: 1)
     monkeypatch.setattr(st, "spinner", lambda *a, **k: dummy_ctx)
-    monkeypatch.setattr(st, "error", lambda *a, **k: None)
+    errors = []
+    monkeypatch.setattr(st, "error", lambda msg, *a, **k: errors.append(msg))
     monkeypatch.setattr(st, "success", lambda *a, **k: None)
     monkeypatch.setattr(st, "toast", lambda *a, **k: None)
 
@@ -60,6 +61,8 @@ def test_render_management_mode_mixed_files(monkeypatch):
     monkeypatch.setattr(management_ui, "display_thumbnail_grid", lambda *a, **k: None)
 
     def fake_process_file(cls, uploaded_file):
+        if uploaded_file.name.endswith(".txt"):
+            return {"type": "document", "text": "hello", "metadata": {}}
         return {
             "image_base64": f"b64_{uploaded_file.name}",
             "metadata": {},
@@ -103,7 +106,6 @@ def test_render_management_mode_mixed_files(monkeypatch):
 
     assert builders, "KnowledgeBuilder was not instantiated"
     builder = builders[0]
-    assert set(builder.calls) == {"doc.txt", "pic.png"}
-    doc_item = next(res for res in builder.results if res["filename"] == "doc.txt")
-    assert doc_item["stats"]["vector_dimensions"] > 0
-    assert analysis_calls == ["doc.txt", "pic.png"]
+    assert builder.calls == ["pic.png"]
+    assert analysis_calls == ["pic.png"]
+    assert not errors

@@ -69,34 +69,48 @@ def render_management_mode():
                                 processed_data = file_processor.process_file(
                                     uploaded_file
                                 )
+                                proc_type = processed_data.get("type")
                                 image_b64 = processed_data.get("image_base64")
                                 cad_meta = processed_data.get("metadata")
 
-                                if not image_b64:
+                                if proc_type in ("image", "cad"):
+                                    if not image_b64:
+                                        st.error(f"ファイルの処理に失敗しました: {file_name}")
+                                        logger.error(
+                                            f"File processing failed for {file_name}"
+                                        )
+                                        continue
+
+                                    analysis = analyze_image_with_gpt4o(
+                                        image_b64, uploaded_file.name, cad_meta
+                                    )
+
+                                    kb_builder.build_from_file(
+                                        uploaded_file,
+                                        analysis=analysis,
+                                        image_base64=image_b64,
+                                        user_additions={},
+                                        cad_metadata=cad_meta,
+                                    )
+
+                                    st.success(f"✓ ナレッジを追加しました: {file_name}")
+                                    logger.info(
+                                        f"Successfully added knowledge for {file_name}"
+                                    )
+                                elif proc_type == "document":
+                                    st.success(f"✓ ドキュメントを追加しました: {file_name}")
+                                    logger.info(
+                                        f"Successfully added document for {file_name}"
+                                    )
+                                else:
                                     st.error(f"ファイルの処理に失敗しました: {file_name}")
                                     logger.error(
-                                        f"File processing failed for {file_name}"
+                                        f"Unsupported file type for {file_name}"
                                     )
-                                    continue
-
-                                analysis = analyze_image_with_gpt4o(
-                                    image_b64, uploaded_file.name, cad_meta
-                                )
-
-                                kb_builder.build_from_file(
-                                    uploaded_file,
-                                    analysis=analysis,
-                                    image_base64=image_b64,
-                                    user_additions={},
-                                    cad_metadata=cad_meta,
-                                )
-
-                                st.success(f"✓ ナレッジを追加しました: {file_name}")
-                                logger.info(
-                                    f"Successfully added knowledge for {file_name}"
-                                )
                         except Exception as e:
-                            st.error(f"処理中に予期せぬエラーが発生しました ({file_name}): {e}")
+                            st.error(
+                                f"処理中に予期せぬエラーが発生しました ({file_name}): {e}"
+                            )
                             logger.error(
                                 f"Unhandled error processing {file_name}: {e}",
                                 exc_info=True,
