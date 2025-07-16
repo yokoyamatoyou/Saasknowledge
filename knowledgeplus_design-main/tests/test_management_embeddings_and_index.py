@@ -20,7 +20,6 @@ sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 pytest.importorskip("streamlit")
 import streamlit as st  # noqa: E402
-
 from core import mm_builder_utils  # noqa: E402
 from shared import upload_utils  # noqa: E402
 from shared.search_engine import HybridSearchEngine  # noqa: E402
@@ -67,16 +66,28 @@ def _setup_streamlit(monkeypatch, files):
     monkeypatch.setattr(st, "file_uploader", lambda *a, **k: files)
 
 
-
 def test_render_management_mode_embeddings_and_index(tmp_path, monkeypatch):
     st.session_state.clear()
     monkeypatch.setattr(upload_utils, "BASE_KNOWLEDGE_DIR", tmp_path)
     monkeypatch.setattr(management_ui, "display_thumbnail_grid", lambda *a, **k: None)
     monkeypatch.setattr(management_ui, "analyze_image_with_gpt4o", lambda *a, **k: {})
-    monkeypatch.setattr(mm_builder_utils, "get_embedding", lambda text, client=None: [0.1])
-    monkeypatch.setattr(mm_builder_utils, "get_image_embedding", lambda img, model=None, processor=None: [0.2])
-    monkeypatch.setattr(management_ui.KnowledgeBuilder, "_get_embedding", lambda self, text, client, dimensions=1: [0.3])
-    monkeypatch.setattr(mm_builder_utils, "load_model_and_processor", lambda: (object(), object()))
+    monkeypatch.setattr(management_ui, "generate_faq", lambda *a, **k: 0)
+    monkeypatch.setattr(
+        mm_builder_utils, "get_embedding", lambda text, client=None: [0.1]
+    )
+    monkeypatch.setattr(
+        mm_builder_utils,
+        "get_image_embedding",
+        lambda img, model=None, processor=None: [0.2],
+    )
+    monkeypatch.setattr(
+        management_ui.KnowledgeBuilder,
+        "_get_embedding",
+        lambda self, text, client, dimensions=1: [0.3],
+    )
+    monkeypatch.setattr(
+        mm_builder_utils, "load_model_and_processor", lambda: (object(), object())
+    )
 
     text_file = io.BytesIO(b"hello world")
     text_file.name = "doc.txt"
@@ -90,7 +101,9 @@ def test_render_management_mode_embeddings_and_index(tmp_path, monkeypatch):
     emb_files = list((kb_dir / "embeddings").glob("*.pkl"))
     assert len(emb_files) >= 2
 
-    monkeypatch.setattr(HybridSearchEngine, "_load_or_build_bm25_index", lambda self: None)
+    monkeypatch.setattr(
+        HybridSearchEngine, "_load_or_build_bm25_index", lambda self: None
+    )
     monkeypatch.setattr(HybridSearchEngine, "_integrate_faq_chunks", lambda self: None)
     engine = HybridSearchEngine(str(kb_dir))
     assert len(engine.embeddings) >= 2
