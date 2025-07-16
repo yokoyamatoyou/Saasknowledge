@@ -7,9 +7,9 @@ import numpy as np
 from config import (
     DEFAULT_KB_NAME,
     EMBEDDING_BATCH_SIZE,
+    EMBEDDING_DIM,
     EMBEDDING_DIMENSIONS,
     EMBEDDING_MODEL,
-    EMBEDDING_DIM,
     HYBRID_BM25_WEIGHT,
     HYBRID_VECTOR_WEIGHT,
 )
@@ -28,6 +28,8 @@ import re
 import typing
 from pathlib import Path
 
+from core import mm_builder_utils
+
 # from nltk.tokenize import word_tokenize # SudachiPyに置き換え、またはフォールバックとして保持
 from nltk.corpus import stopwords
 
@@ -35,7 +37,6 @@ from nltk.corpus import stopwords
 from rank_bm25 import BM25Okapi
 from shared.nltk_utils import ensure_nltk_resources
 from shared.openai_utils import get_embeddings_batch, get_openai_client
-from core import mm_builder_utils
 
 logger = logging.getLogger(__name__)
 
@@ -206,7 +207,9 @@ try:
         "・",
     ]
     _stop_words_set.update(_japanese_stopwords_list)
-    logger.info(f"ストップワードの初期化完了 (knowledge_search.py): {len(_stop_words_set)}語")
+    logger.info(
+        f"ストップワードの初期化完了 (knowledge_search.py): {len(_stop_words_set)}語"
+    )
 except Exception as e_stopwords:
     logger.error(f"ストップワード初期化エラー (knowledge_search.py): {e_stopwords}")
 
@@ -233,7 +236,9 @@ def tokenize_text_for_bm25_internal(text_input: str) -> list[str]:
             logger.error(
                 f"    [Tokenizer] SudachiPyでのトークン化中にエラー: {e_sudachi_tokenize}. Regexフォールバック使用。Text: {processed_text[:30]}..."
             )
-            tokens = re.findall(r"[ぁ-ん]+|[ァ-ン]+|[一-龥]+|[a-zA-Z0-9]+", processed_text)
+            tokens = re.findall(
+                r"[ぁ-ん]+|[ァ-ン]+|[一-龥]+|[a-zA-Z0-9]+", processed_text
+            )
     else:
         tokens = re.findall(r"[ぁ-ん]+|[ァ-ン]+|[一-龥]+|[a-zA-Z0-9]+", processed_text)
     if not tokens:
@@ -292,7 +297,9 @@ class HybridSearchEngine:
 
         if SentenceTransformer is not None:
             try:
-                logger.info("バックアップ埋め込みモデル SentenceTransformer を読み込み中...")
+                logger.info(
+                    "バックアップ埋め込みモデル SentenceTransformer を読み込み中..."
+                )
                 self.model = SentenceTransformer(
                     "paraphrase-multilingual-MiniLM-L12-v2"
                 )
@@ -301,11 +308,15 @@ class HybridSearchEngine:
                 logger.error(f"SentenceTransformer 読み込みエラー: {e_st}")
                 self.model = None
         else:
-            logger.info("SentenceTransformer が利用できないためバックアップモデルを読み込みません")
+            logger.info(
+                "SentenceTransformer が利用できないためバックアップモデルを読み込みません"
+            )
             self.model = None
 
         try:
-            self.clip_model, self.clip_processor = mm_builder_utils.load_model_and_processor()
+            self.clip_model, self.clip_processor = (
+                mm_builder_utils.load_model_and_processor()
+            )
             logger.info("CLIPモデルを読み込みました")
         except Exception as e_clip:
             logger.error(f"CLIPモデル読み込みエラー: {e_clip}")
@@ -365,9 +376,13 @@ class HybridSearchEngine:
                 with open(metadata_file, "r", encoding="utf-8") as f:
                     return json.load(f)
             except Exception as e:
-                logger.error(f"ナレッジベースメタデータ読み込みエラー: {e}", exc_info=True)
+                logger.error(
+                    f"ナレッジベースメタデータ読み込みエラー: {e}", exc_info=True
+                )
         else:
-            logger.warning(f"ナレッジベースメタデータファイルが見つかりません: {metadata_file}")
+            logger.warning(
+                f"ナレッジベースメタデータファイルが見つかりません: {metadata_file}"
+            )
         return {}
 
     def _load_chunks(self) -> list[dict]:
@@ -406,9 +421,13 @@ class HybridSearchEngine:
                 if metadata_file.exists():
                     with open(metadata_file, "r", encoding="utf-8") as f:
                         metadata = json.load(f)
-                    logger.info(f"    メタデータファイル {metadata_file.name} をロードしました。")
+                    logger.info(
+                        f"    メタデータファイル {metadata_file.name} をロードしました。"
+                    )
                 else:
-                    logger.warning(f"    メタデータファイル {metadata_file.name} が見つかりません。")
+                    logger.warning(
+                        f"    メタデータファイル {metadata_file.name} が見つかりません。"
+                    )
                 loaded_chunks.append(
                     {"id": chunk_id, "text": chunk_text, "metadata": metadata}
                 )
@@ -417,7 +436,9 @@ class HybridSearchEngine:
                     f"チャンク '{chunk_file_path.name}' の読み込み中にエラー: {e}",
                     exc_info=True,
                 )
-        logger.info(f"    _load_chunks 完了。ロードされたチャンク数: {len(loaded_chunks)}")
+        logger.info(
+            f"    _load_chunks 完了。ロードされたチャンク数: {len(loaded_chunks)}"
+        )
         return loaded_chunks
 
     def _load_embeddings(self) -> dict[str, list[float]]:
@@ -447,7 +468,9 @@ class HybridSearchEngine:
             try:
                 stem = emb_file_path.stem
                 chunk_id = stem  # chunk_idをファイル名から直接取得
-                logger.info(f"    埋め込みファイル {emb_file_path.name} からIDを抽出: {chunk_id}")
+                logger.info(
+                    f"    埋め込みファイル {emb_file_path.name} からIDを抽出: {chunk_id}"
+                )
                 with open(emb_file_path, "rb") as f:
                     embedding_data = pickle.load(f)
                 emb_vector = None
@@ -466,14 +489,20 @@ class HybridSearchEngine:
                     except Exception:
                         pass
             except Exception as e:
-                logger.error(f"埋め込みファイル '{emb_file_path.name}' の読み込み中にエラー: {e}")
-        logger.info(f"    _load_embeddings 完了。ロードされた埋め込み数: {len(loaded_embeddings)}")
+                logger.error(
+                    f"埋め込みファイル '{emb_file_path.name}' の読み込み中にエラー: {e}"
+                )
+        logger.info(
+            f"    _load_embeddings 完了。ロードされた埋め込み数: {len(loaded_embeddings)}"
+        )
         return loaded_embeddings
 
     def _check_chunk_embedding_consistency(self):
         chunk_ids = set(c["id"] for c in self.chunks)
         embedding_ids = set(self.embeddings.keys())
-        logger.info(f"整合性チェック: チャンクID数={len(chunk_ids)}, 埋め込みID数={len(embedding_ids)}")
+        logger.info(
+            f"整合性チェック: チャンクID数={len(chunk_ids)}, 埋め込みID数={len(embedding_ids)}"
+        )
         missing_embeddings_for_chunks = chunk_ids - embedding_ids
         if missing_embeddings_for_chunks:
             logger.warning(
@@ -527,7 +556,9 @@ class HybridSearchEngine:
         for i, chunk_data in enumerate(self.chunks):
             chunk_text = chunk_data.get("text", "")
             chunk_id = chunk_data.get("id", f"N/A_{i}")
-            logger.info(f"    処理中のチャンクID: {chunk_id}, テキスト: '{chunk_text[:50]}...'")
+            logger.info(
+                f"    処理中のチャンクID: {chunk_id}, テキスト: '{chunk_text[:50]}...'"
+            )
             tokens = tokenize_text_for_bm25_internal(chunk_text)
             is_dummy_token_only = all(
                 token.startswith("<bm25_") and token.endswith("_token>")
@@ -536,7 +567,9 @@ class HybridSearchEngine:
             if tokens and not is_dummy_token_only:
                 tokenized_corpus.append(tokens)
                 successfully_processed_chunks.append(chunk_data)
-                logger.info(f"    チャンクID {chunk_id} は有効なトークンを持ちます。追加済み。")
+                logger.info(
+                    f"    チャンクID {chunk_id} は有効なトークンを持ちます。追加済み。"
+                )
                 if i % 100 == 0 and i > 0:
                     logger.info(f"    ... {i}件のチャンクをトークン化済み ...")
             else:
@@ -544,7 +577,9 @@ class HybridSearchEngine:
                     f"    警告: チャンクID {chunk_id} のトークン化結果がBM25に不適格。除外します。Tokens: {tokens}"
                 )
         if not tokenized_corpus:
-            logger.warning("  警告: 有効なトークン化済みチャンクが一つもありませんでした。")
+            logger.warning(
+                "  警告: 有効なトークン化済みチャンクが一つもありませんでした。"
+            )
         logger.info(
             f"BM25用コーパスのトークン化完了。処理できた有効チャンク数: {len(successfully_processed_chunks)} / {len(self.chunks)}"
         )
@@ -568,7 +603,9 @@ class HybridSearchEngine:
 
         loaded_from_file = False
         if not loaded_from_cache and self.tokenized_corpus_file_path.exists():
-            logger.info(f"トークン化済みコーパスをファイルからロード中: {self.tokenized_corpus_file_path}")
+            logger.info(
+                f"トークン化済みコーパスをファイルからロード中: {self.tokenized_corpus_file_path}"
+            )
             try:
                 with open(self.tokenized_corpus_file_path, "rb") as f:
                     saved_data = pickle.load(f)
@@ -588,7 +625,9 @@ class HybridSearchEngine:
                         f"対応チャンク ({len(self.chunks)}件) をロードしました。"
                     )
                     if len(self.tokenized_corpus_for_bm25) != len(self.chunks):
-                        logger.warning("  警告: ロードしたトークン化コーパスとチャンク数が不一致。インデックス再構築を推奨。")
+                        logger.warning(
+                            "  警告: ロードしたトークン化コーパスとチャンク数が不一致。インデックス再構築を推奨。"
+                        )
                         self.tokenized_corpus_for_bm25 = None
                     else:
                         loaded_from_file = True
@@ -601,9 +640,13 @@ class HybridSearchEngine:
                         except Exception:
                             pass
                 else:
-                    logger.warning("  警告: トークン化済みコーパスファイルの形式が不正。再構築します。")
+                    logger.warning(
+                        "  警告: トークン化済みコーパスファイルの形式が不正。再構築します。"
+                    )
             except Exception as e:
-                logger.info(f"  トークン化済みコーパスのロード失敗: {e}. 再構築します。")
+                logger.info(
+                    f"  トークン化済みコーパスのロード失敗: {e}. 再構築します。"
+                )
 
         if not (loaded_from_file or loaded_from_cache):
             logger.info("トークン化済みコーパスを生成・保存します...")
@@ -645,11 +688,15 @@ class HybridSearchEngine:
                 )
                 return None
             else:
-                logger.warning("  警告: トークン化済みコーパスが空です。BM25インデックスは構築できません。")
+                logger.warning(
+                    "  警告: トークン化済みコーパスが空です。BM25インデックスは構築できません。"
+                )
                 return None
 
         if self.bm25_index_file_path.exists():
-            logger.info(f"BM25インデックスをファイルからロード中: {self.bm25_index_file_path}")
+            logger.info(
+                f"BM25インデックスをファイルからロード中: {self.bm25_index_file_path}"
+            )
             try:
                 with open(self.bm25_index_file_path, "rb") as f:
                     bm25_index_loaded = pickle.load(f)
@@ -657,12 +704,16 @@ class HybridSearchEngine:
                     logger.info("  BM25インデックスのロード完了。")
                     return bm25_index_loaded
                 else:
-                    logger.warning("  警告: ロードしたBM25インデックスの型が不正。再構築します。")
+                    logger.warning(
+                        "  警告: ロードしたBM25インデックスの型が不正。再構築します。"
+                    )
             except Exception as e:
                 logger.info(f"  BM25インデックスのロードに失敗: {e}. 再構築します。")
 
         if not self.tokenized_corpus_for_bm25 or not self.chunks:
-            logger.warning("  警告: BM25インデックス構築に必要なトークン化済みコーパスまたはチャンクデータがありません。")
+            logger.warning(
+                "  警告: BM25インデックス構築に必要なトークン化済みコーパスまたはチャンクデータがありません。"
+            )
             return None
 
         logger.info("BM25インデックスを新規構築中...")
@@ -682,15 +733,21 @@ class HybridSearchEngine:
             try:
                 with open(self.bm25_index_file_path, "wb") as f:
                     pickle.dump(bm25_index_new, f)
-                logger.info(f"  BM25インデックスをファイルに保存しました: {self.bm25_index_file_path}")
+                logger.info(
+                    f"  BM25インデックスをファイルに保存しました: {self.bm25_index_file_path}"
+                )
             except Exception as e:
                 logger.info(f"  BM25インデックスの保存に失敗: {e}")
             return bm25_index_new
         except ZeroDivisionError:
-            logger.error("  警告: BM25インデックス構築中にZeroDivisionError。BM25は機能しない可能性があります。")
+            logger.error(
+                "  警告: BM25インデックス構築中にZeroDivisionError。BM25は機能しない可能性があります。"
+            )
             return None
         except Exception as e:
-            logger.error(f"  BM25インデックス構築中に予期せぬエラー: {e}", exc_info=True)
+            logger.error(
+                f"  BM25インデックス構築中に予期せぬエラー: {e}", exc_info=True
+            )
             return None
 
     def get_embedding_from_openai(
@@ -701,10 +758,14 @@ class HybridSearchEngine:
         if client is None:
             client = get_openai_client()
             if client is None:
-                logger.warning("  警告 (get_embedding): OpenAIクライアントを取得できません。")
+                logger.warning(
+                    "  警告 (get_embedding): OpenAIクライアントを取得できません。"
+                )
                 return None
         if not text or not isinstance(text, str) or len(text.strip()) == 0:
-            logger.warning("  警告 (get_embedding): 埋め込み対象のテキストが空または不正。")
+            logger.warning(
+                "  警告 (get_embedding): 埋め込み対象のテキストが空または不正。"
+            )
             return None
         try:
             response = client.embeddings.create(
@@ -747,10 +808,14 @@ class HybridSearchEngine:
         if not text or not isinstance(text, str) or len(text.strip()) == 0:
             return None
         if self.clip_model is None or self.clip_processor is None:
-            logger.warning("CLIPモデルが読み込まれていないため、テキストをベクトル化できません")
+            logger.warning(
+                "CLIPモデルが読み込まれていないため、テキストをベクトル化できません"
+            )
             return None
         try:
-            inputs = self.clip_processor(text=[text], return_tensors="pt", padding=True, truncation=True)
+            inputs = self.clip_processor(
+                text=[text], return_tensors="pt", padding=True, truncation=True
+            )
             features = self.clip_model.get_text_features(**inputs)
             if hasattr(features, "detach"):
                 features = features.detach()
@@ -777,7 +842,9 @@ class HybridSearchEngine:
             f"検索実行: クエリ='{query}', top_k={top_k}, threshold={threshold}, vec_w={vector_weight}, bm25_w={bm25_weight}"
         )
         if not self.chunks:
-            logger.warning("  警告: 有効なチャンクデータが存在しません (BM25処理後)。検索を中止します。")
+            logger.warning(
+                "  警告: 有効なチャンクデータが存在しません (BM25処理後)。検索を中止します。"
+            )
             return [], True
 
         query_vector = self.get_clip_text_embedding(query)
@@ -790,12 +857,16 @@ class HybridSearchEngine:
                     )
                     try:
                         query_vector = self.model.encode(query).tolist()
-                        logger.info(f"    バックアップベクトル化成功: dim={len(query_vector)}")
+                        logger.info(
+                            f"    バックアップベクトル化成功: dim={len(query_vector)}"
+                        )
                     except Exception as e_st_encode:
                         logger.error(f"    バックアップベクトル化エラー: {e_st_encode}")
                         return [], True
                 else:
-                    logger.info("  クエリをベクトル化できませんでした (CLIP/OpenAI失敗、バックアップモデルなし)。")
+                    logger.info(
+                        "  クエリをベクトル化できませんでした (CLIP/OpenAI失敗、バックアップモデルなし)。"
+                    )
                     return [], True
 
         vector_scores: dict[str, float] = {}
@@ -817,13 +888,17 @@ class HybridSearchEngine:
                         similarity = dot_product
                     vector_scores[chunk_id] = float(similarity)
                 except Exception as e_cosine:
-                    logger.error(f"    コサイン類似度計算エラー (ID:{chunk_id}): {e_cosine}")
+                    logger.error(
+                        f"    コサイン類似度計算エラー (ID:{chunk_id}): {e_cosine}"
+                    )
                     vector_scores[chunk_id] = 0.0
 
         bm25_scores_map: dict[str, float] = {}
         if self.bm25_index and self.tokenized_corpus_for_bm25 and self.chunks:
             query_tokens_for_bm25 = tokenize_text_for_bm25_internal(query)
-            logger.info(f"  BM25用クエリトークン (SudachiPy使用): {query_tokens_for_bm25}")
+            logger.info(
+                f"  BM25用クエリトークン (SudachiPy使用): {query_tokens_for_bm25}"
+            )
             is_dummy_query_token = (
                 len(query_tokens_for_bm25) == 1
                 and query_tokens_for_bm25[0].startswith("<bm25_")
@@ -850,7 +925,9 @@ class HybridSearchEngine:
                                 for cid in bm25_scores_map:
                                     bm25_scores_map[cid] /= max_bm25_score
                     elif raw_bm25_scores_from_lib is None:
-                        logger.warning("    警告: BM25ライブラリ (get_scores) が None を返しました。")
+                        logger.warning(
+                            "    警告: BM25ライブラリ (get_scores) が None を返しました。"
+                        )
                     else:
                         logger.error(
                             f"    致命的エラー: BM25スコアリスト長 ({len(raw_bm25_scores_from_lib)}) と "
@@ -862,9 +939,13 @@ class HybridSearchEngine:
                         exc_info=True,
                     )
             else:
-                logger.info("    BM25検索用の有効なクエリトークンがないため、BM25スコアは0として扱います。")
+                logger.info(
+                    "    BM25検索用の有効なクエリトークンがないため、BM25スコアは0として扱います。"
+                )
         else:
-            logger.info("    BM25インデックスまたはトークン化済みコーパスが見つからないため、BM25検索をスキップします。")
+            logger.info(
+                "    BM25インデックスまたはトークン化済みコーパスが見つからないため、BM25検索をスキップします。"
+            )
 
         hybrid_scores_data: list[dict] = []
         for chunk_data_final in self.chunks:
@@ -917,7 +998,9 @@ class HybridSearchEngine:
             )
         is_not_found = len(output_results) == 0
         if is_not_found and hybrid_scores_data and top_k > 0:
-            logger.info("    閾値を超える結果がないため、最も類似度の高い結果を1件返します (閾値未満の可能性あり)。")
+            logger.info(
+                "    閾値を超える結果がないため、最も類似度の高い結果を1件返します (閾値未満の可能性あり)。"
+            )
             best_match_item = hybrid_scores_data[0]
             b_meta = best_match_item["chunk"]["metadata"]
             b_ctype = "image" if b_meta.get("paths", {}).get("image_path") else "text"
@@ -952,7 +1035,9 @@ def search_knowledge_base(
         )
         resolved_kb_path = Path(kb_path).resolve()
         if not resolved_kb_path.exists():
-            logger.error(f"  エラー: 指定されたナレッジベースパスが見つかりません: {resolved_kb_path}")
+            logger.error(
+                f"  エラー: 指定されたナレッジベースパスが見つかりません: {resolved_kb_path}"
+            )
             return [], True
         logger.info("  検索エンジンを初期化中...")
         search_engine = HybridSearchEngine(str(resolved_kb_path))
@@ -960,7 +1045,9 @@ def search_knowledge_base(
         results, not_found = search_engine.search(
             query, top_k, threshold, client=client
         )
-        logger.info(f"検索完了: 結果{len(results)}件, 見つからなかったフラグ: {not_found}")
+        logger.info(
+            f"検索完了: 結果{len(results)}件, 見つからなかったフラグ: {not_found}"
+        )
         logger.info("=" * 50 + "\n")
         return results, not_found
     except Exception as e_skb:
@@ -978,7 +1065,9 @@ if __name__ == "__main__":
     test_kb_full_path = (script_dir / default_test_kb_relative_path).resolve()
     logger.info(f"テスト用ナレッジベースのパス: {test_kb_full_path}")
     if not test_kb_full_path.exists() or not test_kb_full_path.is_dir():
-        logger.error(f"エラー: テスト用ナレッジベースパス {test_kb_full_path} が見つからないか、ディレクトリではありません。")
+        logger.error(
+            f"エラー: テスト用ナレッジベースパス {test_kb_full_path} が見つからないか、ディレクトリではありません。"
+        )
     else:
         test_query_example = "特定の技術に関する情報はありますか"
         logger.info(f"テスト検索を実行します。クエリ: '{test_query_example}'")
