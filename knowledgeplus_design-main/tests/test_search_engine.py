@@ -11,10 +11,8 @@ sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 from config import EMBEDDING_DIM  # noqa: E402
 from core import mm_builder_utils  # noqa: E402
-from shared.search_engine import (
-    HybridSearchEngine,  # noqa: E402
-    tokenize_text_for_bm25_internal,
-)
+from shared.search_engine import HybridSearchEngine  # noqa: E402
+from shared.search_engine import tokenize_text_for_bm25_internal  # noqa: E402
 
 # Mock for OpenAI client
 
@@ -208,9 +206,7 @@ def test_missing_kb_metadata_logs_warning(tmp_path, caplog):
     with caplog.at_level(logging.WARNING):
         HybridSearchEngine(str(kb_dir))
 
-    assert any(
-        "メタデータファイルが見つかりません" in r.message for r in caplog.records
-    )
+    assert any("メタデータファイルが見つかりません" in r.message for r in caplog.records)
 
 
 def test_malformed_chunk_skipped(tmp_path):
