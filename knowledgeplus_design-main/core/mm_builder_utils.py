@@ -190,6 +190,22 @@ def get_image_embedding(image, model=None, processor=None) -> list[float]:
     return vector[: config.EMBEDDING_DIM]
 
 
+def get_text_embedding(text: str, model=None, processor=None) -> list[float]:
+    """Return an embedding vector for ``text`` using the CLIP text encoder."""
+
+    if model is None or processor is None:
+        model, processor = load_model_and_processor()
+
+    inputs = processor(text=[text], return_tensors="pt", padding=True, truncation=True)
+    features = model.get_text_features(**inputs)
+    if hasattr(features, "detach"):
+        features = features.detach()
+    if hasattr(features, "cpu"):
+        features = features.cpu()
+    vector = features[0].tolist()
+    return vector[: config.EMBEDDING_DIM]
+
+
 # Initialize a default KnowledgeBuilder for convenience
 _file_processor = FileProcessor()
 _kb_builder = KnowledgeBuilder(

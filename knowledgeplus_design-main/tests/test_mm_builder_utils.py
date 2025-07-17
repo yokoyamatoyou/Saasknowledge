@@ -125,3 +125,41 @@ def test_get_image_embedding(monkeypatch):
 
     result = mm_builder_utils.get_image_embedding(object())
     assert result == expected
+
+
+def test_get_text_embedding(monkeypatch):
+    expected = [0.2] * mm_builder_utils.config.EMBEDDING_DIM
+
+    class DummyFeatures:
+        def __init__(self, vec):
+            self.vec = vec
+
+        def detach(self):
+            return self
+
+        def cpu(self):
+            return self
+
+        def __getitem__(self, idx):
+            return DummyList(self.vec)
+
+    class DummyList(list):
+        def tolist(self):
+            return list(self)
+
+    class DummyModel:
+        def get_text_features(self, **kwargs):
+            return DummyFeatures(expected)
+
+    class DummyProcessor:
+        def __call__(self, text, return_tensors="pt", padding=True, truncation=True):
+            return {"dummy": True}
+
+    monkeypatch.setattr(
+        mm_builder_utils,
+        "load_model_and_processor",
+        lambda: (DummyModel(), DummyProcessor()),
+    )
+
+    result = mm_builder_utils.get_text_embedding("hello")
+    assert result == expected

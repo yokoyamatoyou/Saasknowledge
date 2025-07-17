@@ -6,6 +6,7 @@ from uuid import uuid4
 from shared.logging_utils import configure_logging
 from shared.openai_utils import get_openai_client
 from shared.upload_utils import BASE_KNOWLEDGE_DIR, save_processed_data
+from core import mm_builder_utils
 
 configure_logging()
 logger = logging.getLogger(__name__)
@@ -53,12 +54,9 @@ def generate_faqs_from_chunks(
             faq_id = f"faq_{uuid4().hex}"
             combined = f"Q: {q}\nA: {a}"
             try:
-                _get_embedding = __import__(
-                    "knowledge_gpt_app.app", fromlist=["get_embedding"]
-                ).get_embedding
+                embedding = mm_builder_utils.get_text_embedding(combined)
             except Exception:
                 raise RuntimeError("Embedding function unavailable")
-            embedding = _get_embedding(combined, client)
             save_processed_data(
                 kb_name,
                 faq_id,
