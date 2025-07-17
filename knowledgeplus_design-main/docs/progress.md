@@ -62,3 +62,6 @@
 ## 2025-07-17
 - Fixed a ValueError when uploading mixed file types in `mm_kb_builder`. `FileProcessor.process_file` now returns dictionaries so the app uses `get()` to access `image_base64` and `metadata`. Unsupported files show a warning and are skipped. Recorded this change because merge conflicts had occurred at the same code section previously.
 
+
+## 2025-07-17 (2)
+- Reformatted `mm_kb_builder/app.py` with Black to resolve pre-commit failure.
