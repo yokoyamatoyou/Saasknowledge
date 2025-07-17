@@ -9,6 +9,8 @@
    scripts/install_light.sh
    scripts/install_extra.sh  # 必要に応じて heavy パッケージを追加
    ```
+   FAQ 生成では Web からテキストを取得するため `requests` と
+   `beautifulsoup4` が必要です。これらは `requirements-light.txt` に含まれています。
 2. OpenAI API キーを環境変数 `OPENAI_API_KEY` に設定します。`.env.example` をコピーしても構いません。
    ```bash
    export OPENAI_API_KEY=your_api_key
@@ -40,6 +42,18 @@ export SIDEBAR_DEFAULT_VISIBLE=false
 - `KNOWLEDGE_BASE_DIR` – ナレッジベースの保存先
 - `CHAT_HISTORY_DIR` – チャット履歴の保存先
 - `PERSONA_DIR` – ペルソナ設定の保存先
+
+## FAQ作成
+
+`generate_faq.py` を実行すると、ナレッジベースから FAQ を生成できます。
+`--source` オプションでテキストや URL を指定すると、その内容から Q&A を作成します。
+
+```bash
+python knowledgeplus_design-main/generate_faq.py my_kb --source "https://example.com"
+```
+
+GPT‑4.1 mini を使用し、温度は生成した質問数に応じて 0 から 0.8 まで
+0.01 ずつ上昇します。
 
 ## テスト
 

@@ -15,6 +15,9 @@ To keep pull requests stable when using Codex, install dependencies in two steps
   pip install -r knowledgeplus_design-main/requirements.txt
   ```
 
+The FAQ generator relies on `requests` and `beautifulsoup4` to fetch and parse
+web pages. These libraries are included in `requirements-light.txt`.
+
 ### Handling large dependencies
 
 Libraries such as **torch** and **transformers** can be several hundred
@@ -54,6 +57,12 @@ You can similarly override where chat histories are stored by setting
   ```bash
   export CHAT_HISTORY_DIR=/path/to/chat_history
   ```
+
+Set `PERSONA_DIR` to control where persona definitions are saved:
+
+```bash
+export PERSONA_DIR=/path/to/personalities
+```
 
 The sidebar defaults to expanded. Use the `<<` or `>>` button to collapse or
 expand it. Set `SIDEBAR_DEFAULT_VISIBLE=false` before launching if you prefer
@@ -187,4 +196,17 @@ For a deeper look at how the project evolves, check the same
 [docs/integration_plan.md](knowledgeplus_design-main/docs/integration_plan.md)
 file. It documents the phased design notes and lists key repository
 guidelines to keep contributions consistent.
+
+## FAQ generation
+
+Run `generate_faq.py` to create frequently asked questions for a knowledge base.
+You can pass raw text or a URL via the `--source` option:
+
+```bash
+python knowledgeplus_design-main/generate_faq.py my_kb --source "https://example.com"
+```
+
+The script fetches the URL, extracts text with Beautiful Soup and then calls
+GPT‑4.1 mini. Temperature starts at `0` and increases by `0.01` every five
+questions up to a maximum of `0.8`.
 
