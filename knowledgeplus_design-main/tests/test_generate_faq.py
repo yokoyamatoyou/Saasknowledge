@@ -65,7 +65,10 @@ def test_generate_faq_imports_helper(tmp_path, monkeypatch):
         lambda text: called.setdefault("text", text) or [0.0],
     )
 
+    captured = {}
+
     def fake_create(**kwargs):
+        captured.setdefault("temps", []).append(kwargs.get("temperature"))
         return types.SimpleNamespace(
             choices=[
                 types.SimpleNamespace(
@@ -131,7 +134,12 @@ def test_generate_from_source_url(tmp_path, monkeypatch):
 
     monkeypatch.setattr(generate_faq, "BASE_KNOWLEDGE_DIR", tmp_path)
 
+    called = {}
+
+    captured = {}
+
     def fake_get(url, timeout=10):
+        called["url"] = url
         class Resp:
             text = "<html><body>Hello world</body></html>"
 
@@ -147,6 +155,7 @@ def test_generate_from_source_url(tmp_path, monkeypatch):
     )
 
     def fake_create(**kwargs):
+        captured.setdefault("temps", []).append(kwargs.get("temperature"))
         return types.SimpleNamespace(
             choices=[
                 types.SimpleNamespace(
@@ -168,3 +177,81 @@ def test_generate_from_source_url(tmp_path, monkeypatch):
     )
 
     assert count == 1
+    assert called["url"] == "http://example.com"
+    assert captured["temps"] == [0.0]
+
+    data = json.loads((kb_dir / "faqs.json").read_text(encoding="utf-8"))
+    assert data and "question" in data[0] and "answer" in data[0]
+
+
+def test_generate_from_source_text(tmp_path, monkeypatch):
+    kb_dir = tmp_path / "kb_text"
+    for sub in ["chunks", "embeddings", "metadata", "files"]:
+        (kb_dir / sub).mkdir(parents=True)
+
+    monkeypatch.setattr(generate_faq, "BASE_KNOWLEDGE_DIR", tmp_path)
+
+    monkeypatch.setattr(
+        generate_faq.mm_builder_utils, "get_text_embedding", lambda t: [0.0]
+    )
+    monkeypatch.setattr(generate_faq, "save_processed_data", lambda *a, **k: None)
+
+    captured = {}
+
+    def fake_create(**kwargs):
+        captured["temp"] = kwargs.get("temperature")
+        return types.SimpleNamespace(
+            choices=[
+                types.SimpleNamespace(
+                    message=types.SimpleNamespace(
+                        content='[{"category":"c","question":"q","answer":"a"}]'
+                    )
+                )
+            ]
+        )
+
+    client = types.SimpleNamespace(
+        chat=types.SimpleNamespace(
+            completions=types.SimpleNamespace(create=fake_create)
+        )
+    )
+
+    count = generate_faq.generate_faqs_from_chunks(
+        "kb_text", client=client, source="Just some text"
+    )
+
+    assert count == 1
+    assert captured["temp"] == 0.0
+
+    data = json.loads((kb_dir / "faqs.json").read_text(encoding="utf-8"))
+    assert isinstance(data, list) and data[0]["question"] == "q"
+
+
+def test_temperature_increment(monkeypatch):
+    captured = {}
+
+    def fake_create(**kwargs):
+        captured["temp"] = kwargs.get("temperature")
+        return types.SimpleNamespace(
+            choices=[
+                types.SimpleNamespace(
+                    message=types.SimpleNamespace(
+                        content='[{"category":"c","question":"q","answer":"a"}]'
+                    )
+                )
+            ]
+        )
+
+    client = types.SimpleNamespace(
+        chat=types.SimpleNamespace(
+            completions=types.SimpleNamespace(create=fake_create)
+        )
+    )
+
+    pairs, count = generate_faq.generate_faq_from_source(
+        "hello", 1, client, max_tokens=100, q_count=5
+    )
+
+    assert captured["temp"] == 0.01
+    assert count == 6
+    assert pairs and pairs[0]["answer"] == "a"
