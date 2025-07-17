@@ -159,10 +159,18 @@ with tab1:
                     file_extension = uploaded_file.name.split(".")[-1].lower()
                     is_cad_file = file_extension in SUPPORTED_CAD_TYPES
 
-                    image_base64, cad_metadata = _file_processor.process_file(
+                    processed = _file_processor.process_file(
                         uploaded_file,
                         builder=_kb_builder,
                     )
+                    image_base64 = processed.get("image_base64")
+                    cad_metadata = processed.get("metadata")
+                    proc_type = processed.get("type")
+
+                    if proc_type not in ("image", "cad"):
+                        st.warning(f"{uploaded_file.name} はこの画面では処理できないファイル形式です")
+                        progress_bar.progress((i + 1) / len(uploaded_files))
+                        continue
 
                     if image_base64 is None:
                         st.error(
@@ -378,11 +386,13 @@ with tab2:
                     selected_category = st.selectbox(
                         "≣ カテゴリ",
                         category_options,
-                        index=category_options.index(
-                            user_additions.get("category", "技術文書")
-                        )
-                        if user_additions.get("category") in category_options
-                        else 0,
+                        index=(
+                            category_options.index(
+                                user_additions.get("category", "技術文書")
+                            )
+                            if user_additions.get("category") in category_options
+                            else 0
+                        ),
                     )
 
                 with col3_2:
@@ -435,7 +445,8 @@ with tab2:
                                 st.success("◎ ナレッジベースに登録完了！")
 
                                 with st.expander(
-                                    "≡ 登録されたデータ（既存RAGシステム互換）", expanded=True
+                                    "≡ 登録されたデータ（既存RAGシステム互換）",
+                                    expanded=True,
                                 ):
                                     st.write(f"**ID**: {saved_item['id']}")
                                     st.write(f"**ファイルリンク**: {saved_item['file_link']}")
@@ -497,7 +508,8 @@ with tab3:
                     col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
                     with col_stat1:
                         st.metric(
-                            "≡ 総アイテム数", kb_info.get("total_items", len(metadata_files))
+                            "≡ 総アイテム数",
+                            kb_info.get("total_items", len(metadata_files)),
                         )
                     with col_stat2:
                         st.metric(
@@ -508,14 +520,17 @@ with tab3:
                         )
                     with col_stat3:
                         st.metric(
-                            "⟐ テキスト", kb_info.get("item_types", {}).get("text_chunk", 0)
+                            "⟐ テキスト",
+                            kb_info.get("item_types", {}).get("text_chunk", 0),
                         )
                     with col_stat4:
                         st.metric(
                             "⟲ 最終更新",
-                            kb_info.get("last_updated", "")[:10]
-                            if kb_info.get("last_updated")
-                            else "N/A",
+                            (
+                                kb_info.get("last_updated", "")[:10]
+                                if kb_info.get("last_updated")
+                                else "N/A"
+                            ),
                         )
                 except Exception:
                     st.info(f"≡ ナレッジベース登録データ: {len(metadata_files)}件")
@@ -550,9 +565,11 @@ with tab3:
                         {
                             "ID": data["id"][:8] + "...",
                             "ファイル名": data.get("filename", "N/A"),
-                            "タイトル": display_meta.get("title", "N/A")[:30] + "..."
-                            if len(display_meta.get("title", "")) > 30
-                            else display_meta.get("title", "N/A"),
+                            "タイトル": (
+                                display_meta.get("title", "N/A")[:30] + "..."
+                                if len(display_meta.get("title", "")) > 30
+                                else display_meta.get("title", "N/A")
+                            ),
                             "画像タイプ": display_meta.get("image_type", "N/A"),
                             "カテゴリ": display_meta.get("category", "N/A"),
                             "重要度": display_meta.get("importance", "N/A"),
@@ -586,7 +603,8 @@ with tab3:
                 col_search1, col_search2 = st.columns([3, 1])
                 with col_search1:
                     search_query = st.text_input(
-                        "検索クエリを入力", placeholder="例: WEB版 比較項目、技術仕様、組織図"
+                        "検索クエリを入力",
+                        placeholder="例: WEB版 比較項目、技術仕様、組織図",
                     )
 
                 with col_search2:
@@ -720,7 +738,8 @@ with tab3:
                                             with result_col2:
                                                 st.markdown("**≡ 統計・スコア**")
                                                 st.metric(
-                                                    "類似度", f"{result['similarity']:.3f}"
+                                                    "類似度",
+                                                    f"{result['similarity']:.3f}",
                                                 )
                                                 st.write(
                                                     f"**キーワード数**: {stats.get('keywords_count', 0)}"
