@@ -177,14 +177,13 @@ def get_image_embedding(image, model=None, processor=None) -> list[float]:
 
     if model is None or processor is None:
         model, processor = load_model_and_processor()
-        if model is None or processor is None:
-            return [0.0] * config.EMBEDDING_DIM
-        if model is None or processor is None:
-            return [0.0] * config.EMBEDDING_DIM
-        if model is None or processor is None:
-            return [0.0] * config.EMBEDDING_DIM
-        if model is None or processor is None:
-            return [0.0] * config.EMBEDDING_DIM
+    if (
+        model is None
+        or processor is None
+        or not hasattr(model, "get_image_features")
+        or not callable(processor)
+    ):
+        return [0.0] * config.EMBEDDING_DIM
 
     if isinstance(image, (str, Path)):
         from PIL import Image
@@ -208,6 +207,13 @@ def get_text_embedding(text: str, model=None, processor=None) -> list[float]:
 
     if model is None or processor is None:
         model, processor = load_model_and_processor()
+    if (
+        model is None
+        or processor is None
+        or not hasattr(model, "get_text_features")
+        or not callable(processor)
+    ):
+        return [0.0] * config.EMBEDDING_DIM
 
     inputs = processor(text=[text], return_tensors="pt", padding=True, truncation=True)
     features = model.get_text_features(**inputs)

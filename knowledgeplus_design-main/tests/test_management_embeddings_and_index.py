@@ -73,7 +73,9 @@ def test_render_management_mode_embeddings_and_index(tmp_path, monkeypatch):
     monkeypatch.setattr(management_ui, "analyze_image_with_gpt4o", lambda *a, **k: {})
     monkeypatch.setattr(management_ui, "generate_faq", lambda *a, **k: 0)
     monkeypatch.setattr(
-        mm_builder_utils, "get_text_embedding", lambda text, model=None, processor=None: [0.1]
+        mm_builder_utils,
+        "get_text_embedding",
+        lambda text, model=None, processor=None: [0.1],
     )
     monkeypatch.setattr(
         mm_builder_utils,

@@ -831,7 +831,9 @@ with tab3:
                                                         f"metadata: {metadata_dir / f'{item_id}.json'}"
                                                     )
                                             else:
-                                                st.info("検索結果が見つかりませんでした。検索語を変更してみてください。")
+                                                st.info(
+                                                    "検索結果が見つかりませんでした。検索語を変更してみてください。"
+                                                )
                                 else:
                                     st.error("× 検索クエリのベクトル化に失敗しました")
                         else:

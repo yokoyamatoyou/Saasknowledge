@@ -3,10 +3,10 @@ import json
 import logging
 from uuid import uuid4
 
+from core import mm_builder_utils
 from shared.logging_utils import configure_logging
 from shared.openai_utils import get_openai_client
 from shared.upload_utils import BASE_KNOWLEDGE_DIR, save_processed_data
-from core import mm_builder_utils
 
 configure_logging()
 logger = logging.getLogger(__name__)
