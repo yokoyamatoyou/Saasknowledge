@@ -32,9 +32,24 @@ def test_render_management_mode_mixed_files(monkeypatch):
     monkeypatch.setattr(st, "divider", lambda *a, **k: None)
     monkeypatch.setattr(st, "tabs", lambda labels: [dummy_ctx for _ in labels])
     monkeypatch.setattr(st, "expander", lambda *a, **k: dummy_ctx)
+    monkeypatch.setattr(st, "popover", lambda *a, **k: dummy_ctx)
+    monkeypatch.setattr(st, "image", lambda *a, **k: None)
     monkeypatch.setattr(st, "radio", lambda *a, **k: "個別処理")
-    monkeypatch.setattr(st, "text_input", lambda *a, **k: "kb")
     monkeypatch.setattr(st, "number_input", lambda *a, **k: 1)
+    monkeypatch.setattr(st, "text_area", lambda *a, **k: "d")
+    def fake_text_input(label, *a, **k):
+        mapping = {
+            "タイトル": "t",
+            "用途・目的": "p",
+            "関連文書": "r",
+            "追加キーワード (カンマ区切り)": "k1, k2",
+            "Knowledge base name": "kb",
+        }
+        return mapping.get(label, "")
+
+    monkeypatch.setattr(st, "text_input", fake_text_input)
+    monkeypatch.setattr(st, "selectbox", lambda *a, **k: "技術文書")
+    monkeypatch.setattr(st, "select_slider", lambda *a, **k: "中")
     monkeypatch.setattr(st, "spinner", lambda *a, **k: dummy_ctx)
     errors = []
     successes = []
@@ -49,7 +64,7 @@ def test_render_management_mode_mixed_files(monkeypatch):
     monkeypatch.setattr(st, "progress", lambda *a, **k: DummyProgress())
 
     def fake_button(label, *a, **k):
-        return label == "選択したファイルの処理を開始"
+        return label in {"選択したファイルの処理を開始", "ナレッジベースに登録"}
 
     monkeypatch.setattr(st, "button", fake_button)
 
@@ -88,6 +103,7 @@ def test_render_management_mode_mixed_files(monkeypatch):
         def __init__(self, *a, **k):
             self.calls = []
             self.results = []
+            self.additions = []
             builders.append(self)
 
         def build_from_file(
@@ -96,6 +112,7 @@ def test_render_management_mode_mixed_files(monkeypatch):
             item = {"filename": uploaded_file.name, "stats": {"vector_dimensions": 1}}
             self.calls.append(uploaded_file.name)
             self.results.append(item)
+            self.additions.append(user_additions)
             return item
 
         def refresh_search_engine(self, *a, **k):
@@ -108,7 +125,19 @@ def test_render_management_mode_mixed_files(monkeypatch):
     assert builders, "KnowledgeBuilder was not instantiated"
     builder = builders[0]
     assert builder.calls == ["pic.png"]
+    assert builder.additions == [
+        {
+            "title": "t",
+            "additional_description": "d",
+            "purpose": "p",
+            "context": "d",
+            "related_documents": "r",
+            "additional_keywords": ["k1", "k2"],
+            "category": "技術文書",
+            "importance": "中",
+        }
+    ]
     assert analysis_calls == ["pic.png"]
     assert not errors
-    assert "✓ ドキュメントを追加しました: doc.txt" in successes
-    assert "✓ ナレッジを追加しました: pic.png" in successes
+    assert any("ドキュメントを追加" in s for s in successes)
+    assert any("ナレッジを追加しました" in s for s in successes)

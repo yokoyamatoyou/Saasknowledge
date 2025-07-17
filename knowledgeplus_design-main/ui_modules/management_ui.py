@@ -1,5 +1,6 @@
 import logging
 import time
+import io
 
 import streamlit as st
 from config import DEFAULT_KB_NAME
@@ -51,6 +52,9 @@ def render_management_mode():
                 if not isinstance(files, list):
                     files = [files]
 
+                if "pending_uploads" not in st.session_state:
+                    st.session_state.pending_uploads = []
+
                 if st.button("選択したファイルの処理を開始", type="primary"):
                     progress_bar = st.progress(0, "処理を開始します...")
                     start_time = time.time()
@@ -86,18 +90,31 @@ def render_management_mode():
                                         image_b64, uploaded_file.name, cad_meta
                                     )
 
-                                    kb_builder.build_from_file(
-                                        uploaded_file,
-                                        analysis=analysis,
-                                        image_base64=image_b64,
-                                        user_additions={},
-                                        cad_metadata=cad_meta,
-                                    )
+                                    if process_mode == "まとめて処理":
+                                        kb_builder.build_from_file(
+                                            uploaded_file,
+                                            analysis=analysis,
+                                            image_base64=image_b64,
+                                            user_additions={},
+                                            cad_metadata=cad_meta,
+                                        )
 
-                                    st.success(f"✓ ナレッジを追加しました: {file_name}")
-                                    logger.info(
-                                        f"Successfully added knowledge for {file_name}"
-                                    )
+                                        st.success(f"✓ ナレッジを追加しました: {file_name}")
+                                        logger.info(
+                                            f"Successfully added knowledge for {file_name}"
+                                        )
+                                    else:
+                                        st.session_state.pending_uploads.append(
+                                            {
+                                                "filename": file_name,
+                                                "bytes": uploaded_file.getvalue(),
+                                                "image_base64": image_b64,
+                                                "analysis": analysis,
+                                                "cad_metadata": cad_meta,
+                                            }
+                                        )
+                                        st.success(f"✓ {file_name} の解析が完了しました。下部で詳細を確認してください")
+
                                 elif proc_type == "document":
                                     st.success(f"✓ ドキュメントを追加しました: {file_name}")
                                     logger.info(
@@ -126,6 +143,71 @@ def render_management_mode():
                     progress_bar.progress(
                         1.0, f"全ての処理が完了しました！ (合計時間: {total_time:.2f}秒)"
                     )
+
+                    # 個別処理の場合は解析結果を編集・登録するUIを表示
+                    if process_mode == "個別処理" and st.session_state.pending_uploads:
+                        st.markdown("---")
+                        st.subheader("解析結果の確認とメタデータ入力")
+                        for idx, item in enumerate(list(st.session_state.pending_uploads)):
+                            st.image(
+                                item["image_base64"],
+                                caption=item["filename"],
+                                use_container_width=True,
+                            )
+                            with st.popover("AI解析結果", key=f"analysis_{idx}"):
+                                st.json(item["analysis"])
+
+                            title = st.text_input("タイトル", key=f"title_{idx}")
+                            add_desc = st.text_area("補足説明", key=f"desc_{idx}")
+                            purpose = st.text_input("用途・目的", key=f"purpose_{idx}")
+                            context = st.text_area("文脈・背景", key=f"context_{idx}")
+                            related_documents = st.text_input("関連文書", key=f"docs_{idx}")
+                            keywords_str = st.text_input(
+                                "追加キーワード (カンマ区切り)", key=f"kw_{idx}"
+                            )
+                            category = st.selectbox(
+                                "カテゴリ",
+                                ["技術文書", "組織図", "フローチャート", "データ図表", "写真", "地図", "その他"],
+                                key=f"cat_{idx}",
+                            )
+                            importance = st.select_slider(
+                                "重要度", options=["低", "中", "高", "最重要"], key=f"imp_{idx}"
+                            )
+
+                            user_additions = {
+                                "title": title,
+                                "additional_description": add_desc,
+                                "purpose": purpose,
+                                "context": context,
+                                "related_documents": related_documents,
+                                "additional_keywords": [k.strip() for k in keywords_str.split(",") if k.strip()],
+                                "category": category,
+                                "importance": importance,
+                            }
+
+                            if st.button("プレビュー生成", key=f"preview_{idx}"):
+                                preview_chunk = kb_builder._create_comprehensive_search_chunk(
+                                    item["analysis"], user_additions
+                                )
+                                preview_meta = kb_builder._create_structured_metadata(
+                                    item["analysis"], user_additions, item["filename"]
+                                )
+                                st.text_area("検索チャンク", preview_chunk, height=120, disabled=True)
+                                st.json(preview_meta)
+
+                            if st.button("ナレッジベースに登録", key=f"register_{idx}"):
+                                buf = io.BytesIO(item["bytes"])
+                                buf.name = item["filename"]
+                                kb_builder.build_from_file(
+                                    buf,
+                                    analysis=item["analysis"],
+                                    image_base64=item["image_base64"],
+                                    user_additions=user_additions,
+                                    cad_metadata=item.get("cad_metadata"),
+                                )
+                                st.success(f"✓ ナレッジを追加しました: {item['filename']}")
+                                st.session_state.pending_uploads.remove(item)
+                                st.rerun()
 
             if index_mode == "手動":
                 if st.button("検索インデックス更新"):
