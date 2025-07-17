@@ -33,7 +33,7 @@ def mock_openai_client():
         inputs = kwargs.get("input")
         if not isinstance(inputs, list):
             inputs = [inputs]
-        return MockEmbeddingsResponse([[0.1] * 1536 for _ in inputs])
+        return MockEmbeddingsResponse([[0.1] * EMBEDDING_DIM for _ in inputs])
 
     client.embeddings.create.side_effect = create
     client.chat.completions.create.return_value = MagicMock(

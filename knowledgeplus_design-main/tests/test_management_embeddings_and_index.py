@@ -20,6 +20,7 @@ sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 pytest.importorskip("streamlit")
 import streamlit as st  # noqa: E402
+from config import EMBEDDING_DIM  # noqa: E402
 from core import mm_builder_utils  # noqa: E402
 from shared import upload_utils  # noqa: E402
 from shared.search_engine import HybridSearchEngine  # noqa: E402
@@ -75,12 +76,12 @@ def test_render_management_mode_embeddings_and_index(tmp_path, monkeypatch):
     monkeypatch.setattr(
         mm_builder_utils,
         "get_text_embedding",
-        lambda text, model=None, processor=None: [0.1],
+        lambda text, model=None, processor=None: [0.1] * EMBEDDING_DIM,
     )
     monkeypatch.setattr(
         mm_builder_utils,
         "get_image_embedding",
-        lambda img, model=None, processor=None: [0.2],
+        lambda img, model=None, processor=None: [0.2] * EMBEDDING_DIM,
     )
     monkeypatch.setattr(
         mm_builder_utils, "load_model_and_processor", lambda: (object(), object())

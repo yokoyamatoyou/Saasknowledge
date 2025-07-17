@@ -10,6 +10,7 @@ import pytest
 
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
+from config import EMBEDDING_DIM  # noqa: E402
 from shared.file_processor import FileProcessor  # noqa: E402
 from shared.kb_builder import KnowledgeBuilder  # noqa: E402
 
@@ -35,7 +36,7 @@ def mock_openai_client():
         inputs = kwargs.get("input")
         if not isinstance(inputs, list):
             inputs = [inputs]
-        return MockEmbeddingsResponse([[0.1] * 1536 for _ in inputs])
+        return MockEmbeddingsResponse([[0.1] * EMBEDDING_DIM for _ in inputs])
 
     client.embeddings.create.side_effect = create
     client.chat.completions.create.return_value = MagicMock(
