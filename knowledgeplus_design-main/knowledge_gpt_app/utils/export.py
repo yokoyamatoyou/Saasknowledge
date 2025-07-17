@@ -65,7 +65,12 @@ def export_conversation_to_pdf(conversation_id, messages):
     # 日時
     pdf.set_font("IPAGothic", "", 10)
     pdf.cell(
-        0, 10, f'エクスポート日時: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1, "R"
+        0,
+        10,
+        f'エクスポート日時: {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}',
+        0,
+        1,
+        "R",
     )
 
     pdf.ln(5)

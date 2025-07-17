@@ -29,7 +29,10 @@ def generate_prompt_advice(
         resp = client.chat.completions.create(
             model=PROMPT_ADVICE_MODEL,
             messages=[
-                {"role": "system", "content": "ユーザープロンプトを明確にするアドバイスを日本語で箇条書きで返してください。"},
+                {
+                    "role": "system",
+                    "content": "ユーザープロンプトを明確にするアドバイスを日本語で箇条書きで返してください。",
+                },
                 {
                     "role": "user",
                     "content": f"以下のプロンプトを改善してください:\n\n---\n{user_prompt}\n---",

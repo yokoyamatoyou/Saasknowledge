@@ -42,12 +42,12 @@ def save_conversation(conversation_id, title=None, history=None, messages=None):
     # 新しいデータで更新
     data = {
         "id": conversation_id,
-        "title": title if title is not None else existing_data.get("title", "無題の会話"),
+        "title": (title if title is not None else existing_data.get("title", "無題の会話")),
         "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "history": history if history is not None else existing_data.get("history", []),
-        "messages": messages
-        if messages is not None
-        else existing_data.get("messages", []),
+        "messages": (
+            messages if messages is not None else existing_data.get("messages", [])
+        ),
     }
 
     # ファイルに保存
@@ -142,7 +142,10 @@ def auto_generate_title(messages):
         response = openai.ChatCompletion.create(
             model="gpt-4.1-mini-2025-04-14",  # この日付はサンプルです
             messages=[
-                {"role": "system", "content": "あなたは会話の題名を生成するアシスタントです。"},
+                {
+                    "role": "system",
+                    "content": "あなたは会話の題名を生成するアシスタントです。",
+                },
                 {"role": "user", "content": prompt},
             ],
             temperature=0.3,

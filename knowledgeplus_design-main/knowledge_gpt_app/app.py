@@ -169,7 +169,11 @@ def list_conversations():
         except Exception as e:
             logger.error(f"会話メタデータの読み込みエラー ({filename_path.name}): {e}")
             conversations.append(
-                {"id": filename_path.stem, "title": "会話（読込エラー）", "date": "不明"}
+                {
+                    "id": filename_path.stem,
+                    "title": "会話（読込エラー）",
+                    "date": "不明",
+                }
             )
     conversations.sort(key=lambda x: x.get("date"), reverse=True)
     return conversations
@@ -465,7 +469,11 @@ def detect_document_type(text_sample, client=None):
                 "reasoning": "OpenAIクライアント利用不可",
             }
     if not text_sample or not text_sample.strip():
-        return {"doc_type": "一般文書", "confidence": 0.1, "reasoning": "テキストサンプルが空です。"}
+        return {
+            "doc_type": "一般文書",
+            "confidence": 0.1,
+            "reasoning": "テキストサンプルが空です。",
+        }
     try:
         response = client.chat.completions.create(
             model=GPT4_MODEL,
@@ -504,9 +512,17 @@ def get_recommended_parameters(text_sample, document_type, client=None):
         client = get_openai_client()
         if client is None:
             logger.error("OpenAIクライアントが利用できません (get_recommended_parameters)")
-            return {"overlap": 15, "sudachi_mode": "C", "reasoning": "OpenAIクライアント利用不可"}
+            return {
+                "overlap": 15,
+                "sudachi_mode": "C",
+                "reasoning": "OpenAIクライアント利用不可",
+            }
     if not text_sample or not text_sample.strip():
-        return {"overlap": 15, "sudachi_mode": "C", "reasoning": "テキストサンプルが空です。"}
+        return {
+            "overlap": 15,
+            "sudachi_mode": "C",
+            "reasoning": "テキストサンプルが空です。",
+        }
     try:
         response = client.chat.completions.create(
             model=GPT4_MODEL,
@@ -711,7 +727,10 @@ def generate_chunk_metadata(chunk_text, document_type, client=None):
             model=GPT4_MODEL,
             response_format={"type": "json_object"},
             messages=[
-                {"role": "system", "content": "あなたはテキスト分析の専門家です。詳細なメタデータを抽出・生成してください。"},
+                {
+                    "role": "system",
+                    "content": "あなたはテキスト分析の専門家です。詳細なメタデータを抽出・生成してください。",
+                },
                 {"role": "user", "content": prompt},
             ],
         )
@@ -751,7 +770,10 @@ def optimize_chunk_for_mini(chunk_text, document_type, metadata, client=None):
         response = client.chat.completions.create(
             model=GPT4_MINI_MODEL,
             messages=[
-                {"role": "system", "content": "あなたはテキスト最適化の専門家です。簡潔かつ理解しやすく再構成してください。"},
+                {
+                    "role": "system",
+                    "content": "あなたはテキスト最適化の専門家です。簡潔かつ理解しやすく再構成してください。",
+                },
                 {"role": "user", "content": prompt},
             ],
         )
@@ -1038,7 +1060,10 @@ def generate_folder_structure(text_sample, document_type, client=None):
             model=GPT4_MODEL,
             response_format={"type": "json_object"},
             messages=[
-                {"role": "system", "content": "ドキュメント整理専門家。適切なフォルダ構造とファイル名を提案。"},
+                {
+                    "role": "system",
+                    "content": "ドキュメント整理専門家。適切なフォルダ構造とファイル名を提案。",
+                },
                 {"role": "user", "content": prompt},
             ],
         )
@@ -1209,7 +1234,8 @@ def semantic_chunking(
             if not chunk_content or not chunk_content.strip():
                 logger.warning(f"空のチャンク {i+1} をスキップします。")
                 progress_bar.progress(
-                    (i + 1) / total_chunks, text=f"チャンク {i+1}/{total_chunks} 処理中 (スキップ)"
+                    (i + 1) / total_chunks,
+                    text=f"チャンク {i+1}/{total_chunks} 処理中 (スキップ)",
                 )
                 continue
             chunk_id_str = str(i + 1).zfill(max(4, len(str(total_chunks))))
@@ -1259,7 +1285,8 @@ def semantic_chunking(
                     }
                 )
                 status_item.update(
-                    label=f"チャンク {chunk_id_str}/{total_chunks} 処理完了", state="complete"
+                    label=f"チャンク {chunk_id_str}/{total_chunks} 処理完了",
+                    state="complete",
                 )
             progress_bar.progress(
                 (i + 1) / total_chunks, text=f"チャンク {i+1}/{total_chunks} 処理完了"
@@ -1286,7 +1313,8 @@ def semantic_chunking(
 
 # 現在のモードを表示
 st.markdown(
-    f"""<div class="mode-header">現在のモード: {app_mode}</div>""", unsafe_allow_html=True
+    f"""<div class="mode-header">現在のモード: {app_mode}</div>""",
+    unsafe_allow_html=True,
 )
 
 if app_mode == "ナレッジ構築":
@@ -1398,7 +1426,11 @@ if app_mode == "ナレッジ構築":
             "オーバーラップ率 (%)", 0, 50, st.session_state.get("overlap_ratio", 15), 5
         )
         st.session_state["overlap_ratio"] = overlap_ratio_ui_val
-        sudachi_options_map_ui = {"A (最小分割)": "A", "B (中間)": "B", "C (最大分割)": "C"}
+        sudachi_options_map_ui = {
+            "A (最小分割)": "A",
+            "B (中間)": "B",
+            "C (最大分割)": "C",
+        }
         current_sudachi_mode_val_ui = st.session_state.get("sudachi_mode", "C")
         sudachi_display_options_ui = list(sudachi_options_map_ui.keys())
         current_sudachi_display_ui = next(
@@ -1732,18 +1764,20 @@ elif app_mode == "ナレッジ検索":
                 for p in persona_details_list_kb_gpt
                 if p["id"] == current_persona_id_kb_gpt
             ),
-            persona_display_names_kb_gpt[0]
-            if persona_display_names_kb_gpt
-            else "標準アシスタント",
+            (
+                persona_display_names_kb_gpt[0]
+                if persona_display_names_kb_gpt
+                else "標準アシスタント"
+            ),
         )
         selected_persona_name_kb_gpt_ui = st.sidebar.selectbox(
             "AIペルソナ",
             persona_display_names_kb_gpt,
-            index=persona_display_names_kb_gpt.index(
-                current_persona_name_display_kb_gpt
-            )
-            if current_persona_name_display_kb_gpt in persona_display_names_kb_gpt
-            else 0,
+            index=(
+                persona_display_names_kb_gpt.index(current_persona_name_display_kb_gpt)
+                if current_persona_name_display_kb_gpt in persona_display_names_kb_gpt
+                else 0
+            ),
             key="persona_kb_gpt_selectbox",
         )
         st.session_state["persona"] = persona_map_kb_gpt[
@@ -1914,7 +1948,9 @@ elif app_mode == "FAQ作成":
         if current_faq_kb not in kb_names_for_faq:
             current_faq_kb = kb_names_for_faq[0]
         selected_kb = st.selectbox(
-            "対象ナレッジベース", kb_names_for_faq, index=kb_names_for_faq.index(current_faq_kb)
+            "対象ナレッジベース",
+            kb_names_for_faq,
+            index=kb_names_for_faq.index(current_faq_kb),
         )
         st.session_state["faq_kb_name"] = selected_kb
 
@@ -2151,7 +2187,9 @@ elif app_mode == "chatGPT":
                 placeholder="過去の会話を選択...",
             )
             if selected_conv_display_str_load and st.button(
-                "⟲ この会話を読み込む", key="load_chat_button_main", use_container_width=True
+                "⟲ この会話を読み込む",
+                key="load_chat_button_main",
+                use_container_width=True,
             ):
                 conv_id_to_load_val = conv_map_load_ids[selected_conv_display_str_load]
                 loaded_msgs_val, loaded_title_val = load_conversation(

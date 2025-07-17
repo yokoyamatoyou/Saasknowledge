@@ -142,7 +142,9 @@ def test_generate_from_source_url(tmp_path, monkeypatch):
 
     monkeypatch.setattr(generate_faq, "requests", types.SimpleNamespace(get=fake_get))
 
-    monkeypatch.setattr(generate_faq.mm_builder_utils, "get_text_embedding", lambda t: [0.0])
+    monkeypatch.setattr(
+        generate_faq.mm_builder_utils, "get_text_embedding", lambda t: [0.0]
+    )
 
     def fake_create(**kwargs):
         return types.SimpleNamespace(
@@ -156,7 +158,9 @@ def test_generate_from_source_url(tmp_path, monkeypatch):
         )
 
     client = types.SimpleNamespace(
-        chat=types.SimpleNamespace(completions=types.SimpleNamespace(create=fake_create))
+        chat=types.SimpleNamespace(
+            completions=types.SimpleNamespace(create=fake_create)
+        )
     )
 
     count = generate_faq.generate_faqs_from_chunks(
