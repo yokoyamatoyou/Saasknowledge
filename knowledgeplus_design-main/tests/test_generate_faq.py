@@ -70,7 +70,7 @@ def test_generate_faq_imports_helper(tmp_path, monkeypatch):
             choices=[
                 types.SimpleNamespace(
                     message=types.SimpleNamespace(
-                        content='[{"question":"q","answer":"a"}]'
+                        content='[{"category":"c","question":"q","answer":"a"}]'
                     )
                 )
             ]
@@ -120,3 +120,47 @@ def test_malformed_json_logged(tmp_path, monkeypatch, caplog):
 
     assert count == 0
     assert any("JSON decode failed" in r.message for r in caplog.records)
+
+
+def test_generate_from_source_url(tmp_path, monkeypatch):
+    kb_dir = tmp_path / "kb_url"
+    (kb_dir / "chunks").mkdir(parents=True)
+    (kb_dir / "embeddings").mkdir()
+    (kb_dir / "metadata").mkdir()
+    (kb_dir / "files").mkdir()
+
+    monkeypatch.setattr(generate_faq, "BASE_KNOWLEDGE_DIR", tmp_path)
+
+    def fake_get(url, timeout=10):
+        class Resp:
+            text = "<html><body>Hello world</body></html>"
+
+            def raise_for_status(self):
+                pass
+
+        return Resp()
+
+    monkeypatch.setattr(generate_faq, "requests", types.SimpleNamespace(get=fake_get))
+
+    monkeypatch.setattr(generate_faq.mm_builder_utils, "get_text_embedding", lambda t: [0.0])
+
+    def fake_create(**kwargs):
+        return types.SimpleNamespace(
+            choices=[
+                types.SimpleNamespace(
+                    message=types.SimpleNamespace(
+                        content='[{"category":"c","question":"q","answer":"a"}]'
+                    )
+                )
+            ]
+        )
+
+    client = types.SimpleNamespace(
+        chat=types.SimpleNamespace(completions=types.SimpleNamespace(create=fake_create))
+    )
+
+    count = generate_faq.generate_faqs_from_chunks(
+        "kb_url", client=client, source="http://example.com"
+    )
+
+    assert count == 1

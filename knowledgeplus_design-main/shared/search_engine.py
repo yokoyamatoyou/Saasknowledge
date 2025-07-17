@@ -515,6 +515,7 @@ class HybridSearchEngine:
                         "faq": True,
                         "question": faq.get("question"),
                         "answer": faq.get("answer"),
+                        "category": faq.get("category"),
                     },
                 }
             )
