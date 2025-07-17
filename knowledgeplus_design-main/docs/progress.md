@@ -65,3 +65,7 @@
 
 ## 2025-07-17 (2)
 - Reformatted `mm_kb_builder/app.py` with Black to resolve pre-commit failure.
+
+## 2025-07-17 (3)
+- Ran pre-commit hooks locally and confirmed Black, ruff and isort all pass.
+- Verified full test suite executes successfully after installing light dependencies.
