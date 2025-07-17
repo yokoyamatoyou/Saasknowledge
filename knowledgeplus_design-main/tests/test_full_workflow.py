@@ -75,7 +75,7 @@ def test_build_and_generate_faq(tmp_path, monkeypatch):
     assert item is not None
     assert refresh_calls == ["test_kb"]
 
-    def fake_generate(name, max_tokens=1000, num_pairs=3, client=None):
+    def fake_generate(name, max_tokens=1000, num_pairs=3, client=None, source=None):
         out = tmp_path / "knowledge_base" / name / "faqs.json"
         out.write_text(
             json.dumps([{"id": "faq1", "question": "q", "answer": "a"}]),

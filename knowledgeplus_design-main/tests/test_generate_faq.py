@@ -23,7 +23,7 @@ def test_generate_faq_cli(tmp_path, monkeypatch):
 
     monkeypatch.setattr(generate_faq, "BASE_KNOWLEDGE_DIR", tmp_path)
 
-    def fake_generate(name, max_tokens=1000, num_pairs=3, client=None):
+    def fake_generate(name, max_tokens=1000, num_pairs=3, client=None, source=None):
         out = tmp_path / name / "faqs.json"
         out.write_text(
             json.dumps([{"id": "faq1", "question": "q", "answer": "a"}]),

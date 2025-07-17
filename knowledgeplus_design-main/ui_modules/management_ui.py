@@ -235,6 +235,12 @@ def render_management_mode():
             value=DEFAULT_KB_NAME,
             help="FAQを生成するナレッジベースの名前を入力します。",
         )
+        faq_source = st.text_area(
+            "FAQ生成用テキストまたはURL",
+            key="faq_source",
+            height=100,
+            help="直接入力したテキストまたは取得したいWebページのURLを指定します。",
+        )
         max_tokens = st.number_input(
             "Max tokens per chunk", 100, 2000, 1000, 100, help="チャンクあたりの最大トークン数を設定します。"
         )
@@ -253,6 +259,10 @@ def render_management_mode():
             else:
                 with st.spinner("FAQを生成中..."):
                     count = generate_faq(
-                        kb_name, int(max_tokens), int(pairs), client=client
+                        kb_name,
+                        int(max_tokens),
+                        int(pairs),
+                        client=client,
+                        source=faq_source,
                     )
                 st.success(f"{count}件のFAQを生成しました。")
