@@ -24,7 +24,9 @@ def render_management_mode():
         st.divider()
         with st.expander("ナレッジを追加する", expanded=True):
             process_mode = st.radio(
-                "処理モード", ["個別処理", "まとめて処理"], help="ファイルを個別に処理するか、まとめて処理するかを選択します。"
+                "処理モード",
+                ["個別処理", "まとめて処理"],
+                help="ファイルを個別に処理するか、まとめて処理するかを選択します。",
             )
             index_mode = st.radio(
                 "インデックス更新",
@@ -143,7 +145,8 @@ def render_management_mode():
                     end_time = time.time()
                     total_time = end_time - start_time
                     progress_bar.progress(
-                        1.0, f"全ての処理が完了しました！ (合計時間: {total_time:.2f}秒)"
+                        1.0,
+                        f"全ての処理が完了しました！ (合計時間: {total_time:.2f}秒)",
                     )
 
                     # 個別処理の場合は解析結果を編集・登録するUIを表示
@@ -171,11 +174,21 @@ def render_management_mode():
                             )
                             category = st.selectbox(
                                 "カテゴリ",
-                                ["技術文書", "組織図", "フローチャート", "データ図表", "写真", "地図", "その他"],
+                                [
+                                    "技術文書",
+                                    "組織図",
+                                    "フローチャート",
+                                    "データ図表",
+                                    "写真",
+                                    "地図",
+                                    "その他",
+                                ],
                                 key=f"cat_{idx}",
                             )
                             importance = st.select_slider(
-                                "重要度", options=["低", "中", "高", "最重要"], key=f"imp_{idx}"
+                                "重要度",
+                                options=["低", "中", "高", "最重要"],
+                                key=f"imp_{idx}",
                             )
 
                             user_additions = {
@@ -203,7 +216,10 @@ def render_management_mode():
                                     item["analysis"], user_additions, item["filename"]
                                 )
                                 st.text_area(
-                                    "検索チャンク", preview_chunk, height=120, disabled=True
+                                    "検索チャンク",
+                                    preview_chunk,
+                                    height=120,
+                                    disabled=True,
                                 )
                                 st.json(preview_meta)
 
@@ -242,10 +258,20 @@ def render_management_mode():
             help="直接入力したテキストまたは取得したいWebページのURLを指定します。",
         )
         max_tokens = st.number_input(
-            "Max tokens per chunk", 100, 2000, 1000, 100, help="チャンクあたりの最大トークン数を設定します。"
+            "Max tokens per chunk",
+            100,
+            2000,
+            1000,
+            100,
+            help="チャンクあたりの最大トークン数を設定します。",
         )
         pairs = st.number_input(
-            "Pairs per chunk", 1, 10, 3, 1, help="各チャンクから生成するQ&Aペアの数を設定します。"
+            "Pairs per chunk",
+            1,
+            10,
+            3,
+            1,
+            help="各チャンクから生成するQ&Aペアの数を設定します。",
         )
         if st.button(
             "◎ FAQ生成",

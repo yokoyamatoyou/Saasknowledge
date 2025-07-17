@@ -1,4 +1,5 @@
 """Download required NLTK resources."""
+
 import logging
 
 import nltk
