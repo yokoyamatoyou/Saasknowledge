@@ -160,10 +160,15 @@ def load_model_and_processor() -> Tuple[object, object]:
     """
     global _clip_model, _clip_processor
     if _clip_model is None or _clip_processor is None:
-        from transformers import CLIPModel, CLIPProcessor
+        try:
+            from transformers import CLIPModel, CLIPProcessor
 
-        _clip_model = CLIPModel.from_pretrained(config.MULTIMODAL_MODEL)
-        _clip_processor = CLIPProcessor.from_pretrained(config.MULTIMODAL_MODEL)
+            _clip_model = CLIPModel.from_pretrained(config.MULTIMODAL_MODEL)
+            _clip_processor = CLIPProcessor.from_pretrained(config.MULTIMODAL_MODEL)
+        except Exception as e:  # pragma: no cover - heavy deps may be missing
+            logger.error("CLIPモデル読み込みエラー: %s", e)
+            _clip_model = None
+            _clip_processor = None
     return _clip_model, _clip_processor
 
 
@@ -172,6 +177,13 @@ def get_image_embedding(image, model=None, processor=None) -> list[float]:
 
     if model is None or processor is None:
         model, processor = load_model_and_processor()
+    if (
+        model is None
+        or processor is None
+        or not hasattr(model, "get_image_features")
+        or not callable(processor)
+    ):
+        return [0.0] * config.EMBEDDING_DIM
 
     if isinstance(image, (str, Path)):
         from PIL import Image
@@ -182,6 +194,29 @@ def get_image_embedding(image, model=None, processor=None) -> list[float]:
 
     inputs = processor(images=img, return_tensors="pt")
     features = model.get_image_features(**inputs)
+    if hasattr(features, "detach"):
+        features = features.detach()
+    if hasattr(features, "cpu"):
+        features = features.cpu()
+    vector = features[0].tolist()
+    return vector[: config.EMBEDDING_DIM]
+
+
+def get_text_embedding(text: str, model=None, processor=None) -> list[float]:
+    """Return an embedding vector for ``text`` using the CLIP text encoder."""
+
+    if model is None or processor is None:
+        model, processor = load_model_and_processor()
+    if (
+        model is None
+        or processor is None
+        or not hasattr(model, "get_text_features")
+        or not callable(processor)
+    ):
+        return [0.0] * config.EMBEDDING_DIM
+
+    inputs = processor(text=[text], return_tensors="pt", padding=True, truncation=True)
+    features = model.get_text_features(**inputs)
     if hasattr(features, "detach"):
         features = features.detach()
     if hasattr(features, "cpu"):

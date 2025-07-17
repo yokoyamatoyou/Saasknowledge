@@ -9,6 +9,7 @@ import pytest
 
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
+from config import EMBEDDING_DIM  # noqa: E402
 from shared.file_processor import FileProcessor  # noqa: E402
 from shared.kb_builder import KnowledgeBuilder  # noqa: E402
 
@@ -125,4 +126,4 @@ def test_sample_png_upload(kb_builder_instance, temp_kb_dir, monkeypatch):
 
     with open(temp_kb_dir / "embeddings" / f"{item_id}.pkl", "rb") as f:
         embedding_data = pickle.load(f)
-        assert len(embedding_data["embedding"]) == 1536
+        assert len(embedding_data["embedding"]) == EMBEDDING_DIM

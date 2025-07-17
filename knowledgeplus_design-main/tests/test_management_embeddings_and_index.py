@@ -73,17 +73,14 @@ def test_render_management_mode_embeddings_and_index(tmp_path, monkeypatch):
     monkeypatch.setattr(management_ui, "analyze_image_with_gpt4o", lambda *a, **k: {})
     monkeypatch.setattr(management_ui, "generate_faq", lambda *a, **k: 0)
     monkeypatch.setattr(
-        mm_builder_utils, "get_embedding", lambda text, client=None: [0.1]
+        mm_builder_utils,
+        "get_text_embedding",
+        lambda text, model=None, processor=None: [0.1],
     )
     monkeypatch.setattr(
         mm_builder_utils,
         "get_image_embedding",
         lambda img, model=None, processor=None: [0.2],
-    )
-    monkeypatch.setattr(
-        management_ui.KnowledgeBuilder,
-        "_get_embedding",
-        lambda self, text, client, dimensions=1: [0.3],
     )
     monkeypatch.setattr(
         mm_builder_utils, "load_model_and_processor", lambda: (object(), object())

@@ -611,25 +611,23 @@ with tab3:
                     search_top_k = st.selectbox("表示件数", [5, 10, 15, 20], index=1)
 
                 if search_query and st.button("⌕ 検索実行", type="primary"):
-                    client = get_openai_client()
-                    if client:
-                        with st.spinner("検索中..."):
-                            # クエリのベクトル化
-                            query_embedding = _kb_builder._get_embedding(
-                                search_query, client, dimensions=embedding_dims
-                            )
+                    with st.spinner("検索中..."):
+                        # クエリのベクトル化
+                        query_embedding = _kb_builder.generate_text_embedding(
+                            search_query
+                        )
 
-                            if query_embedding is not None:
-                                # 類似度計算（分離構造対応）
-                                similarities = []
+                        if query_embedding is not None:
+                            # 類似度計算（分離構造対応）
+                            similarities = []
 
-                                for metadata_file in metadata_files:
-                                    try:
-                                        # メタデータ読み込み
-                                        with open(
-                                            metadata_file, "r", encoding="utf-8"
-                                        ) as f:
-                                            metadata = json.load(f)
+                            for metadata_file in metadata_files:
+                                try:
+                                    # メタデータ読み込み
+                                    with open(
+                                        metadata_file, "r", encoding="utf-8"
+                                    ) as f:
+                                        metadata = json.load(f)
 
                                         item_id = metadata["id"]
 
@@ -676,8 +674,8 @@ with tab3:
                                                         "similarity": similarity,
                                                     }
                                                 )
-                                    except Exception as e:
-                                        logger.error(f"検索エラー {metadata_file}: {e}")
+                                except Exception as e:
+                                    logger.error(f"検索エラー {metadata_file}: {e}")
 
                                 # 類似度順でソート
                                 similarities.sort(
@@ -832,14 +830,16 @@ with tab3:
                                                     st.write(
                                                         f"metadata: {metadata_dir / f'{item_id}.json'}"
                                                     )
+                                            else:
+                                                st.info(
+                                                    "検索結果が見つかりませんでした。検索語を変更してみてください。"
+                                                )
                                 else:
-                                    st.info("検索結果が見つかりませんでした。検索語を変更してみてください。")
-                            else:
-                                st.error("× 検索クエリのベクトル化に失敗しました")
-                    else:
-                        st.error("× OpenAIクライアントに接続できません")
-        else:
-            st.info("ナレッジベースにデータがありません")
+                                    st.error("× 検索クエリのベクトル化に失敗しました")
+                        else:
+                            st.error("× OpenAIクライアントに接続できません")
+            else:
+                st.info("ナレッジベースにデータがありません")
     else:
         st.info(f"ナレッジベース '{kb_name}' が見つかりません")
 

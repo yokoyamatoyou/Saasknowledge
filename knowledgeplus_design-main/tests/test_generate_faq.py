@@ -57,19 +57,13 @@ def test_generate_faq_imports_helper(tmp_path, monkeypatch):
 
     monkeypatch.setattr(generate_faq, "BASE_KNOWLEDGE_DIR", tmp_path)
 
-    import sys
-    import types
-
-    kgapp = types.ModuleType("knowledge_gpt_app.app")
-    monkeypatch.setitem(sys.modules, "knowledge_gpt_app.app", kgapp)
-
     called = {}
 
-    def fake_get_embedding(text, client=None):
-        called["text"] = text
-        return [0.0]
-
-    monkeypatch.setattr(kgapp, "get_embedding", fake_get_embedding, raising=False)
+    monkeypatch.setattr(
+        generate_faq.mm_builder_utils,
+        "get_text_embedding",
+        lambda text: called.setdefault("text", text) or [0.0],
+    )
 
     def fake_create(**kwargs):
         return types.SimpleNamespace(

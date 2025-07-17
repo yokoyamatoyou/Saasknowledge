@@ -71,7 +71,9 @@ class KnowledgeBuilder:
         try:
             from core import mm_builder_utils
 
-            return mm_builder_utils.get_embedding(text)
+            return mm_builder_utils.get_text_embedding(
+                text, model=self.clip_model, processor=self.clip_processor
+            )
         except Exception as e:  # pragma: no cover - openai unavailable
             logger.error("テキスト埋め込み生成エラー: %s", e)
             return None
@@ -79,13 +81,8 @@ class KnowledgeBuilder:
     def build_from_file(
         self, uploaded_file, analysis, image_base64, user_additions, cad_metadata
     ):
-        client = self.get_openai_client()
-        if not client:
-            st.error("OpenAIクライアントに接続できません")
-            return None
-
         search_chunk = self._create_comprehensive_search_chunk(analysis, user_additions)
-        embedding = self._get_embedding(search_chunk, client)
+        embedding = self.generate_text_embedding(search_chunk)
 
         if embedding is None:
             st.error("埋め込みベクトルの生成に失敗しました。")
