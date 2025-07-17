@@ -1,6 +1,6 @@
+import io
 import logging
 import time
-import io
 
 import streamlit as st
 from config import DEFAULT_KB_NAME
@@ -113,7 +113,9 @@ def render_management_mode():
                                                 "cad_metadata": cad_meta,
                                             }
                                         )
-                                        st.success(f"✓ {file_name} の解析が完了しました。下部で詳細を確認してください")
+                                        st.success(
+                                            f"✓ {file_name} の解析が完了しました。下部で詳細を確認してください"
+                                        )
 
                                 elif proc_type == "document":
                                     st.success(f"✓ ドキュメントを追加しました: {file_name}")
@@ -148,7 +150,9 @@ def render_management_mode():
                     if process_mode == "個別処理" and st.session_state.pending_uploads:
                         st.markdown("---")
                         st.subheader("解析結果の確認とメタデータ入力")
-                        for idx, item in enumerate(list(st.session_state.pending_uploads)):
+                        for idx, item in enumerate(
+                            list(st.session_state.pending_uploads)
+                        ):
                             st.image(
                                 item["image_base64"],
                                 caption=item["filename"],
@@ -180,19 +184,27 @@ def render_management_mode():
                                 "purpose": purpose,
                                 "context": context,
                                 "related_documents": related_documents,
-                                "additional_keywords": [k.strip() for k in keywords_str.split(",") if k.strip()],
+                                "additional_keywords": [
+                                    k.strip()
+                                    for k in keywords_str.split(",")
+                                    if k.strip()
+                                ],
                                 "category": category,
                                 "importance": importance,
                             }
 
                             if st.button("プレビュー生成", key=f"preview_{idx}"):
-                                preview_chunk = kb_builder._create_comprehensive_search_chunk(
-                                    item["analysis"], user_additions
+                                preview_chunk = (
+                                    kb_builder._create_comprehensive_search_chunk(
+                                        item["analysis"], user_additions
+                                    )
                                 )
                                 preview_meta = kb_builder._create_structured_metadata(
                                     item["analysis"], user_additions, item["filename"]
                                 )
-                                st.text_area("検索チャンク", preview_chunk, height=120, disabled=True)
+                                st.text_area(
+                                    "検索チャンク", preview_chunk, height=120, disabled=True
+                                )
                                 st.json(preview_meta)
 
                             if st.button("ナレッジベースに登録", key=f"register_{idx}"):

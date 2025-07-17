@@ -37,6 +37,7 @@ def test_render_management_mode_mixed_files(monkeypatch):
     monkeypatch.setattr(st, "radio", lambda *a, **k: "個別処理")
     monkeypatch.setattr(st, "number_input", lambda *a, **k: 1)
     monkeypatch.setattr(st, "text_area", lambda *a, **k: "d")
+
     def fake_text_input(label, *a, **k):
         mapping = {
             "タイトル": "t",
