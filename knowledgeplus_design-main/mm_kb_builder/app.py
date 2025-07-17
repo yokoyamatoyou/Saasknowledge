@@ -674,8 +674,8 @@ with tab3:
                                                         "similarity": similarity,
                                                     }
                                                 )
-                                    except Exception as e:
-                                        logger.error(f"検索エラー {metadata_file}: {e}")
+                                except Exception as e:
+                                    logger.error(f"検索エラー {metadata_file}: {e}")
 
                                 # 類似度順でソート
                                 similarities.sort(
@@ -830,14 +830,14 @@ with tab3:
                                                     st.write(
                                                         f"metadata: {metadata_dir / f'{item_id}.json'}"
                                                     )
+                                            else:
+                                                st.info("検索結果が見つかりませんでした。検索語を変更してみてください。")
                                 else:
-                                    st.info("検索結果が見つかりませんでした。検索語を変更してみてください。")
-                            else:
-                                st.error("× 検索クエリのベクトル化に失敗しました")
-                    else:
-                        st.error("× OpenAIクライアントに接続できません")
-        else:
-            st.info("ナレッジベースにデータがありません")
+                                    st.error("× 検索クエリのベクトル化に失敗しました")
+                        else:
+                            st.error("× OpenAIクライアントに接続できません")
+            else:
+                st.info("ナレッジベースにデータがありません")
     else:
         st.info(f"ナレッジベース '{kb_name}' が見つかりません")
 
