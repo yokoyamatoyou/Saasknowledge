@@ -50,7 +50,9 @@ def test_process_image_saves_embedding(tmp_path, monkeypatch):
 def test_process_document_saves_embedding(tmp_path, monkeypatch):
     monkeypatch.setattr(upload_utils, "BASE_KNOWLEDGE_DIR", tmp_path)
     builder = KnowledgeBuilder(FileProcessor(), lambda: None, lambda *_: None)
-    monkeypatch.setattr(builder, "generate_text_embedding", lambda t: [0.5] * EMBEDDING_DIM)
+    monkeypatch.setattr(
+        builder, "generate_text_embedding", lambda t: [0.5] * EMBEDDING_DIM
+    )
     buf = io.BytesIO(b"hello world")
     buf.name = "note.txt"
     FileProcessor.process_file(buf, kb_name="kb2", builder=builder)
