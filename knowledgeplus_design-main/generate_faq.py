@@ -3,6 +3,7 @@ import json
 import logging
 from uuid import uuid4
 
+import requests
 from core import mm_builder_utils
 from shared.logging_utils import configure_logging
 from shared.openai_utils import get_openai_client
@@ -13,12 +14,32 @@ logger = logging.getLogger(__name__)
 
 
 def generate_faqs_from_chunks(
-    kb_name: str, max_tokens: int = 1000, num_pairs: int = 3, client=None
+    kb_name: str,
+    max_tokens: int = 1000,
+    num_pairs: int = 3,
+    client=None,
+    source: str | None = None,
 ) -> int:
     kb_dir = BASE_KNOWLEDGE_DIR / kb_name
     chunks_dir = kb_dir / "chunks"
-    if not chunks_dir.exists():
-        raise FileNotFoundError(f"Chunks directory not found: {chunks_dir}")
+
+    texts: list[str] = []
+    if source:
+        text = source.strip()
+        if text.startswith("http://") or text.startswith("https://"):
+            try:
+                resp = requests.get(text, timeout=10)
+                resp.raise_for_status()
+                text = resp.text
+            except Exception as e:  # noqa: BLE001
+                logger.error("Failed to fetch URL: %s", e)
+        texts.append(text)
+    else:
+        if not chunks_dir.exists():
+            raise FileNotFoundError(f"Chunks directory not found: {chunks_dir}")
+        texts = [
+            p.read_text(encoding="utf-8") for p in sorted(chunks_dir.glob("*.txt"))
+        ]
 
     if client is None:
         client = get_openai_client()
@@ -26,8 +47,8 @@ def generate_faqs_from_chunks(
             raise RuntimeError("OpenAI client unavailable")
 
     faq_entries = []
-    for chunk_file in sorted(chunks_dir.glob("*.txt")):
-        text = chunk_file.read_text(encoding="utf-8")[:max_tokens]
+    for raw_text in texts:
+        text = raw_text[:max_tokens]
         prompt = (
             f"You are a helpful assistant. Based on the following text, "
             f"generate {num_pairs} question and answer pairs as JSON in the form "
