@@ -37,8 +37,9 @@ def test_render_management_mode_mixed_files(monkeypatch):
     monkeypatch.setattr(st, "number_input", lambda *a, **k: 1)
     monkeypatch.setattr(st, "spinner", lambda *a, **k: dummy_ctx)
     errors = []
+    successes = []
     monkeypatch.setattr(st, "error", lambda msg, *a, **k: errors.append(msg))
-    monkeypatch.setattr(st, "success", lambda *a, **k: None)
+    monkeypatch.setattr(st, "success", lambda msg, *a, **k: successes.append(msg))
     monkeypatch.setattr(st, "toast", lambda *a, **k: None)
 
     class DummyProgress:
@@ -109,3 +110,5 @@ def test_render_management_mode_mixed_files(monkeypatch):
     assert builder.calls == ["pic.png"]
     assert analysis_calls == ["pic.png"]
     assert not errors
+    assert "✓ ドキュメントを追加しました: doc.txt" in successes
+    assert "✓ ナレッジを追加しました: pic.png" in successes

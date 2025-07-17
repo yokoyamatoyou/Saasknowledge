@@ -7,6 +7,7 @@ import pytest
 
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
+from config import EMBEDDING_DIM  # noqa: E402
 from shared import upload_utils  # noqa: E402
 from shared.file_processor import FileProcessor  # noqa: E402
 from shared.kb_builder import KnowledgeBuilder  # noqa: E402
@@ -30,7 +31,7 @@ def test_process_image_saves_embedding(tmp_path, monkeypatch):
     monkeypatch.setattr(
         builder,
         "generate_image_embedding",
-        lambda b: [0.1, 0.2],
+        lambda b: [0.1] * EMBEDDING_DIM,
     )
     buf = _make_png()
     FileProcessor.process_file(buf, kb_name="kb1", builder=builder)
@@ -38,7 +39,8 @@ def test_process_image_saves_embedding(tmp_path, monkeypatch):
     files = list(emb_dir.glob("*.pkl"))
     assert len(files) == 1
     data = pickle.loads(files[0].read_bytes())
-    assert data["embedding"] == [0.1, 0.2]
+    assert len(data["embedding"]) == EMBEDDING_DIM
+    assert data["embedding"][0] == 0.1
     chunk_dir = tmp_path / "kb1" / "chunks"
     chunks = list(chunk_dir.glob("*.txt"))
     assert len(chunks) == 1
@@ -48,7 +50,7 @@ def test_process_image_saves_embedding(tmp_path, monkeypatch):
 def test_process_document_saves_embedding(tmp_path, monkeypatch):
     monkeypatch.setattr(upload_utils, "BASE_KNOWLEDGE_DIR", tmp_path)
     builder = KnowledgeBuilder(FileProcessor(), lambda: None, lambda *_: None)
-    monkeypatch.setattr(builder, "generate_text_embedding", lambda t: [0.5])
+    monkeypatch.setattr(builder, "generate_text_embedding", lambda t: [0.5] * EMBEDDING_DIM)
     buf = io.BytesIO(b"hello world")
     buf.name = "note.txt"
     FileProcessor.process_file(buf, kb_name="kb2", builder=builder)
@@ -56,4 +58,5 @@ def test_process_document_saves_embedding(tmp_path, monkeypatch):
     files = list(emb_dir.glob("*.pkl"))
     assert len(files) == 1
     data = pickle.loads(files[0].read_bytes())
-    assert data["embedding"] == [0.5]
+    assert len(data["embedding"]) == EMBEDDING_DIM
+    assert data["embedding"][0] == 0.5
