@@ -140,6 +140,7 @@ def test_generate_from_source_url(tmp_path, monkeypatch):
 
     def fake_get(url, timeout=10):
         called["url"] = url
+
         class Resp:
             text = "<html><body>Hello world</body></html>"
 
