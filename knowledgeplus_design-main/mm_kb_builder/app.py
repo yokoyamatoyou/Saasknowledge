@@ -115,7 +115,9 @@ embedding_dims = st.sidebar.selectbox(
 )
 
 # メインタブ
-tab1, tab2, tab3 = st.tabs(["↑ 画像アップロード", "∠ 内容編集・ナレッジ化", "≡ ナレッジベース管理"])
+tab1, tab2, tab3 = st.tabs(
+    ["↑ 画像アップロード", "∠ 内容編集・ナレッジ化", "≡ ナレッジベース管理"]
+)
 
 with tab1:
     st.header("画像・図面のアップロード")
@@ -258,7 +260,9 @@ with tab2:
                             if cad_meta.get("file_type"):
                                 st.write(f"**形式**: {cad_meta['file_type']}")
                             if cad_meta.get("total_entities"):
-                                st.write(f"**エンティティ数**: {cad_meta['total_entities']}")
+                                st.write(
+                                    f"**エンティティ数**: {cad_meta['total_entities']}"
+                                )
                             if cad_meta.get("vertices_count"):
                                 st.write(f"**頂点数**: {cad_meta['vertices_count']}")
                             if cad_meta.get("volume"):
@@ -276,11 +280,15 @@ with tab2:
 
                     if analysis.get("detected_elements"):
                         st.write("**検出要素**:")
-                        for element in analysis["detected_elements"][:5]:  # 上位5つのみ表示
+                        for element in analysis["detected_elements"][
+                            :5
+                        ]:  # 上位5つのみ表示
                             st.write(f"- {element}")
 
                     if analysis.get("text_content"):
-                        st.write(f"**画像内テキスト**: {analysis['text_content'][:200]}...")
+                        st.write(
+                            f"**画像内テキスト**: {analysis['text_content'][:200]}..."
+                        )
 
                     if analysis.get("keywords"):
                         st.write(
@@ -388,11 +396,13 @@ with tab2:
                     selected_category = st.selectbox(
                         "≣ カテゴリ",
                         category_options,
-                        index=category_options.index(
-                            user_additions.get("category", "技術文書")
-                        )
-                        if user_additions.get("category") in category_options
-                        else 0,
+                        index=(
+                            category_options.index(
+                                user_additions.get("category", "技術文書")
+                            )
+                            if user_additions.get("category") in category_options
+                            else 0
+                        ),
                     )
 
                 with col3_2:
@@ -445,10 +455,13 @@ with tab2:
                                 st.success("◎ ナレッジベースに登録完了！")
 
                                 with st.expander(
-                                    "≡ 登録されたデータ（既存RAGシステム互換）", expanded=True
+                                    "≡ 登録されたデータ（既存RAGシステム互換）",
+                                    expanded=True,
                                 ):
                                     st.write(f"**ID**: {saved_item['id']}")
-                                    st.write(f"**ファイルリンク**: {saved_item['file_link']}")
+                                    st.write(
+                                        f"**ファイルリンク**: {saved_item['file_link']}"
+                                    )
                                     st.write(
                                         f"**ベクトル次元数**: {saved_item['stats']['vector_dimensions']}"
                                     )
@@ -474,7 +487,9 @@ files/{saved_item['id']}_info.json  # ファイル情報
                 else:
                     st.success("◎ この画像は既にナレッジベース登録済みです")
 
-                    if st.button("⟲ 再登録（情報更新）", help="情報を更新して再度登録します"):
+                    if st.button(
+                        "⟲ 再登録（情報更新）", help="情報を更新して再度登録します"
+                    ):
                         st.session_state.processed_images[selected_id][
                             "is_finalized"
                         ] = False
@@ -484,7 +499,9 @@ with tab3:
     st.header("ナレッジベース管理")
 
     # ナレッジベース選択
-    kb_name = st.selectbox("ナレッジベース選択", [DEFAULT_KB_NAME], index=0)  # 将来複数KB対応可能
+    kb_name = st.selectbox(
+        "ナレッジベース選択", [DEFAULT_KB_NAME], index=0
+    )  # 将来複数KB対応可能
 
     # 既存RAGシステム互換のディレクトリ構造
     kb_dir = DATA_DIR / kb_name
@@ -507,7 +524,8 @@ with tab3:
                     col_stat1, col_stat2, col_stat3, col_stat4 = st.columns(4)
                     with col_stat1:
                         st.metric(
-                            "≡ 総アイテム数", kb_info.get("total_items", len(metadata_files))
+                            "≡ 総アイテム数",
+                            kb_info.get("total_items", len(metadata_files)),
                         )
                     with col_stat2:
                         st.metric(
@@ -518,14 +536,17 @@ with tab3:
                         )
                     with col_stat3:
                         st.metric(
-                            "⟐ テキスト", kb_info.get("item_types", {}).get("text_chunk", 0)
+                            "⟐ テキスト",
+                            kb_info.get("item_types", {}).get("text_chunk", 0),
                         )
                     with col_stat4:
                         st.metric(
                             "⟲ 最終更新",
-                            kb_info.get("last_updated", "")[:10]
-                            if kb_info.get("last_updated")
-                            else "N/A",
+                            (
+                                kb_info.get("last_updated", "")[:10]
+                                if kb_info.get("last_updated")
+                                else "N/A"
+                            ),
                         )
                 except Exception:
                     st.info(f"≡ ナレッジベース登録データ: {len(metadata_files)}件")
@@ -533,7 +554,9 @@ with tab3:
                 st.info(f"≡ ナレッジベース登録データ: {len(metadata_files)}件")
 
             # ディレクトリ構造表示
-            with st.expander("⟐ ディレクトリ構造（既存RAGシステム互換）", expanded=False):
+            with st.expander(
+                "⟐ ディレクトリ構造（既存RAGシステム互換）", expanded=False
+            ):
                 st.code(
                     f"""
 ⟐ {kb_name}/
@@ -560,9 +583,11 @@ with tab3:
                         {
                             "ID": data["id"][:8] + "...",
                             "ファイル名": data.get("filename", "N/A"),
-                            "タイトル": display_meta.get("title", "N/A")[:30] + "..."
-                            if len(display_meta.get("title", "")) > 30
-                            else display_meta.get("title", "N/A"),
+                            "タイトル": (
+                                display_meta.get("title", "N/A")[:30] + "..."
+                                if len(display_meta.get("title", "")) > 30
+                                else display_meta.get("title", "N/A")
+                            ),
                             "画像タイプ": display_meta.get("image_type", "N/A"),
                             "カテゴリ": display_meta.get("category", "N/A"),
                             "重要度": display_meta.get("importance", "N/A"),
@@ -596,7 +621,8 @@ with tab3:
                 col_search1, col_search2 = st.columns([3, 1])
                 with col_search1:
                     search_query = st.text_input(
-                        "検索クエリを入力", placeholder="例: WEB版 比較項目、技術仕様、組織図"
+                        "検索クエリを入力",
+                        placeholder="例: WEB版 比較項目、技術仕様、組織図",
                     )
 
                 with col_search2:
@@ -730,7 +756,8 @@ with tab3:
                                             with result_col2:
                                                 st.markdown("**≡ 統計・スコア**")
                                                 st.metric(
-                                                    "類似度", f"{result['similarity']:.3f}"
+                                                    "類似度",
+                                                    f"{result['similarity']:.3f}",
                                                 )
                                                 st.write(
                                                     f"**キーワード数**: {stats.get('keywords_count', 0)}"
@@ -804,7 +831,9 @@ with tab3:
 
                                             # デバッグ情報
                                             if show_debug:
-                                                with st.popover("⚙ デバッグ: チャンクとファイルパス"):
+                                                with st.popover(
+                                                    "⚙ デバッグ: チャンクとファイルパス"
+                                                ):
                                                     st.markdown("**検索チャンク:**")
                                                     st.text_area(
                                                         "",
@@ -824,7 +853,9 @@ with tab3:
                                                         f"metadata: {metadata_dir / f'{item_id}.json'}"
                                                     )
                                 else:
-                                    st.info("検索結果が見つかりませんでした。検索語を変更してみてください。")
+                                    st.info(
+                                        "検索結果が見つかりませんでした。検索語を変更してみてください。"
+                                    )
                             else:
                                 st.error("× 検索クエリのベクトル化に失敗しました")
                     else:
