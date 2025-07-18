@@ -90,6 +90,7 @@ def render_sidebar_toggle(
         st.rerun()
 
     margin = "0" if st.session_state.sidebar_visible else f"-{sidebar_width}"
+    pointer_events = "auto" if st.session_state.sidebar_visible else "none"
     st.markdown(
         f"""
         <style>
@@ -97,6 +98,7 @@ def render_sidebar_toggle(
             transition: margin-left 0.3s ease;
             margin-left: {margin};
             width: {sidebar_width};
+            pointer-events: {pointer_events};
         }}
         </style>
         <script>
