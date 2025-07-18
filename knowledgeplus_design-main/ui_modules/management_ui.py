@@ -82,7 +82,9 @@ def render_management_mode():
 
                                 if proc_type in ("image", "cad"):
                                     if not image_b64:
-                                        st.error(f"ファイルの処理に失敗しました: {file_name}")
+                                        st.error(
+                                            f"ファイルの処理に失敗しました: {file_name}"
+                                        )
                                         logger.error(
                                             f"File processing failed for {file_name}"
                                         )
@@ -101,7 +103,9 @@ def render_management_mode():
                                             cad_metadata=cad_meta,
                                         )
 
-                                        st.success(f"✓ ナレッジを追加しました: {file_name}")
+                                        st.success(
+                                            f"✓ ナレッジを追加しました: {file_name}"
+                                        )
                                         logger.info(
                                             f"Successfully added knowledge for {file_name}"
                                         )
@@ -120,17 +124,23 @@ def render_management_mode():
                                         )
 
                                 elif proc_type == "document":
-                                    st.success(f"✓ ドキュメントを追加しました: {file_name}")
+                                    st.success(
+                                        f"✓ ドキュメントを追加しました: {file_name}"
+                                    )
                                     logger.info(
                                         f"Successfully added document for {file_name}"
                                     )
                                 else:
-                                    st.error(f"ファイルの処理に失敗しました: {file_name}")
+                                    st.error(
+                                        f"ファイルの処理に失敗しました: {file_name}"
+                                    )
                                     logger.error(
                                         f"Unsupported file type for {file_name}"
                                     )
                         except Exception as e:
-                            st.error(f"処理中に予期せぬエラーが発生しました ({file_name}): {e}")
+                            st.error(
+                                f"処理中に予期せぬエラーが発生しました ({file_name}): {e}"
+                            )
                             logger.error(
                                 f"Unhandled error processing {file_name}: {e}",
                                 exc_info=True,
@@ -168,7 +178,9 @@ def render_management_mode():
                             add_desc = st.text_area("補足説明", key=f"desc_{idx}")
                             purpose = st.text_input("用途・目的", key=f"purpose_{idx}")
                             context = st.text_area("文脈・背景", key=f"context_{idx}")
-                            related_documents = st.text_input("関連文書", key=f"docs_{idx}")
+                            related_documents = st.text_input(
+                                "関連文書", key=f"docs_{idx}"
+                            )
                             keywords_str = st.text_input(
                                 "追加キーワード (カンマ区切り)", key=f"kw_{idx}"
                             )
@@ -233,7 +245,9 @@ def render_management_mode():
                                     user_additions=user_additions,
                                     cad_metadata=item.get("cad_metadata"),
                                 )
-                                st.success(f"✓ ナレッジを追加しました: {item['filename']}")
+                                st.success(
+                                    f"✓ ナレッジを追加しました: {item['filename']}"
+                                )
                                 st.session_state.pending_uploads.remove(item)
                                 st.rerun()
 

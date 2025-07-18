@@ -115,7 +115,9 @@ embedding_dims = st.sidebar.selectbox(
 )
 
 # メインタブ
-tab1, tab2, tab3 = st.tabs(["↑ 画像アップロード", "∠ 内容編集・ナレッジ化", "≡ ナレッジベース管理"])
+tab1, tab2, tab3 = st.tabs(
+    ["↑ 画像アップロード", "∠ 内容編集・ナレッジ化", "≡ ナレッジベース管理"]
+)
 
 with tab1:
     st.header("画像・図面のアップロード")
@@ -168,7 +170,9 @@ with tab1:
                     proc_type = processed.get("type")
 
                     if proc_type not in ("image", "cad"):
-                        st.warning(f"{uploaded_file.name} はこの画面では処理できないファイル形式です")
+                        st.warning(
+                            f"{uploaded_file.name} はこの画面では処理できないファイル形式です"
+                        )
                         progress_bar.progress((i + 1) / len(uploaded_files))
                         continue
 
@@ -256,7 +260,9 @@ with tab2:
                             if cad_meta.get("file_type"):
                                 st.write(f"**形式**: {cad_meta['file_type']}")
                             if cad_meta.get("total_entities"):
-                                st.write(f"**エンティティ数**: {cad_meta['total_entities']}")
+                                st.write(
+                                    f"**エンティティ数**: {cad_meta['total_entities']}"
+                                )
                             if cad_meta.get("vertices_count"):
                                 st.write(f"**頂点数**: {cad_meta['vertices_count']}")
                             if cad_meta.get("volume"):
@@ -274,11 +280,15 @@ with tab2:
 
                     if analysis.get("detected_elements"):
                         st.write("**検出要素**:")
-                        for element in analysis["detected_elements"][:5]:  # 上位5つのみ表示
+                        for element in analysis["detected_elements"][
+                            :5
+                        ]:  # 上位5つのみ表示
                             st.write(f"- {element}")
 
                     if analysis.get("text_content"):
-                        st.write(f"**画像内テキスト**: {analysis['text_content'][:200]}...")
+                        st.write(
+                            f"**画像内テキスト**: {analysis['text_content'][:200]}..."
+                        )
 
                     if analysis.get("keywords"):
                         st.write(
@@ -449,7 +459,9 @@ with tab2:
                                     expanded=True,
                                 ):
                                     st.write(f"**ID**: {saved_item['id']}")
-                                    st.write(f"**ファイルリンク**: {saved_item['file_link']}")
+                                    st.write(
+                                        f"**ファイルリンク**: {saved_item['file_link']}"
+                                    )
                                     st.write(
                                         f"**ベクトル次元数**: {saved_item['stats']['vector_dimensions']}"
                                     )
@@ -475,7 +487,9 @@ files/{saved_item['id']}_info.json  # ファイル情報
                 else:
                     st.success("◎ この画像は既にナレッジベース登録済みです")
 
-                    if st.button("⟲ 再登録（情報更新）", help="情報を更新して再度登録します"):
+                    if st.button(
+                        "⟲ 再登録（情報更新）", help="情報を更新して再度登録します"
+                    ):
                         st.session_state.processed_images[selected_id][
                             "is_finalized"
                         ] = False
@@ -485,7 +499,9 @@ with tab3:
     st.header("ナレッジベース管理")
 
     # ナレッジベース選択
-    kb_name = st.selectbox("ナレッジベース選択", [DEFAULT_KB_NAME], index=0)  # 将来複数KB対応可能
+    kb_name = st.selectbox(
+        "ナレッジベース選択", [DEFAULT_KB_NAME], index=0
+    )  # 将来複数KB対応可能
 
     # 既存RAGシステム互換のディレクトリ構造
     kb_dir = DATA_DIR / kb_name
@@ -538,7 +554,9 @@ with tab3:
                 st.info(f"≡ ナレッジベース登録データ: {len(metadata_files)}件")
 
             # ディレクトリ構造表示
-            with st.expander("⟐ ディレクトリ構造（既存RAGシステム互換）", expanded=False):
+            with st.expander(
+                "⟐ ディレクトリ構造（既存RAGシステム互換）", expanded=False
+            ):
                 st.code(
                     f"""
 ⟐ {kb_name}/
@@ -811,7 +829,9 @@ with tab3:
 
                                             # デバッグ情報
                                             if show_debug:
-                                                with st.popover("⚙ デバッグ: チャンクとファイルパス"):
+                                                with st.popover(
+                                                    "⚙ デバッグ: チャンクとファイルパス"
+                                                ):
                                                     st.markdown("**検索チャンク:**")
                                                     st.text_area(
                                                         "",

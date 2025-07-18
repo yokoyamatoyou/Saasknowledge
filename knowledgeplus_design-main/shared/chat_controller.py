@@ -207,7 +207,9 @@ class ChatController:
         if client is None:
             client = self._get_openai_client_internal()  # Call static method
             if client is None:
-                raise OpenAIClientError("OpenAIクライアントの初期化に失敗しました。APIキーを確認してください。")
+                raise OpenAIClientError(
+                    "OpenAIクライアントの初期化に失敗しました。APIキーを確認してください。"
+                )
 
         if conversation_history is None:
             conversation_history = []
@@ -219,7 +221,9 @@ class ChatController:
         if response_length is None:
             response_length = persona_data["default_response_length"]
 
-        max_tokens = {"簡潔": 600, "普通": 1200, "詳細": 2400}.get(response_length, 1200)
+        max_tokens = {"簡潔": 600, "普通": 1200, "詳細": 2400}.get(
+            response_length, 1200
+        )
         system_prompt = persona_data["system_prompt"]
 
         messages = [{"role": "system", "content": system_prompt}]
@@ -243,7 +247,9 @@ class ChatController:
                     yield chunk.choices[0].delta.content
         except Exception as e:  # pragma: no cover - network errors may vary
             logger.error("GPT response generation failed: %s", e, exc_info=True)
-            raise GPTGenerationError(f"応答生成中に予期しないエラーが発生しました: {e}") from e
+            raise GPTGenerationError(
+                f"応答生成中に予期しないエラーが発生しました: {e}"
+            ) from e
 
     def generate_conversation_title(self, conversation_history, client=None):
         """
@@ -306,7 +312,9 @@ class ChatController:
                 .replace("『", "")
                 .replace("』", "")
             )
-            title = title.replace("タイトル:", "").replace("会話のタイトル:", "").strip()
+            title = (
+                title.replace("タイトル:", "").replace("会話のタイトル:", "").strip()
+            )
             if not title:
                 return "会話"  # フォールバック
             return title

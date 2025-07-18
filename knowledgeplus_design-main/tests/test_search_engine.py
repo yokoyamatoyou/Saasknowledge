@@ -206,7 +206,9 @@ def test_missing_kb_metadata_logs_warning(tmp_path, caplog):
     with caplog.at_level(logging.WARNING):
         HybridSearchEngine(str(kb_dir))
 
-    assert any("メタデータファイルが見つかりません" in r.message for r in caplog.records)
+    assert any(
+        "メタデータファイルが見つかりません" in r.message for r in caplog.records
+    )
 
 
 def test_malformed_chunk_skipped(tmp_path):

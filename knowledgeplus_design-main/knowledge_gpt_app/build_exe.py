@@ -113,7 +113,9 @@ def check_dependencies(auto_install: bool | None = None) -> bool:
             logger.info(f"  - {pkg}")
 
         if auto_install:
-            logger.info("AUTO_INSTALL_DEPS モードで不足パッケージを自動インストールします。")
+            logger.info(
+                "AUTO_INSTALL_DEPS モードで不足パッケージを自動インストールします。"
+            )
             for pkg in missing_packages:
                 subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
             logger.info("依存パッケージのインストールが完了しました。")
@@ -139,14 +141,18 @@ def check_resources():
     # アイコンファイルをチェック
     icon_path = resources_dir / "app_icon.ico"
     if not icon_path.exists():
-        logger.warning("アプリケーションアイコンが見つかりません。デフォルトアイコンを作成します。")
+        logger.warning(
+            "アプリケーションアイコンが見つかりません。デフォルトアイコンを作成します。"
+        )
         create_default_icon(icon_path)
 
     # フォントファイルをチェック
     font_path = Path("ipaexg.ttf")
     if not font_path.exists():
         logger.warning("日本語フォントファイル（ipaexg.ttf）が見つかりません。")
-        logger.warning("以下のURLからダウンロードしてプロジェクトルートに配置してください:")
+        logger.warning(
+            "以下のURLからダウンロードしてプロジェクトルートに配置してください:"
+        )
         logger.warning("https://moji.or.jp/ipafont/")
         return False
 
@@ -156,7 +162,9 @@ def check_resources():
 def create_default_icon(icon_path):
     """デフォルトのアイコンファイルを作成（ダミー）"""
     # 実際には何もしないが、本来はデフォルトアイコンを生成するコードが入る
-    logger.warning("注意: アイコンファイルが作成されていません。Windowsのデフォルトアイコンが使用されます。")
+    logger.warning(
+        "注意: アイコンファイルが作成されていません。Windowsのデフォルトアイコンが使用されます。"
+    )
 
 
 def main():

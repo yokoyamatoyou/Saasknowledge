@@ -108,7 +108,9 @@ def export_conversation_to_pdf(conversation_id, messages):
 
             for i, result in enumerate(message["search_results"]):
                 pdf.set_font("IPAGothic", "", 8)
-                pdf.cell(0, 5, f'結果 {i+1} - 類似度: {result["similarity"]:.2f}', 0, 1, "L")
+                pdf.cell(
+                    0, 5, f'結果 {i+1} - 類似度: {result["similarity"]:.2f}', 0, 1, "L"
+                )
 
                 if "metadata" in result and "source" in result["metadata"]:
                     pdf.cell(0, 5, f'出典: {result["metadata"]["source"]}', 0, 1, "L")
