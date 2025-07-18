@@ -77,12 +77,33 @@ def render_sidebar_toggle(
         if sidebar_button and sidebar_button(toggle_label, key=key, help="サイドバーを折りたたむ"):
             button_clicked = True
     else:
-        if st.button(toggle_label, key=key, help="サイドバーを表示"):
-            st.markdown(
-                f"<style>button[id='{key}'] {{position: fixed; top: 0.5rem; left: 0.5rem; z-index: 1000;}}</style>",
-                unsafe_allow_html=True,
-            )
+        if st.button(toggle_label, key=key):
             button_clicked = True
+        st.markdown(
+            f"""
+            <style>
+            button[id='{key}'] {{
+                position: fixed;
+                top: 0.5rem;
+                left: 0.5rem;
+                z-index: 1000;
+            }}
+            button[id='{key}']::after {{
+                content: 'サイドバーを表示';
+                position: absolute;
+                top: -1.2rem;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 0.75rem;
+                background: rgba(255,255,255,0.9);
+                padding: 2px 4px;
+                border-radius: 4px;
+                white-space: nowrap;
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
 
     if button_clicked:
         st.session_state.sidebar_visible = not st.session_state.sidebar_visible
