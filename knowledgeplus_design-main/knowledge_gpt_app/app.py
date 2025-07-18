@@ -249,8 +249,9 @@ apply_intel_theme(st)
 st.title("RAGシステム統合ツール")
 
 # アプリケーションモード選択
-mode_options = ["ナレッジ検索", "ナレッジ構築", "FAQ作成", "chatGPT"]
-current_mode = st.session_state.get("app_mode", "ナレッジ検索")
+# unified_app.py と同じ順序で並べる
+mode_options = ["chatGPT", "ナレッジ検索", "管理"]
+current_mode = st.session_state.get("app_mode", "chatGPT")
 app_mode_index = mode_options.index(current_mode) if current_mode in mode_options else 0
 app_mode = st.sidebar.radio("モード選択", mode_options, index=app_mode_index)
 st.session_state["app_mode"] = app_mode
