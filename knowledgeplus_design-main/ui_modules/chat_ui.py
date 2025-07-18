@@ -68,13 +68,9 @@ def render_chat_mode(safe_generate_gpt_response):
                 )
                 context = "\n".join(r.get("text", "") for r in results[:3])
                 if not context:
-                    st.info(
-                        "ナレッジ検索で関連情報が見つかりませんでした。AIの一般的な知識で回答します。"
-                    )
+                    st.info("ナレッジ検索で関連情報が見つかりませんでした。AIの一般的な知識で回答します。")
             else:
-                st.warning(
-                    "ナレッジ検索が無効化されているか、ナレッジベースの初期化に失敗したため、検索は行われません。"
-                )
+                st.warning("ナレッジ検索が無効化されているか、ナレッジベースの初期化に失敗したため、検索は行われません。")
 
         client = get_openai_client()
         if client:

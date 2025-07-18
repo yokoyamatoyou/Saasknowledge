@@ -74,9 +74,7 @@ def render_sidebar_toggle(
     button_clicked = False
     sidebar_button = getattr(getattr(st, "sidebar", None), "button", None)
     if st.session_state.sidebar_visible:
-        if sidebar_button and sidebar_button(
-            toggle_label, key=key, help="サイドバーを折りたたむ"
-        ):
+        if sidebar_button and sidebar_button(toggle_label, key=key, help="サイドバーを折りたたむ"):
             button_clicked = True
     else:
         if st.button(toggle_label, key=key):

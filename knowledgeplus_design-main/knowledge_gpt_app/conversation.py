@@ -42,9 +42,7 @@ def save_conversation(conversation_id, title=None, history=None, messages=None):
     # 新しいデータで更新
     data = {
         "id": conversation_id,
-        "title": (
-            title if title is not None else existing_data.get("title", "無題の会話")
-        ),
+        "title": (title if title is not None else existing_data.get("title", "無題の会話")),
         "date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "history": history if history is not None else existing_data.get("history", []),
         "messages": (
