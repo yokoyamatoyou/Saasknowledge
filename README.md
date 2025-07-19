@@ -144,22 +144,16 @@ pre-commit install
 
 ## Testing
 
-Before running `pytest`, install the minimal dependencies required for the test
-suite. The helper script below pulls in packages such as **Pillow**, which the
-tests rely on:
-```bash
-scripts/install_light.sh
-```
-
-If you only want to run the tests without setting up the full application,
-use the optional script below. It installs `numpy`, `PyMuPDF` and other
-libraries required by the test suite:
+Before running `pytest`, install the libraries required by the test suite. The
+quickest way is to run the dedicated helper script:
 
 ```bash
 scripts/install_tests.sh
 ```
 
-If certain tests depend on heavier libraries, you can also run:
+This installs `numpy`, `PyMuPDF`, **Pillow** and other dependencies the tests
+expect. If some tests need heavier packages (for example those that rely on
+`torch` or `transformers`), install them with:
 
 ```bash
 scripts/install_extra.sh
