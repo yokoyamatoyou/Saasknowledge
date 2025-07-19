@@ -83,7 +83,10 @@ if str(repo_root) not in sys.path:
 try:
     from shared.chat_controller import ChatController, get_persona_list, load_persona
     from shared.nltk_utils import ensure_nltk_resources
-    from shared.search_engine import EnhancedHybridSearchEngine
+    from shared.search_engine import (
+        CachedEnhancedSearchEngine,
+        EnhancedHybridSearchEngine,
+    )
 
     ensure_nltk_resources()
     logger.info("自作モジュールのインポートに成功しました")
@@ -94,6 +97,9 @@ except Exception as e:
 # 固定モデル名
 GPT4_MODEL = "gpt-4.1-2025-04-14"
 GPT4_MINI_MODEL = "gpt-4.1-mini-2025-04-14"
+
+# When enabled, the cached search engine avoids repeated OpenAI calls
+USE_CACHED_ENGINE = os.getenv("USE_CACHED_ENGINE", "0").lower() in {"1", "true", "yes"}
 
 # 共通ナレッジベースディレクトリ
 BASE_KNOWLEDGE_DIR = SHARED_KB_DIR
@@ -577,21 +583,26 @@ def get_search_engine(kb_name: str) -> EnhancedHybridSearchEngine:
             st.session_state.search_engines[kb_name] = None
             return None
         try:
-            logger.info(
-                f"Initializing EnhancedHybridSearchEngine for '{kb_name}' at path '{kb_path_str}'..."
+            engine_cls = (
+                CachedEnhancedSearchEngine
+                if USE_CACHED_ENGINE
+                else EnhancedHybridSearchEngine
             )
-            engine = EnhancedHybridSearchEngine(kb_path_str)
+            logger.info(
+                f"Initializing {engine_cls.__name__} for '{kb_name}' at path '{kb_path_str}'..."
+            )
+            engine = engine_cls(kb_path_str)
             st.session_state.search_engines[kb_name] = engine
             st.session_state.chat_controller = ChatController(
                 engine
             )  # ChatControllerのインスタンスを生成
             logger.info(
-                f"EnhancedHybridSearchEngine for '{kb_name}' initialized and cached."
+                f"{engine_cls.__name__} for '{kb_name}' initialized and cached."
             )
             return engine
         except Exception as e:
             logger.error(
-                f"Failed to initialize EnhancedHybridSearchEngine for '{kb_name}': {e}",
+                f"Failed to initialize {engine_cls.__name__} for '{kb_name}': {e}",
                 exc_info=True,
             )
             st.session_state.search_engines[kb_name] = None
