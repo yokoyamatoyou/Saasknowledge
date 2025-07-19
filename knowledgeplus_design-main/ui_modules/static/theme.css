@@ -474,14 +474,19 @@ button#toggle_sidebar p {
 
     /* Chat input styling - improved visibility */
     .st-chat-input {
-        border: 1px solid #dadce0; /* Add a clear border */
+        border: 1px solid #888888; /* More visible border */
         border-radius: 8px;
         padding: 8px;
         background-color: #f8f9fa; /* Slightly different background */
     }
-    .st-chat-input input {
+    .st-chat-input input,
+    .st-chat-input textarea {
         border: none; /* Remove inner input border */
         box-shadow: none; /* Remove inner input shadow */
+        min-height: 2.75em; /* Allow multi-line input */
+        resize: vertical; /* Let users expand the field */
+        overflow-y: auto;
+        white-space: pre-wrap; /* Wrap long text */
     }
 
     /* Chat message styling */
