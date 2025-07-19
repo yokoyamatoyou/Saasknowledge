@@ -13,7 +13,13 @@ from typing import TYPE_CHECKING, Optional
 if TYPE_CHECKING:  # pragma: no cover - imported for type hints only
     from shared.kb_builder import KnowledgeBuilder
 
-import fitz  # PyMuPDF
+try:
+    import fitz  # PyMuPDF
+
+    FITZ_SUPPORT = True
+except ImportError:  # pragma: no cover - optional
+    fitz = None
+    FITZ_SUPPORT = False
 
 try:
     import docx  # python-docx
@@ -86,7 +92,12 @@ class FileProcessor:
     def _encode_image_to_base64(image_file):
         """画像ファイルをbase64エンコード"""
         try:
-            if hasattr(image_file, "type") and image_file.type == "application/pdf":
+            if (
+                hasattr(image_file, "type")
+                and image_file.type == "application/pdf"
+                and FITZ_SUPPORT
+                and PIL_SUPPORT
+            ):
                 data = image_file.read()
                 pdf_doc = fitz.open(stream=data, filetype="pdf")
                 page = pdf_doc.load_page(0)
@@ -97,6 +108,13 @@ class FileProcessor:
                 pdf_doc.close()
                 image_file.seek(0)
                 return base64.b64encode(buffered.getvalue()).decode("utf-8")
+            elif (
+                hasattr(image_file, "type")
+                and image_file.type == "application/pdf"
+                and not FITZ_SUPPORT
+            ):
+                st.error("PyMuPDF がインストールされていないため PDF を画像化できません")
+                return None
             else:
                 image_file.seek(0)
                 image_bytes = image_file.read()
@@ -356,7 +374,7 @@ class FileProcessor:
                     page_text = page.extract_text()
                     if page_text:
                         text += page_text + "\n"
-                if PIL_SUPPORT:
+                if PIL_SUPPORT and FITZ_SUPPORT:
                     pdf_doc = fitz.open(stream=data, filetype="pdf")
                     for page in pdf_doc:
                         pix = page.get_pixmap()
@@ -367,6 +385,8 @@ class FileProcessor:
                         img.save(buf, format="PNG")
                         images.append(base64.b64encode(buf.getvalue()).decode("utf-8"))
                     pdf_doc.close()
+                elif PIL_SUPPORT and not FITZ_SUPPORT:
+                    logger.warning("PyMuPDF not available, skipping PDF image extraction")
             else:
                 text = file_obj.read().decode("utf-8", errors="replace")
                 file_obj.seek(0)
