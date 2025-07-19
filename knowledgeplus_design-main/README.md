@@ -127,6 +127,14 @@ graph TD
 *   **ChatController**: 会話履歴を管理し、`HybridSearchEngine` から取得したコンテキストを基にGPTモデル（OpenAI API）を呼び出し、ユーザーの質問に対する応答を生成します。
 *   **app.py**: Streamlitを用いたユーザーインターフェースを提供し、上記のバックエンドコンポーネントを統合して、シームレスなユーザー体験を実現します。
 
+## 🔬 Experiment Manager
+
+`shared/experiment_manager.py` では検索アルゴリズムごとの利用状況を記録できます。
+`record_result()` で成功数を蓄積し、十分な試行が溜まったら `deploy_best()` を
+実行して最も成績の良いアルゴリズム名を `data/active_algorithm.txt` に書き込みます。
+次回起動時は `get_active_algorithm()` でこの値を読み込み、自動的に最適な検索エ
+ンジンを選択できます。
+
 ## 🧪 テストの実行
 
 自動テストスイートは `pytest` で実行できます。
