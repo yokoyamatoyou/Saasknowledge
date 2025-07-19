@@ -38,12 +38,12 @@ from nltk.corpus import stopwords
 
 # import time # 直接は不要
 from rank_bm25 import BM25Okapi
+from shared.experiment_manager import ExperimentManager
 from shared.feedback_store import load_feedback
 from shared.metrics import get_collector
 from shared.nltk_utils import ensure_nltk_resources
 from shared.openai_utils import get_embeddings_batch, get_openai_client
 from shared.thesaurus import expand_query, load_synonyms
-from shared.experiment_manager import ExperimentManager
 
 logger = logging.getLogger(__name__)
 
