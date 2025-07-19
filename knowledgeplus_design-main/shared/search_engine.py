@@ -38,6 +38,8 @@ from nltk.corpus import stopwords
 from rank_bm25 import BM25Okapi
 from shared.nltk_utils import ensure_nltk_resources
 from shared.openai_utils import get_embeddings_batch, get_openai_client
+from shared.thesaurus import load_synonyms, expand_query
+from shared.feedback_store import load_feedback
 
 logger = logging.getLogger(__name__)
 
@@ -952,6 +954,8 @@ class EnhancedHybridSearchEngine(HybridSearchEngine):
         self.version_graph: dict[str, dict] = {}
         self.rule_index: dict[str, list[str]] = {}
         self.hierarchy_index: dict[str, list[str]] = {}
+        self.synonyms = load_synonyms()
+        self.feedback = load_feedback()
         self._build_extended_indexes()
 
     def _build_extended_indexes(self) -> None:
@@ -1118,7 +1122,8 @@ class EnhancedHybridSearchEngine(HybridSearchEngine):
         client=None,
     ) -> tuple[list[dict], bool]:
         logger.info(f"拡張検索開始: query='{query}'")
-        intent = self.classify_query_intent(query, client)
+        processed_query = expand_query(query, self.synonyms)
+        intent = self.classify_query_intent(processed_query, client)
         logger.info(f"クエリ意図: {intent}")
 
         if vector_weight is None or bm25_weight is None:
@@ -1138,7 +1143,7 @@ class EnhancedHybridSearchEngine(HybridSearchEngine):
             bm25_weight *= 0.8
 
         base_results, not_found = super().search(
-            query,
+            processed_query,
             top_k=top_k * 3,
             threshold=threshold / 2,
             vector_weight=vector_weight,
@@ -1172,6 +1177,9 @@ class EnhancedHybridSearchEngine(HybridSearchEngine):
                 + recency_score * recency_weight
                 + hierarchy_score * hierarchy_weight
             )
+            fb_score = self.feedback.get(res.get("id"), 0)
+            if fb_score:
+                final_score *= 1 + 0.1 * fb_score
             res["score_breakdown"] = {
                 "base_score": base_score,
                 "recency_score": recency_score,
