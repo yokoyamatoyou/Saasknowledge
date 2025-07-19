@@ -3,6 +3,19 @@ import os
 import uuid
 from datetime import datetime
 
+from shared.experiment_manager import ExperimentManager
+
+exp_mgr = ExperimentManager()
+try:
+    exp_mgr.deploy_best()
+except Exception as e:
+    logging.warning("deploy_best failed: %s", e)
+
+active_algo = exp_mgr.get_active_algorithm(
+    "cached" if os.getenv("USE_CACHED_ENGINE", "0").lower() in {"1", "true", "yes"} else "enhanced"
+)
+os.environ["USE_CACHED_ENGINE"] = "1" if active_algo == "cached" else "0"
+
 import streamlit as st
 from shared.chat_controller import get_persona_list
 from shared.chat_history_utils import (

@@ -43,8 +43,12 @@ from shared.metrics import get_collector
 from shared.nltk_utils import ensure_nltk_resources
 from shared.openai_utils import get_embeddings_batch, get_openai_client
 from shared.thesaurus import expand_query, load_synonyms
+from shared.experiment_manager import ExperimentManager
 
 logger = logging.getLogger(__name__)
+
+# Experiment manager for algorithm A/B testing
+exp_mgr = ExperimentManager()
 
 # --- SudachiPyのインポートと初期化 ---
 try:
@@ -946,6 +950,7 @@ class HybridSearchEngine:
                 }
             ]
             is_not_found = False
+        exp_mgr.record_result(self.__class__.__name__, not is_not_found)
         return output_results, is_not_found
 
 
@@ -1230,6 +1235,7 @@ class EnhancedHybridSearchEngine(HybridSearchEngine):
         logger.info(f"拡張検索完了: {len(final_results)}件の結果")
         execution_time = time.monotonic() - start_time
         collector.log_search(query, final_results, execution_time, cache_hit=False)
+        exp_mgr.record_result(self.__class__.__name__, len(final_results) > 0)
         return final_results, len(final_results) == 0
 
 
