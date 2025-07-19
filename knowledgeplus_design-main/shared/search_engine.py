@@ -26,6 +26,7 @@ except Exception as e:
     logging.warning(f"SentenceTransformer import failed: {e}")
 import logging
 import re
+import time
 import typing
 from pathlib import Path
 
@@ -37,6 +38,7 @@ from nltk.corpus import stopwords
 # import time # 直接は不要
 from rank_bm25 import BM25Okapi
 from shared.feedback_store import load_feedback
+from shared.metrics import get_collector
 from shared.nltk_utils import ensure_nltk_resources
 from shared.openai_utils import get_embeddings_batch, get_openai_client
 from shared.thesaurus import expand_query, load_synonyms
@@ -1121,6 +1123,8 @@ class EnhancedHybridSearchEngine(HybridSearchEngine):
         bm25_weight: typing.Optional[float] = None,
         client=None,
     ) -> tuple[list[dict], bool]:
+        collector = get_collector()
+        start_time = time.monotonic()
         logger.info(f"拡張検索開始: query='{query}'")
         processed_query = expand_query(query, self.synonyms)
         intent = self.classify_query_intent(processed_query, client)
@@ -1223,6 +1227,8 @@ class EnhancedHybridSearchEngine(HybridSearchEngine):
                     ]
 
         logger.info(f"拡張検索完了: {len(final_results)}件の結果")
+        execution_time = time.monotonic() - start_time
+        collector.log_search(query, final_results, execution_time, cache_hit=False)
         return final_results, len(final_results) == 0
 
 
