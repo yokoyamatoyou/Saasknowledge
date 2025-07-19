@@ -386,7 +386,9 @@ class FileProcessor:
                         images.append(base64.b64encode(buf.getvalue()).decode("utf-8"))
                     pdf_doc.close()
                 elif PIL_SUPPORT and not FITZ_SUPPORT:
-                    logger.warning("PyMuPDF not available, skipping PDF image extraction")
+                    logger.warning(
+                        "PyMuPDF not available, skipping PDF image extraction"
+                    )
             else:
                 text = file_obj.read().decode("utf-8", errors="replace")
                 file_obj.seek(0)
