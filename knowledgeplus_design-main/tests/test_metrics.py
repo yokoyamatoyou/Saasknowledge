@@ -1,12 +1,14 @@
 import sys
 from pathlib import Path
 
-import pytest
-
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
-from shared.metrics import SearchMetricsCollector, get_collector, get_report
-from shared.search_engine import EnhancedHybridSearchEngine, HybridSearchEngine
+import pytest  # noqa: E402
+from shared.metrics import SearchMetricsCollector  # noqa: E402
+from shared.search_engine import (  # noqa: E402
+    EnhancedHybridSearchEngine,
+    HybridSearchEngine,
+)
 
 
 def test_metrics_collector_updates_and_report():
