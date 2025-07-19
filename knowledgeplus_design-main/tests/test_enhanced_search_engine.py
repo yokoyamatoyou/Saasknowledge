@@ -136,3 +136,36 @@ def test_search_filters_and_conflicts(monkeypatch, empty_kb):
     for r in results:
         if r["id"] == "new":
             assert r.get("conflicts")
+
+
+def test_query_expansion(monkeypatch, empty_kb):
+    engine = EnhancedHybridSearchEngine(str(empty_kb))
+    monkeypatch.setattr(engine, "synonyms", {"foo": ["bar"]})
+
+    captured = {}
+
+    def fake_super(self, query, **kwargs):
+        captured["query"] = query
+        return [], True
+
+    monkeypatch.setattr(HybridSearchEngine, "search", fake_super)
+    monkeypatch.setattr(engine, "classify_query_intent", lambda q, client=None: {})
+
+    engine.search("foo")
+    assert captured["query"] == "foo bar"
+
+
+def test_feedback_weight(monkeypatch, empty_kb):
+    engine = EnhancedHybridSearchEngine(str(empty_kb))
+    engine.feedback = {"c1": 2}
+
+    base_results = [{"id": "c1", "text": "x", "metadata": {}, "similarity": 0.5}]
+
+    def fake_super(self, query, **kwargs):
+        return base_results, False
+
+    monkeypatch.setattr(HybridSearchEngine, "search", fake_super)
+    monkeypatch.setattr(engine, "classify_query_intent", lambda q, client=None: {})
+
+    results, _ = engine.search("test")
+    assert results[0]["similarity"] > 0.5
