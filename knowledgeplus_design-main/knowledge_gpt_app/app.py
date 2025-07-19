@@ -77,7 +77,7 @@ if str(repo_root) not in sys.path:
 try:
     from shared.chat_controller import ChatController, get_persona_list, load_persona
     from shared.nltk_utils import ensure_nltk_resources
-    from shared.search_engine import HybridSearchEngine
+    from shared.search_engine import EnhancedHybridSearchEngine
 
     ensure_nltk_resources()
     logger.info("自作モジュールのインポートに成功しました")
@@ -557,7 +557,7 @@ def get_recommended_parameters(text_sample, document_type, client=None):
         }
 
 
-def get_search_engine(kb_name: str) -> HybridSearchEngine:
+def get_search_engine(kb_name: str) -> EnhancedHybridSearchEngine:
     if (
         kb_name not in st.session_state.search_engines
         or st.session_state.search_engines[kb_name] is None
@@ -569,18 +569,20 @@ def get_search_engine(kb_name: str) -> HybridSearchEngine:
             return None
         try:
             logger.info(
-                f"Initializing HybridSearchEngine for '{kb_name}' at path '{kb_path_str}'..."
+                f"Initializing EnhancedHybridSearchEngine for '{kb_name}' at path '{kb_path_str}'..."
             )
-            engine = HybridSearchEngine(kb_path_str)
+            engine = EnhancedHybridSearchEngine(kb_path_str)
             st.session_state.search_engines[kb_name] = engine
             st.session_state.chat_controller = ChatController(
                 engine
             )  # ChatControllerのインスタンスを生成
-            logger.info(f"HybridSearchEngine for '{kb_name}' initialized and cached.")
+            logger.info(
+                f"EnhancedHybridSearchEngine for '{kb_name}' initialized and cached."
+            )
             return engine
         except Exception as e:
             logger.error(
-                f"Failed to initialize HybridSearchEngine for '{kb_name}': {e}",
+                f"Failed to initialize EnhancedHybridSearchEngine for '{kb_name}': {e}",
                 exc_info=True,
             )
             st.session_state.search_engines[kb_name] = None
