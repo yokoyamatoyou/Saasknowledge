@@ -2,6 +2,7 @@ import json
 
 # from sklearn.feature_extraction.text import TfidfVectorizer # BM25には不要
 import pickle
+from datetime import datetime
 
 import numpy as np
 from config import (
@@ -941,6 +942,280 @@ class HybridSearchEngine:
             ]
             is_not_found = False
         return output_results, is_not_found
+
+
+class EnhancedHybridSearchEngine(HybridSearchEngine):
+    """Hybrid search engine with recency, hierarchy and rule conflict logic."""
+
+    def __init__(self, kb_path: str):
+        super().__init__(kb_path)
+        self.version_graph: dict[str, dict] = {}
+        self.rule_index: dict[str, list[str]] = {}
+        self.hierarchy_index: dict[str, list[str]] = {}
+        self._build_extended_indexes()
+
+    def _build_extended_indexes(self) -> None:
+        for chunk in self.chunks:
+            cid = chunk["id"]
+            meta = chunk.get("metadata", {})
+            if "version_info" in meta:
+                self.version_graph[cid] = meta["version_info"]
+            rule_info = meta.get("rule_info", {})
+            if rule_info.get("contains_rules"):
+                for rtype in rule_info.get("rule_types", []):
+                    self.rule_index.setdefault(rtype, []).append(cid)
+            if "hierarchy_info" in meta:
+                level = meta["hierarchy_info"].get("approval_level")
+                if level:
+                    self.hierarchy_index.setdefault(level, []).append(cid)
+
+    def calculate_recency_weight(
+        self,
+        chunk_metadata: dict,
+        query_date: typing.Optional[datetime] = None,
+    ) -> float:
+        if query_date is None:
+            query_date = datetime.now()
+        version_info = chunk_metadata.get("version_info", {})
+        eff = version_info.get("effective_date")
+        if not eff:
+            created = chunk_metadata.get("created_at")
+            if created:
+                eff = created.split()[0]
+            else:
+                return 0.5
+        try:
+            if isinstance(eff, str):
+                effective_date = datetime.strptime(eff, "%Y-%m-%d")
+            else:
+                effective_date = eff
+            days_old = (query_date - effective_date).days
+            decay_rate = 0.001
+            score = float(np.exp(-decay_rate * days_old))
+            expiry = version_info.get("expiry_date")
+            if expiry:
+                expiry_d = datetime.strptime(expiry, "%Y-%m-%d")
+                if query_date > expiry_d:
+                    score *= 0.1
+            return score
+        except Exception as e:
+            logger.warning(f"日付解析エラー (chunk_id: {chunk_metadata.get('id')}): {e}")
+            return 0.5
+
+    def filter_latest_versions(self, chunks: list[dict]) -> list[dict]:
+        latest = []
+        deprecated = set()
+        for ch in chunks:
+            vi = ch.get("metadata", {}).get("version_info", {})
+            sb = vi.get("superseded_by")
+            if sb:
+                deprecated.add(ch["id"])
+        for ch in chunks:
+            cid = ch["id"]
+            vi = ch.get("metadata", {}).get("version_info", {})
+            status = vi.get("status", "active")
+            if status == "deprecated" or cid in deprecated:
+                continue
+            latest.append(ch)
+        return latest
+
+    def detect_rule_conflicts(self, chunks: list[dict], client=None) -> list[dict]:
+        if client is None:
+            client = get_openai_client()
+            if client is None:
+                logger.warning("ルール矛盾検出: OpenAIクライアントが利用できません")
+                return []
+
+        conflicts: list[dict] = []
+        rules_by_type: dict[str, list[dict]] = {}
+        for ch in chunks:
+            rinfo = ch.get("metadata", {}).get("rule_info", {})
+            if not rinfo.get("contains_rules"):
+                continue
+            for rule in rinfo.get("extracted_rules", []):
+                rtype = rule.get("rule_type")
+                if rtype:
+                    rules_by_type.setdefault(rtype, []).append(
+                        {
+                            "chunk_id": ch["id"],
+                            "rule": rule,
+                            "source": ch.get("metadata", {}).get("hierarchy_info", {}),
+                        }
+                    )
+
+        for rtype, rlist in rules_by_type.items():
+            if len(rlist) < 2:
+                continue
+            rules_text = json.dumps(rlist, ensure_ascii=False, indent=2)
+            prompt = (
+                f"以下の{rtype}に関するルールを分析し、矛盾や不整合を検出してください。\n"
+                f"ルール一覧:\n{rules_text}\n"
+                "以下のJSON形式で矛盾を報告してください:\n"
+                '{\n    "has_conflict": true/false,\n    "conflicts": []\n}'
+            )
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4",
+                    response_format={"type": "json_object"},
+                    messages=[
+                        {"role": "system", "content": "ビジネスルールの矛盾検出専門家"},
+                        {"role": "user", "content": prompt},
+                    ],
+                )
+                result = json.loads(response.choices[0].message.content)
+                if result.get("has_conflict"):
+                    conflicts.extend(result.get("conflicts", []))
+            except Exception as e:
+                logger.error(f"ルール矛盾検出エラー (rule_type: {rtype}): {e}")
+        return conflicts
+
+    def classify_query_intent(self, query: str, client=None) -> dict:
+        if client is None:
+            client = get_openai_client()
+            if client is None:
+                return {
+                    "primary_intent": "general",
+                    "temporal_requirement": "any",
+                    "scope": "company_wide",
+                    "needs_latest": False,
+                }
+        prompt = (
+            f'以下の検索クエリの意図を分析してください。\nクエリ: "{query}"\n\n'
+            "JSON形式で以下の情報を返してください:\n"
+            '{\n  "primary_intent": "latest_info|procedure|comparison|definition|general",'
+            '\n  "temporal_requirement": "latest|historical|any",'
+            '\n  "scope": "company_wide|department|specific_location",'
+            '\n  "needs_latest": true/false,\n  "rule_type": "見積り条件|承認権限|手続き|その他|null",'
+            '\n  "keywords": []\n}'
+        )
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4",
+                response_format={"type": "json_object"},
+                messages=[
+                    {"role": "system", "content": "検索意図分析の専門家"},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.1,
+            )
+            return json.loads(response.choices[0].message.content)
+        except Exception as e:
+            logger.error(f"クエリ意図分析エラー: {e}")
+            return {
+                "primary_intent": "general",
+                "temporal_requirement": "any",
+                "scope": "company_wide",
+                "needs_latest": False,
+            }
+
+    def search(
+        self,
+        query: str,
+        top_k: int = 5,
+        threshold: float = 0.15,
+        vector_weight: typing.Optional[float] = None,
+        bm25_weight: typing.Optional[float] = None,
+        client=None,
+    ) -> tuple[list[dict], bool]:
+        logger.info(f"拡張検索開始: query='{query}'")
+        intent = self.classify_query_intent(query, client)
+        logger.info(f"クエリ意図: {intent}")
+
+        if vector_weight is None or bm25_weight is None:
+            vector_weight, bm25_weight = compute_hybrid_weights(len(self.chunks))
+
+        recency_weight = 0.0
+        hierarchy_weight = 0.0
+
+        if intent.get("needs_latest") or intent.get("temporal_requirement") == "latest":
+            recency_weight = 0.3
+            vector_weight *= 0.7
+            bm25_weight *= 0.7
+
+        if intent.get("scope") == "company_wide":
+            hierarchy_weight = 0.2
+            vector_weight *= 0.8
+            bm25_weight *= 0.8
+
+        base_results, not_found = super().search(
+            query,
+            top_k=top_k * 3,
+            threshold=threshold / 2,
+            vector_weight=vector_weight,
+            bm25_weight=bm25_weight,
+            client=client,
+        )
+
+        if not_found or not base_results:
+            logger.info("基本検索で結果が見つかりませんでした")
+            return [], True
+
+        enhanced_results = []
+        for res in base_results:
+            meta = res.get("metadata", {})
+            recency_score = 0.0
+            if recency_weight > 0:
+                recency_score = self.calculate_recency_weight(meta)
+
+            hierarchy_score = 0.0
+            if hierarchy_weight > 0:
+                hinfo = meta.get("hierarchy_info", {})
+                level = hinfo.get("approval_level", "local")
+                hmap = {"company": 1.0, "department": 0.7, "local": 0.4}
+                hierarchy_score = hmap.get(level, 0.4)
+                authority = hinfo.get("authority_score", 0.5)
+                hierarchy_score = hierarchy_score * 0.7 + authority * 0.3
+
+            base_score = res["similarity"]
+            final_score = (
+                base_score * (1 - recency_weight - hierarchy_weight)
+                + recency_score * recency_weight
+                + hierarchy_score * hierarchy_weight
+            )
+            res["score_breakdown"] = {
+                "base_score": base_score,
+                "recency_score": recency_score,
+                "hierarchy_score": hierarchy_score,
+                "final_score": final_score,
+                "weights": {
+                    "base": 1 - recency_weight - hierarchy_weight,
+                    "recency": recency_weight,
+                    "hierarchy": hierarchy_weight,
+                },
+            }
+            res["similarity"] = final_score
+            enhanced_results.append(res)
+
+        if intent.get("needs_latest"):
+            chunks_data = [
+                {"id": r["id"], "text": r["text"], "metadata": r["metadata"]}
+                for r in enhanced_results
+            ]
+            latest = self.filter_latest_versions(chunks_data)
+            latest_ids = {c["id"] for c in latest}
+            enhanced_results = [r for r in enhanced_results if r["id"] in latest_ids]
+
+        enhanced_results.sort(key=lambda x: x["similarity"], reverse=True)
+        final_results = [r for r in enhanced_results if r["similarity"] >= threshold][
+            :top_k
+        ]
+
+        if len(final_results) > 1 and intent.get("rule_type"):
+            chunks_for_conflict = [
+                {"id": r["id"], "text": r["text"], "metadata": r["metadata"]}
+                for r in final_results
+            ]
+            conflicts = self.detect_rule_conflicts(chunks_for_conflict, client)
+            if conflicts:
+                for r in final_results:
+                    r["conflicts"] = [
+                        c
+                        for c in conflicts
+                        if r["id"] in c.get("conflicting_chunks", [])
+                    ]
+
+        logger.info(f"拡張検索完了: {len(final_results)}件の結果")
+        return final_results, len(final_results) == 0
 
 
 def search_knowledge_base(
