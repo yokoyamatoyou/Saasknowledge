@@ -434,7 +434,9 @@ def get_embedding(text, model=None, client=None):
         client = get_openai_client()
         if client is None:
             logger.error("OpenAIクライアントが利用できません (get_embedding)")
-            st.error("OpenAI APIに接続できません (get_embedding)。APIキーを確認してください。")
+            st.error(
+                "OpenAI APIに接続できません (get_embedding)。APIキーを確認してください。"
+            )
             return None
     effective_model = (
         model if model else st.session_state.get("embedding_model", EMBEDDING_MODEL)
@@ -445,7 +447,9 @@ def get_embedding(text, model=None, client=None):
     try:
         max_input_chars = 25000
         if len(text) > max_input_chars:
-            logger.warning(f"入力テキスト長が{max_input_chars}文字を超過。切り詰めます。")
+            logger.warning(
+                f"入力テキスト長が{max_input_chars}文字を超過。切り詰めます。"
+            )
             text_to_embed = text[:max_input_chars]
         else:
             text_to_embed = text
@@ -454,8 +458,12 @@ def get_embedding(text, model=None, client=None):
         )
         return response.data[0].embedding
     except Exception as e:
-        logger.error(f"埋め込みベクトル作成エラー ({effective_model}): {e}", exc_info=True)
-        st.error(f"埋め込みベクトルの作成中にエラーが発生しました ({effective_model}): {e}")
+        logger.error(
+            f"埋め込みベクトル作成エラー ({effective_model}): {e}", exc_info=True
+        )
+        st.error(
+            f"埋め込みベクトルの作成中にエラーが発生しました ({effective_model}): {e}"
+        )
         return None
 
 
@@ -512,7 +520,9 @@ def get_recommended_parameters(text_sample, document_type, client=None):
     if client is None:
         client = get_openai_client()
         if client is None:
-            logger.error("OpenAIクライアントが利用できません (get_recommended_parameters)")
+            logger.error(
+                "OpenAIクライアントが利用できません (get_recommended_parameters)"
+            )
             return {
                 "overlap": 15,
                 "sudachi_mode": "C",
@@ -564,7 +574,9 @@ def get_search_engine(kb_name: str) -> EnhancedHybridSearchEngine:
     ):
         kb_path_str = str(RAG_BASE_DIR / kb_name)
         if not os.path.exists(kb_path_str):
-            logger.error(f"ナレッジベースのパスが見つかりません: {kb_path_str} (KB名: {kb_name})")
+            logger.error(
+                f"ナレッジベースのパスが見つかりません: {kb_path_str} (KB名: {kb_name})"
+            )
             st.session_state.search_engines[kb_name] = None
             return None
         try:
@@ -576,7 +588,9 @@ def get_search_engine(kb_name: str) -> EnhancedHybridSearchEngine:
             st.session_state.chat_controller = ChatController(
                 engine
             )  # ChatControllerのインスタンスを生成
-            logger.info(f"EnhancedHybridSearchEngine for '{kb_name}' initialized and cached.")
+            logger.info(
+                f"EnhancedHybridSearchEngine for '{kb_name}' initialized and cached."
+            )
             return engine
         except Exception as e:
             logger.error(
@@ -619,7 +633,9 @@ def list_knowledge_bases() -> List[Dict[str, Any]]:
                             metadata = json.load(f)
                         kb_info.update(metadata)
                     except Exception as e:
-                        logger.warning(f"メタデータ読み込み失敗 ({kb_name}): {e}", exc_info=False)
+                        logger.warning(
+                            f"メタデータ読み込み失敗 ({kb_name}): {e}", exc_info=False
+                        )
                 kb_list.append(kb_info)
     return kb_list
 
@@ -631,7 +647,9 @@ def create_run_script():
             f.write("@echo off\nchcp 65001 > nul\n")
             f.write("echo RAG System Tool Startup...\n")
             f.write("if not exist .env (\n")
-            f.write("  echo APIキーが.envファイルに見つかりません。入力してください。\n")
+            f.write(
+                "  echo APIキーが.envファイルに見つかりません。入力してください。\n"
+            )
             f.write("  set /p OPENAI_API_KEY=OpenAI API Key: \n")
             f.write("  echo OPENAI_API_KEY=%OPENAI_API_KEY% > .env\n")
             f.write("  echo APIキーを.envに保存しました。\n")
@@ -647,7 +665,9 @@ def create_run_script():
         ) as f:
             f.write('#!/bin/bash\necho "RAG System Tool Startup..."\n')
             f.write("if [ ! -f .env ]; then\n")
-            f.write('  echo "APIキーが.envファイルに見つかりません。入力してください。"\n')
+            f.write(
+                '  echo "APIキーが.envファイルに見つかりません。入力してください。"\n'
+            )
             f.write('  read -p "OpenAI API Key: " OPENAI_API_KEY_INPUT\n')
             f.write('  echo "OPENAI_API_KEY=$OPENAI_API_KEY_INPUT" > .env\n')
             f.write('  echo "APIキーを.envに保存しました。"\n')
@@ -669,7 +689,9 @@ def create_run_script():
 def export_knowledge_base(kb_name):
     kb_dir = RAG_BASE_DIR / kb_name
     if not kb_dir.exists() or not kb_dir.is_dir():
-        st.warning(f"ナレッジベース '{kb_name}' は存在しないか、ディレクトリではありません。")
+        st.warning(
+            f"ナレッジベース '{kb_name}' は存在しないか、ディレクトリではありません。"
+        )
         return None
     try:
         with tempfile.TemporaryDirectory() as export_dir_temp:
@@ -784,7 +806,9 @@ def optimize_chunk_for_mini(chunk_text, document_type, metadata, client=None):
         return chunk_text[: min(len(chunk_text), 800)] + "..."
 
 
-def segment_text_by_meaning(text, sudachi_mode="C", document_type="一般文書", client=None):
+def segment_text_by_meaning(
+    text, sudachi_mode="C", document_type="一般文書", client=None
+):
     if client is None:
         client = get_openai_client()
         if client is None:
@@ -1160,7 +1184,9 @@ def search_multiple_knowledge_bases(
                         r["kb_name"] = kb_name
                     all_results.extend(results_for_kb)
             except Exception as e:
-                logger.error(f"ナレッジベース '{kb_name}' 検索エラー: {e}", exc_info=True)
+                logger.error(
+                    f"ナレッジベース '{kb_name}' 検索エラー: {e}", exc_info=True
+                )
                 st.warning(f"ナレッジベース '{kb_name}' での検索中にエラー。")
         else:
             st.warning(f"ナレッジベース '{kb_name}' の検索エンジン利用不可。")
@@ -1212,11 +1238,15 @@ def semantic_chunking(
                 text, sudachi_mode, document_type, client
             )
             if not segments:
-                st.warning("意味単位での分割結果が空です。段落分割にフォールバックします。")
+                st.warning(
+                    "意味単位での分割結果が空です。段落分割にフォールバックします。"
+                )
                 segments = [p.strip() for p in text.split("\n\n") if p.strip()]
             st.success(f"{len(segments)}個のセグメントに分割完了")
             status_seg.update(label="意味単位分割完了", state="complete")
-        with st.status("オーバーラップチャンクを作成中...", expanded=False) as status_chk:
+        with st.status(
+            "オーバーラップチャンクを作成中...", expanded=False
+        ) as status_chk:
             chunks = create_overlapping_chunks(
                 segments, overlap_ratio, st.session_state.get("max_chunk_size", 1000)
             )
@@ -1333,7 +1363,9 @@ st.markdown(
 )
 
 if app_mode == "ナレッジ構築":
-    st.markdown("ドキュメントをアップロードして意味ベースのチャンク分けを実行し、RAG用のナレッジベースを構築します。")
+    st.markdown(
+        "ドキュメントをアップロードして意味ベースのチャンク分けを実行し、RAG用のナレッジベースを構築します。"
+    )
     tab1, tab2 = st.tabs(["ナレッジベース作成", "ナレッジベース管理"])
     with tab1:
         st.header("ナレッジベース作成")
@@ -1403,9 +1435,9 @@ if app_mode == "ナレッジ構築":
                                 client_for_detection,
                             )
                             st.session_state["detected_doc_type"] = detection_result
-                            st.session_state[
-                                "_last_uploaded_filename_for_doc_type"
-                            ] = uploaded_file.name
+                            st.session_state["_last_uploaded_filename_for_doc_type"] = (
+                                uploaded_file.name
+                            )
                             document_type_selection_from_state = detection_result.get(
                                 "doc_type"
                             )
@@ -1415,11 +1447,15 @@ if app_mode == "ナレッジ構築":
                             with st.expander("判断理由を見る"):
                                 st.info(f"{detection_result.get('reasoning', 'N/A')}")
                         else:
-                            st.warning("文書タイプ自動判別不可: OpenAIクライアントエラー。手動で選択してください。")
+                            st.warning(
+                                "文書タイプ自動判別不可: OpenAIクライアントエラー。手動で選択してください。"
+                            )
                             st.session_state["detected_doc_type"] = None
                             document_type_selection_from_state = None
                     else:
-                        st.warning("ファイル内容の読み込みに失敗したため、文書タイプ判別をスキップします。")
+                        st.warning(
+                            "ファイル内容の読み込みに失敗したため、文書タイプ判別をスキップします。"
+                        )
                         st.session_state["detected_doc_type"] = None
                         document_type_selection_from_state = None
         doc_type_final_idx = 0
@@ -1487,7 +1523,9 @@ if app_mode == "ナレッジ構築":
             rec_p = st.session_state["recommended_params"]
             with st.sidebar.expander("GPTによる推奨設定案を見る", expanded=False):
                 st.markdown(f"推奨オーバーラップ率: **{rec_p.get('overlap', 'N/A')}%**")
-                st.markdown(f"推奨形態素解析粒度: **{rec_p.get('sudachi_mode', 'N/A')}**")
+                st.markdown(
+                    f"推奨形態素解析粒度: **{rec_p.get('sudachi_mode', 'N/A')}**"
+                )
                 st.caption(f"理由: {rec_p.get('reasoning', 'N/A')}")
                 if st.button("この推奨設定を適用", key="apply_rec_params_sidebar"):
                     st.session_state["overlap_ratio"] = rec_p.get(
@@ -1531,9 +1569,9 @@ if app_mode == "ナレッジ構築":
                                         final_document_type_selected,
                                         client_for_pipeline,
                                     )
-                                    st.session_state[
-                                        "recommended_params"
-                                    ] = rec_params_val
+                                    st.session_state["recommended_params"] = (
+                                        rec_params_val
+                                    )
                                     st.session_state[
                                         "_last_uploaded_filename_for_param_rec"
                                     ] = uploaded_file.name
@@ -1551,7 +1589,9 @@ if app_mode == "ナレッジ構築":
                             original_bytes=file_bytes,
                         )
                 else:
-                    st.error("ファイル内容の読み込みに失敗したため、処理を中止しました。")
+                    st.error(
+                        "ファイル内容の読み込みに失敗したため、処理を中止しました。"
+                    )
         elif not kb_name_input:
             st.warning("ナレッジベース名を入力してください。")
         elif not uploaded_file:
@@ -1580,8 +1620,12 @@ if app_mode == "ナレッジ構築":
                     with tab_c_meta:
                         st.json(chunk_item_disp.get("meta_info", {}), expanded=False)
             if len(chunks_to_display) > 5:
-                st.info(f"全 {len(chunks_to_display)} 件中、最初の5件を表示しています。")
-            if st.button("プレビューをクリアして次の準備をする", key="clear_processed_chunks"):
+                st.info(
+                    f"全 {len(chunks_to_display)} 件中、最初の5件を表示しています。"
+                )
+            if st.button(
+                "プレビューをクリアして次の準備をする", key="clear_processed_chunks"
+            ):
                 st.session_state["processed_chunks"] = None
                 st.session_state["detected_doc_type"] = None
                 st.session_state["recommended_params"] = None
@@ -1633,7 +1677,9 @@ if app_mode == "ナレッジ構築":
                         key=f"export_kb_btn_{selected_kb_to_manage}",
                         use_container_width=True,
                     ):
-                        with st.spinner(f"'{selected_kb_to_manage}' をエクスポート準備中..."):
+                        with st.spinner(
+                            f"'{selected_kb_to_manage}' をエクスポート準備中..."
+                        ):
                             export_zip_data = export_knowledge_base(
                                 selected_kb_to_manage
                             )
@@ -1695,7 +1741,9 @@ if app_mode == "ナレッジ構築":
                                     exc_info=True,
                                 )
         else:
-            st.info("利用可能なナレッジベースがありません。「ナレッジベース作成」タブから新しいナレッジベースを作成してください。")
+            st.info(
+                "利用可能なナレッジベースがありません。「ナレッジベース作成」タブから新しいナレッジベースを作成してください。"
+            )
     with st.expander("ℹ RAGシステムのベストプラクティスとヒント"):
         st.markdown(
             """
@@ -1707,7 +1755,9 @@ if app_mode == "ナレッジ構築":
         """
         )
     with st.expander("⚡ ワンクリック起動スクリプトを作成"):
-        if st.button("Windows/Mac/Linux用 起動スクリプト生成", key="create_startup_script_btn"):
+        if st.button(
+            "Windows/Mac/Linux用 起動スクリプト生成", key="create_startup_script_btn"
+        ):
             script_msg = create_run_script()
             st.success(script_msg)
             st.info(
@@ -1755,7 +1805,9 @@ elif app_mode == "ナレッジ検索":
         else:
             st.sidebar.caption("検索エンジンは検索実行時に自動準備されます。")
     else:
-        st.sidebar.warning("利用可能なナレッジベースがありません。「ナレッジ構築」モードでナレッジベースを作成してください。")
+        st.sidebar.warning(
+            "利用可能なナレッジベースがありません。「ナレッジ構築」モードでナレッジベースを作成してください。"
+        )
     st.sidebar.header("検索パラメータ")
     search_threshold_val_ui = st.sidebar.slider(
         "検索類似度閾値",
@@ -1765,8 +1817,12 @@ elif app_mode == "ナレッジ検索":
         0.01,
         help="この値以上の類似度を持つ結果を表示します。低いほど多くの結果が出ますが、関連性が低いものも混ざります。",
     )
-    top_k_val_ui = st.sidebar.slider("最大検索結果数", 1, 20, 5, help="表示する検索結果の最大数。")
-    generate_gpt_answer_flag_ui = st.sidebar.checkbox("検索結果からGPTで回答を要約生成する", value=True)
+    top_k_val_ui = st.sidebar.slider(
+        "最大検索結果数", 1, 20, 5, help="表示する検索結果の最大数。"
+    )
+    generate_gpt_answer_flag_ui = st.sidebar.checkbox(
+        "検索結果からGPTで回答を要約生成する", value=True
+    )
     if generate_gpt_answer_flag_ui:
         st.sidebar.markdown("##### GPT回答生成設定")
         persona_details_list_kb_gpt = get_persona_list()
@@ -1835,7 +1891,9 @@ elif app_mode == "ナレッジ検索":
         if not search_query_input_val.strip():
             st.warning("検索クエリを入力してください。")
         elif not st.session_state.get("selected_kbs"):
-            st.warning("検索対象のナレッジベースが選択されていません。サイドバーで選択してください。")
+            st.warning(
+                "検索対象のナレッジベースが選択されていません。サイドバーで選択してください。"
+            )
         else:
             ready_to_search_kbs_list = []
             for kb_name_check_search in st.session_state["selected_kbs"]:
@@ -1853,7 +1911,9 @@ elif app_mode == "ナレッジ検索":
                 ):
                     client_for_search_and_gpt = get_openai_client()
                     if not client_for_search_and_gpt:
-                        st.error("OpenAIクライアントの取得に失敗しました。検索およびGPT回答生成は実行できません。")
+                        st.error(
+                            "OpenAIクライアントの取得に失敗しました。検索およびGPT回答生成は実行できません。"
+                        )
                     else:
                         (
                             search_results_data,
@@ -1866,7 +1926,9 @@ elif app_mode == "ナレッジ検索":
                             client=client_for_search_and_gpt,
                         )
                 if not_found_flag_val or not search_results_data:
-                    st.warning("検索結果が見つかりませんでした。クエリを変えるか、類似度閾値を調整してみてください。")
+                    st.warning(
+                        "検索結果が見つかりませんでした。クエリを変えるか、類似度閾値を調整してみてください。"
+                    )
                 else:
                     st.success(
                         f"{len(search_results_data)}件の関連情報が見つかりました（類似度閾値: {search_threshold_val_ui}）。"
@@ -1936,7 +1998,9 @@ elif app_mode == "ナレッジ検索":
                                 height=200,
                                 key=f"search_res_text_{i_disp}",
                             )
-                            with st.popover("詳細メタデータを見る...", use_container_width=True):
+                            with st.popover(
+                                "詳細メタデータを見る...", use_container_width=True
+                            ):
                                 st.json(meta_info_disp, expanded=True)
                         time.sleep(0.05)
     with st.expander("💡 ナレッジ検索の使い方とヒント"):
@@ -1957,7 +2021,9 @@ elif app_mode == "FAQ作成":
     kb_list_for_faq = list_knowledge_bases()
     kb_names_for_faq = [kb["name"] for kb in kb_list_for_faq]
     if not kb_names_for_faq:
-        st.info("利用可能なナレッジベースがありません。まず『ナレッジ構築』モードで作成してください。")
+        st.info(
+            "利用可能なナレッジベースがありません。まず『ナレッジ構築』モードで作成してください。"
+        )
     else:
         current_faq_kb = st.session_state.get("faq_kb_name", kb_names_for_faq[0])
         if current_faq_kb not in kb_names_for_faq:
@@ -2107,7 +2173,9 @@ elif app_mode == "chatGPT":
 
             history_for_gpt_send = [
                 msg
-                for msg in st.session_state.gpt_messages[:-1]  # 最新のユーザーメッセージを除外
+                for msg in st.session_state.gpt_messages[
+                    :-1
+                ]  # 最新のユーザーメッセージを除外
                 if msg["role"] in ["user", "assistant"]
             ]
 
@@ -2131,7 +2199,9 @@ elif app_mode == "chatGPT":
                     placeholder.markdown(gpt_response_text_val)
                 except Exception as e:
                     logger.error(f"GPT応答生成中にエラー: {e}", exc_info=True)
-                    gpt_response_text_val = "申し訳ありません、応答の生成中にエラーが発生しました。"
+                    gpt_response_text_val = (
+                        "申し訳ありません、応答の生成中にエラーが発生しました。"
+                    )
                     placeholder.error(gpt_response_text_val)
 
             # 3. アシスタントの応答をセッションに追加
@@ -2217,7 +2287,9 @@ elif app_mode == "chatGPT":
                     st.success(f"会話「{loaded_title_val}」を読み込みました。")
                     st.rerun()
                 else:
-                    st.error("会話の読み込みに失敗しました。ファイルが破損している可能性があります。")
+                    st.error(
+                        "会話の読み込みに失敗しました。ファイルが破損している可能性があります。"
+                    )
         else:
             st.write("保存された会話はまだありません。")
 
