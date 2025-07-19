@@ -41,7 +41,11 @@ def test_positive_feedback(monkeypatch):
     mod = _load_module(monkeypatch)
     monkeypatch.setattr(mod, "render_document_card", lambda *a, **k: None)
     records = []
-    monkeypatch.setattr(mod.feedback_store, "record_feedback", lambda cid, score=1: records.append((cid, score)))
+    monkeypatch.setattr(
+        mod.feedback_store,
+        "record_feedback",
+        lambda cid, score=1: records.append((cid, score)),
+    )
     monkeypatch.setattr(st, "toast", lambda *a, **k: None)
     _setup_cols(monkeypatch, "役に立った")
 
@@ -54,7 +58,11 @@ def test_negative_feedback(monkeypatch):
     mod = _load_module(monkeypatch)
     monkeypatch.setattr(mod, "render_document_card", lambda *a, **k: None)
     records = []
-    monkeypatch.setattr(mod.feedback_store, "record_feedback", lambda cid, score=1: records.append((cid, score)))
+    monkeypatch.setattr(
+        mod.feedback_store,
+        "record_feedback",
+        lambda cid, score=1: records.append((cid, score)),
+    )
     monkeypatch.setattr(st, "toast", lambda *a, **k: None)
     _setup_cols(monkeypatch, "役に立たなかった")
 

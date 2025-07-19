@@ -1,9 +1,9 @@
 import streamlit as st
 from config import HYBRID_BM25_WEIGHT, HYBRID_VECTOR_WEIGHT
 from knowledge_gpt_app.app import list_knowledge_bases, search_multiple_knowledge_bases
+from shared import feedback_store
 from shared.openai_utils import get_openai_client
 from ui_modules.document_card import render_document_card
-from shared import feedback_store
 
 
 def render_result_with_feedback(doc):
