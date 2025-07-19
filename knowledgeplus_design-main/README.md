@@ -137,11 +137,13 @@ graph TD
 
 ## 🧪 テストの実行
 
-自動テストスイートは `pytest` で実行できます。
-`numpy` や `PyMuPDF` などテストに必要なライブラリは、リポジトリ直下の
-`scripts/install_tests.sh` でまとめてインストールできます。
+自動テストスイートは `pytest` で実行できます。まず `scripts/install_tests.sh` を
+実行して `numpy` や `PyMuPDF` など必須ライブラリを導入してください。必要に応じて
+`scripts/install_extra.sh` で heavy な依存関係も追加します。
 
 ```bash
+scripts/install_tests.sh
+scripts/install_extra.sh  # テスト内容に応じて
 pytest -q
 ```
 PNG アップロード処理を検証するテストでは、コード内で小さな画像を生成して
