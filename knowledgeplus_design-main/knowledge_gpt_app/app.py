@@ -35,7 +35,13 @@ except Exception:  # pragma: no cover - fall back to simple split
 import time
 
 # Optional libraries for PDF/Docx OCR handling
-import fitz  # PyMuPDF
+try:
+    import fitz  # PyMuPDF
+
+    FITZ_SUPPORT = True
+except ImportError:  # pragma: no cover - optional
+    fitz = None
+    FITZ_SUPPORT = False
 import pytesseract
 from generate_faq import generate_faqs_from_chunks
 from shared.file_processor import FileProcessor
@@ -274,7 +280,7 @@ def read_file(file):
                 page_text = page.extract_text()
                 if page_text:
                     content += page_text + "\n"
-                elif OCR_SUPPORT and Image:
+                elif OCR_SUPPORT and Image and FITZ_SUPPORT:
                     if ocr_doc is None:
                         ocr_doc = fitz.open(stream=data, filetype="pdf")
                     pix = ocr_doc.load_page(idx).get_pixmap()
@@ -282,6 +288,9 @@ def read_file(file):
                     ocr_text = pytesseract.image_to_string(img, lang="jpn+eng")
                     if ocr_text.strip():
                         content += ocr_text + "\n"
+                elif OCR_SUPPORT and Image and not FITZ_SUPPORT:
+                    st.warning("PyMuPDF がないため PDF のOCRは実行できません")
+                    break
             if ocr_doc is not None:
                 ocr_doc.close()
             os.unlink(temp_path)
