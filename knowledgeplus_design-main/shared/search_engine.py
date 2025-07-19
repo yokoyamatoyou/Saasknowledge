@@ -3,6 +3,7 @@ import json
 # from sklearn.feature_extraction.text import TfidfVectorizer # BM25には不要
 import pickle
 from datetime import datetime
+from functools import lru_cache
 
 import numpy as np
 from config import (
@@ -1230,6 +1231,20 @@ class EnhancedHybridSearchEngine(HybridSearchEngine):
         execution_time = time.monotonic() - start_time
         collector.log_search(query, final_results, execution_time, cache_hit=False)
         return final_results, len(final_results) == 0
+
+
+class CachedEnhancedSearchEngine(EnhancedHybridSearchEngine):
+    """Enhanced search engine with cached intent classification."""
+
+    @lru_cache(maxsize=128)
+    def _cached_intent_analysis(self, query: str) -> dict:
+        """Return cached intent analysis results."""
+        return super().classify_query_intent(query)
+
+    def classify_query_intent(self, query: str, client=None) -> dict:  # type: ignore[override]
+        if client is not None:
+            return super().classify_query_intent(query, client)
+        return self._cached_intent_analysis(query)
 
 
 def search_knowledge_base(
