@@ -9,6 +9,20 @@ def render_search_mode(safe_generate_gpt_response):
     """Refactored search interface with a clean layout and simplified controls."""
     st.subheader("ナレッジ検索")
 
+    sidebar = st.sidebar
+    if hasattr(sidebar, "checkbox"):
+        if "filter_latest" not in st.session_state:
+            st.session_state["filter_latest"] = False
+        if "filter_company_rules" not in st.session_state:
+            st.session_state["filter_company_rules"] = False
+        with sidebar.expander("検索フィルター", expanded=False):
+            st.session_state["filter_latest"] = st.checkbox(
+                "最新バージョンのみ", value=st.session_state["filter_latest"]
+            )
+            st.session_state["filter_company_rules"] = st.checkbox(
+                "会社規定のみ", value=st.session_state["filter_company_rules"]
+            )
+
     # Apply custom CSS for buttons
     st.markdown(
         """
@@ -66,12 +80,30 @@ def render_search_mode(safe_generate_gpt_response):
         try:
             kb_names = [kb["name"] for kb in list_knowledge_bases()]
             if kb_names:
-                st.session_state["results"], _ = search_multiple_knowledge_bases(
+                results, _ = search_multiple_knowledge_bases(
                     query,
                     kb_names,
                     vector_weight=HYBRID_VECTOR_WEIGHT,
                     bm25_weight=HYBRID_BM25_WEIGHT,
                 )
+                if st.session_state.get("filter_latest"):
+                    results = [
+                        r
+                        for r in results
+                        if not r.get("metadata", {})
+                        .get("version_info", {})
+                        .get("superseded_by")
+                    ]
+                if st.session_state.get("filter_company_rules"):
+                    results = [
+                        r
+                        for r in results
+                        if r.get("metadata", {})
+                        .get("hierarchy_info", {})
+                        .get("approval_level")
+                        == "company"
+                    ]
+                st.session_state["results"] = results
             else:
                 st.session_state["results"] = []
                 st.warning("検索可能なナレッジベースがありません。")

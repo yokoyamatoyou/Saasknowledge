@@ -32,6 +32,24 @@ def render_document_card(doc: Dict[str, Any]) -> None:
     body = f"<div class='doc-card'><strong>{escape(title)}</strong>"
     if similarity is not None:
         body += f"<div>Score: {similarity:.3f}</div>"
+
+    version_info = meta.get("version_info", {})
+    if version_info:
+        ver_parts = []
+        if version_info.get("version"):
+            ver_parts.append(f"v{escape(str(version_info['version']))}")
+        if version_info.get("effective_date"):
+            ver_parts.append(f"{escape(str(version_info['effective_date']))} 発効")
+        body += f"<div>Version: {' | '.join(ver_parts)}</div>"
+
+    hierarchy_info = meta.get("hierarchy_info", {})
+    level = hierarchy_info.get("approval_level")
+    if level:
+        body += f"<div>Level: {escape(str(level))}</div>"
+
+    if doc.get("conflicts"):
+        body += "<div style='color:red;'>⚠ ルール矛盾あり</div>"
+
     body += f"<div>{escape(snippet)}...</div></div>"
     st.markdown(body, unsafe_allow_html=True)
 
