@@ -1,8 +1,8 @@
+import argparse
 import json
 import logging
-from pathlib import Path
 from datetime import datetime
-import argparse
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,9 @@ def migrate_metadata_file(metadata_path: Path, chunk_text: str | None = None) ->
         if "version_info" not in metadata:
             metadata["version_info"] = {
                 "version": "1.0.0",
-                "effective_date": metadata.get("created_at", datetime.now().strftime("%Y-%m-%d")).split()[0],
+                "effective_date": metadata.get(
+                    "created_at", datetime.now().strftime("%Y-%m-%d")
+                ).split()[0],
                 "expiry_date": None,
                 "supersedes": [],
                 "superseded_by": None,
