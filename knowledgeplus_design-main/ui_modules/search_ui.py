@@ -3,6 +3,26 @@ from config import HYBRID_BM25_WEIGHT, HYBRID_VECTOR_WEIGHT
 from knowledge_gpt_app.app import list_knowledge_bases, search_multiple_knowledge_bases
 from shared.openai_utils import get_openai_client
 from ui_modules.document_card import render_document_card
+from shared import feedback_store
+
+
+def render_result_with_feedback(doc):
+    """Render a search result and capture feedback from the user."""
+    render_document_card(doc)
+    chunk_id = str(
+        doc.get("id")
+        or doc.get("metadata", {}).get("id")
+        or doc.get("metadata", {}).get("chunk_id", "")
+    )
+    if not chunk_id:
+        return
+    col_good, col_bad, _ = st.columns([0.15, 0.15, 0.7])
+    if col_good.button("役に立った", key=f"useful_{chunk_id}"):
+        feedback_store.record_feedback(chunk_id, 1)
+        st.toast("フィードバックを保存しました")
+    if col_bad.button("役に立たなかった", key=f"not_useful_{chunk_id}"):
+        feedback_store.record_feedback(chunk_id, -1)
+        st.toast("フィードバックを保存しました")
 
 
 def render_search_mode(safe_generate_gpt_response):
@@ -156,4 +176,4 @@ def render_search_mode(safe_generate_gpt_response):
                 st.info("検索結果がありません。")
         with tabs[1]:
             for doc in st.session_state.get("results", []):
-                render_document_card(doc)
+                render_result_with_feedback(doc)
