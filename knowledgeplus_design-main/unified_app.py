@@ -4,6 +4,8 @@ import uuid
 from datetime import datetime
 
 import streamlit as st
+from config import DEFAULT_KB_NAME
+from knowledge_gpt_app.app import get_search_engine
 from shared.chat_controller import ChatController, get_persona_list
 from shared.chat_history_utils import (
     create_history,
@@ -16,9 +18,6 @@ from shared.upload_utils import ensure_openai_key
 from ui_modules.chat_ui import render_chat_mode
 from ui_modules.management_ui import render_management_mode
 from ui_modules.search_ui import render_search_mode
-
-from knowledge_gpt_app.app import get_search_engine
-from config import DEFAULT_KB_NAME
 from ui_modules.sidebar_toggle import render_sidebar_toggle
 from ui_modules.theme import apply_intel_theme
 
@@ -172,7 +171,9 @@ else:
 sidebar = st.sidebar
 if hasattr(sidebar, "markdown"):
     sidebar.markdown("---")
-if hasattr(sidebar, "button") and sidebar.button("＋ 新しいチャット", key="new_chat_btn"):
+if hasattr(sidebar, "button") and sidebar.button(
+    "＋ 新しいチャット", key="new_chat_btn"
+):
     new_id = create_history(
         {
             "persona": st.session_state.get("persona"),
