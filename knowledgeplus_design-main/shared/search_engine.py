@@ -1,10 +1,10 @@
+import hashlib
 import json
 
 # from sklearn.feature_extraction.text import TfidfVectorizer # BM25には不要
 import pickle
-from datetime import datetime
-import hashlib
 from collections import OrderedDict
+from datetime import datetime
 
 import numpy as np
 from config import (
