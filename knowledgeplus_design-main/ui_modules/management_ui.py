@@ -391,7 +391,7 @@ def render_management_mode():
             selected = st.selectbox("クエリを選択", unique)
             words = st.text_input("同義語 (カンマ区切り)", key="zero_syn_words")
             if st.button("同義語追加", key="zero_syn_save"):
-                new_words = [w.strip() for w in words.split(',') if w.strip()]
+                new_words = [w.strip() for w in words.split(",") if w.strip()]
                 update_synonyms(selected.strip(), new_words)
                 engine = get_search_engine(DEFAULT_KB_NAME)
                 if engine is not None:
