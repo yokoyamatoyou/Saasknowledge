@@ -206,3 +206,13 @@ The script fetches the URL, extracts text with Beautiful Soup and then calls
 GPT‑4.1 mini. Temperature starts at `0` and increases by `0.01` every five
 questions up to a maximum of `0.8`.
 
+
+## Metrics report
+
+Use `show_metrics.py` to display search performance metrics collected during the current session.
+
+```bash
+python show_metrics.py
+```
+
+The script prints a JSON summary including average response time and recommendations for improving search quality.
