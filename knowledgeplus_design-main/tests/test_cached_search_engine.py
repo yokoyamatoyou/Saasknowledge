@@ -60,7 +60,10 @@ def test_search_uses_intent_cache(monkeypatch, empty_kb):
     monkeypatch.setattr(
         HybridSearchEngine,
         "search",
-        lambda *a, **k: ([{"id": "c1", "text": "x", "metadata": {}, "similarity": 0.5}], False),
+        lambda *a, **k: (
+            [{"id": "c1", "text": "x", "metadata": {}, "similarity": 0.5}],
+            False,
+        ),
     )
 
     class DummyCollector:
