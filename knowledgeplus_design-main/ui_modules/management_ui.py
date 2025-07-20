@@ -10,6 +10,7 @@ from knowledge_gpt_app.app import get_search_engine, refresh_search_engine
 from shared.file_processor import FileProcessor
 from shared.kb_builder import KnowledgeBuilder
 from shared.openai_utils import get_openai_client
+from shared.thesaurus import load_synonyms, update_synonyms
 from ui_modules.thumbnail_editor import display_thumbnail_grid
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 def render_management_mode():
     """Render the management interface including FAQ generation."""
     st.subheader("管理")
-    tabs = st.tabs(["ナレッジベース構築", "FAQ自動生成"])
+    tabs = st.tabs(["ナレッジベース構築", "FAQ自動生成", "同義語管理"])
 
     with tabs[0]:
         st.divider()
@@ -359,4 +360,20 @@ def render_management_mode():
                         client=client,
                         source=faq_source,
                     )
+
                 st.success(f"{count}件のFAQを生成しました。")
+
+    with tabs[2]:
+        st.divider()
+        st.subheader("同義語辞書の編集")
+        current = load_synonyms()
+        st.json(current)
+        term = st.text_input("キーワード", key="syn_term")
+        words = st.text_input("同義語 (カンマ区切り)", key="syn_words")
+        if st.button("保存", key="syn_save"):
+            new_words = [w.strip() for w in words.split(",") if w.strip()]
+            updated = update_synonyms(term.strip(), new_words)
+            engine = get_search_engine(DEFAULT_KB_NAME)
+            if engine is not None:
+                engine.synonyms = updated
+            st.toast("同義語を更新しました")
