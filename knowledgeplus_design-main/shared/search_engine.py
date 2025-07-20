@@ -1128,6 +1128,7 @@ class EnhancedHybridSearchEngine(HybridSearchEngine):
         vector_weight: typing.Optional[float] = None,
         bm25_weight: typing.Optional[float] = None,
         client=None,
+        cache_hit: bool = False,
     ) -> tuple[list[dict], bool]:
         collector = get_collector()
         start_time = time.monotonic()
@@ -1234,7 +1235,7 @@ class EnhancedHybridSearchEngine(HybridSearchEngine):
 
         logger.info(f"拡張検索完了: {len(final_results)}件の結果")
         execution_time = time.monotonic() - start_time
-        collector.log_search(query, final_results, execution_time, cache_hit=False)
+        collector.log_search(query, final_results, execution_time, cache_hit=cache_hit)
         exp_mgr.record_result(self.__class__.__name__, len(final_results) > 0)
         return final_results, len(final_results) == 0
 
@@ -1251,6 +1252,32 @@ class CachedEnhancedSearchEngine(EnhancedHybridSearchEngine):
         if client is not None:
             return super().classify_query_intent(query, client)
         return self._cached_intent_analysis(query)
+
+    def search(
+        self,
+        query: str,
+        top_k: int = 5,
+        threshold: float = 0.15,
+        vector_weight: typing.Optional[float] = None,
+        bm25_weight: typing.Optional[float] = None,
+        client=None,
+    ) -> tuple[list[dict], bool]:
+        cache_hit = False
+        if client is None:
+            processed_query = expand_query(query, self.synonyms)
+            info_before = self._cached_intent_analysis.cache_info()
+            self._cached_intent_analysis(processed_query)
+            info_after = self._cached_intent_analysis.cache_info()
+            cache_hit = info_after.hits > info_before.hits
+        return super().search(
+            query,
+            top_k=top_k,
+            threshold=threshold,
+            vector_weight=vector_weight,
+            bm25_weight=bm25_weight,
+            client=client,
+            cache_hit=cache_hit,
+        )
 
 
 def search_knowledge_base(
