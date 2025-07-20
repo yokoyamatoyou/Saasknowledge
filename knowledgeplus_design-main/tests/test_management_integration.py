@@ -7,7 +7,10 @@ import pytest
 
 sys.modules.setdefault(
     "knowledge_gpt_app.app",
-    types.SimpleNamespace(refresh_search_engine=lambda *a, **k: None),
+    types.SimpleNamespace(
+        refresh_search_engine=lambda *a, **k: None,
+        get_search_engine=lambda name: None,
+    ),
 )
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
@@ -106,6 +109,12 @@ def test_render_management_mode_mixed_files(monkeypatch):
             self.results = []
             self.additions = []
             builders.append(self)
+
+        def _create_comprehensive_search_chunk(self, analysis, adds):
+            return "chunk"
+
+        def _create_structured_metadata(self, analysis, adds, filename):
+            return {}
 
         def build_from_file(
             self, uploaded_file, analysis, image_base64, user_additions, cad_metadata

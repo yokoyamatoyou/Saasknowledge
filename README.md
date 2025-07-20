@@ -176,6 +176,7 @@ gracefully. A PNG upload test dynamically generates a tiny image in memory to
 2. Drag & drop documents and images into the uploader.
 3. Click **選択したファイルの処理を開始** to process everything with a single button.
    The search index refreshes automatically when batch mode completes.
+4. If proposed chunks contain conflicting rules, a warning appears so you can adjust the metadata or cancel before saving.
 
 ## Thumbnail grid
 

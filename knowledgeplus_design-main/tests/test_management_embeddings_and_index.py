@@ -13,7 +13,10 @@ pytest.importorskip("nltk")
 
 sys.modules.setdefault(
     "knowledge_gpt_app.app",
-    types.SimpleNamespace(refresh_search_engine=lambda *a, **k: None),
+    types.SimpleNamespace(
+        refresh_search_engine=lambda *a, **k: None,
+        get_search_engine=lambda name: None,
+    ),
 )
 
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
