@@ -1,5 +1,6 @@
 import json
 import types
+
 from shared import rule_extractor
 
 
