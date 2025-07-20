@@ -9,3 +9,5 @@ rank-bm25>=0.2.2
 nltk>=3.9.1
 streamlit>=1.28.0
 pytest>=8.1.1
+requests>=2.32.3
+

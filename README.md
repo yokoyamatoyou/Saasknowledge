@@ -145,15 +145,16 @@ pre-commit install
 ## Testing
 
 Before running `pytest`, install the libraries required by the test suite. The
-quickest way is to run the dedicated helper script:
+quickest way is to run the dedicated helper script (the CI workflow calls this
+script as well):
 
 ```bash
 scripts/install_tests.sh
 ```
 
-This installs `numpy`, `PyMuPDF`, **Pillow** and other dependencies the tests
-expect. If some tests need heavier packages (for example those that rely on
-`torch` or `transformers`), install them with:
+This installs `numpy`, `requests`, `PyMuPDF`, **Pillow** and other dependencies
+the tests expect. If some tests need heavier packages (for example those that
+rely on `torch` or `transformers`), install them with:
 
 ```bash
 scripts/install_extra.sh
