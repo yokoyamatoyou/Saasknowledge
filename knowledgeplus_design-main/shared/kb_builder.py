@@ -168,9 +168,7 @@ class KnowledgeBuilder:
         search_terms = analysis_result.get("search_terms", [])
         all_keywords = keywords + user_keywords + search_terms
         if all_keywords:
-            chunk_parts.append(
-                f"キーワード: {', '.join(set(all_keywords))}"
-            )  # 重複除去
+            chunk_parts.append(f"キーワード: {', '.join(set(all_keywords))}")  # 重複除去
 
         # 関連トピック
         related_topics = analysis_result.get("related_topics", [])
