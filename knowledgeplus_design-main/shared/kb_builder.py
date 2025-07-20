@@ -168,7 +168,9 @@ class KnowledgeBuilder:
         search_terms = analysis_result.get("search_terms", [])
         all_keywords = keywords + user_keywords + search_terms
         if all_keywords:
-            chunk_parts.append(f"キーワード: {', '.join(set(all_keywords))}")  # 重複除去
+            chunk_parts.append(
+                f"キーワード: {', '.join(set(all_keywords))}"
+            )  # 重複除去
 
         # 関連トピック
         related_topics = analysis_result.get("related_topics", [])
@@ -312,7 +314,7 @@ class KnowledgeBuilder:
 
     def _create_structured_metadata(self, analysis_result, user_additions, filename):
         """★ 構造化メタデータを作成（検索結果表示用）"""
-        return {
+        metadata = {
             # 基本情報
             "filename": filename,
             "image_type": analysis_result.get("image_type", ""),
@@ -350,3 +352,22 @@ class KnowledgeBuilder:
             # CADメタデータ
             "cad_metadata": analysis_result.get("cad_metadata", {}),
         }
+
+        text_content = metadata.get("text_content")
+        if text_content:
+            try:
+                from .rule_extractor import extract_rules
+
+                rules = extract_rules(text_content, client=self.get_openai_client())
+                if rules:
+                    metadata["rule_info"] = {
+                        "contains_rules": True,
+                        "rule_types": list(
+                            {r.get("rule_type") for r in rules if r.get("rule_type")}
+                        ),
+                        "extracted_rules": rules,
+                    }
+            except Exception as e:  # pragma: no cover - optional
+                logger.error("ルール抽出エラー: %s", e)
+
+        return metadata
