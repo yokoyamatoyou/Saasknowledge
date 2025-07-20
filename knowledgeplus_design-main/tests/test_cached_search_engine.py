@@ -57,8 +57,26 @@ def test_search_uses_intent_cache(monkeypatch, empty_kb):
         fake_parent,
         raising=False,
     )
-    monkeypatch.setattr(HybridSearchEngine, "search", lambda *a, **k: ([], True))
+    monkeypatch.setattr(
+        HybridSearchEngine,
+        "search",
+        lambda *a, **k: ([{"id": "c1", "text": "x", "metadata": {}, "similarity": 0.5}], False),
+    )
+
+    class DummyCollector:
+        def __init__(self):
+            self.cache_hits = []
+
+        def log_search(self, query, results, execution_time, cache_hit=False):
+            self.cache_hits.append(cache_hit)
+
+    collector = DummyCollector()
+    import shared.metrics as metrics_module
+
+    monkeypatch.setattr(metrics_module, "collector", collector, raising=False)
+    monkeypatch.setattr(metrics_module, "get_collector", lambda: collector)
 
     engine.search("foo")
     engine.search("foo")
     assert calls["count"] == 1
+    assert collector.cache_hits == [False, True]
