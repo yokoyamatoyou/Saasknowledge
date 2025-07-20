@@ -171,9 +171,7 @@ else:
 sidebar = st.sidebar
 if hasattr(sidebar, "markdown"):
     sidebar.markdown("---")
-if hasattr(sidebar, "button") and sidebar.button(
-    "＋ 新しいチャット", key="new_chat_btn"
-):
+if hasattr(sidebar, "button") and sidebar.button("＋ 新しいチャット", key="new_chat_btn"):
     new_id = create_history(
         {
             "persona": st.session_state.get("persona"),
