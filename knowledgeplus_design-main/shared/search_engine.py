@@ -3,7 +3,8 @@ import json
 # from sklearn.feature_extraction.text import TfidfVectorizer # BM25には不要
 import pickle
 from datetime import datetime
-from functools import lru_cache
+import hashlib
+from collections import OrderedDict
 
 import numpy as np
 from config import (
@@ -1243,15 +1244,34 @@ class EnhancedHybridSearchEngine(HybridSearchEngine):
 class CachedEnhancedSearchEngine(EnhancedHybridSearchEngine):
     """Enhanced search engine with cached intent classification."""
 
-    @lru_cache(maxsize=128)
-    def _cached_intent_analysis(self, query: str) -> dict:
-        """Return cached intent analysis results."""
-        return super().classify_query_intent(query)
+    def __init__(self, kb_path: str):
+        super().__init__(kb_path)
+        self._intent_cache: OrderedDict[str, dict] = OrderedDict()
+
+    def _get_cached_intent(self, query_hash: str) -> dict | None:
+        result = self._intent_cache.get(query_hash)
+        if result is not None:
+            self._intent_cache.move_to_end(query_hash)
+        return result
+
+    def _set_cached_intent(self, query_hash: str, data: dict) -> None:
+        self._intent_cache[query_hash] = data
+        self._intent_cache.move_to_end(query_hash)
+        if len(self._intent_cache) > 128:
+            self._intent_cache.popitem(last=False)
 
     def classify_query_intent(self, query: str, client=None) -> dict:  # type: ignore[override]
         if client is not None:
             return super().classify_query_intent(query, client)
-        return self._cached_intent_analysis(query)
+
+        query_hash = hashlib.md5(query.encode()).hexdigest()
+        cached = self._get_cached_intent(query_hash)
+        if cached is not None:
+            return cached
+
+        result = super().classify_query_intent(query)
+        self._set_cached_intent(query_hash, result)
+        return result
 
     def search(
         self,
@@ -1265,10 +1285,8 @@ class CachedEnhancedSearchEngine(EnhancedHybridSearchEngine):
         cache_hit = False
         if client is None:
             processed_query = expand_query(query, self.synonyms)
-            info_before = self._cached_intent_analysis.cache_info()
-            self._cached_intent_analysis(processed_query)
-            info_after = self._cached_intent_analysis.cache_info()
-            cache_hit = info_after.hits > info_before.hits
+            query_hash = hashlib.md5(processed_query.encode()).hexdigest()
+            cache_hit = query_hash in self._intent_cache
         return super().search(
             query,
             top_k=top_k,
