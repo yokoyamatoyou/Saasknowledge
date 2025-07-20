@@ -3,6 +3,7 @@ from config import HYBRID_BM25_WEIGHT, HYBRID_VECTOR_WEIGHT
 from knowledge_gpt_app.app import list_knowledge_bases, search_multiple_knowledge_bases
 from shared import feedback_store
 from shared.openai_utils import get_openai_client
+from shared.zero_hit_logger import log_zero_hit_query
 from ui_modules.document_card import render_document_card
 
 
@@ -124,6 +125,8 @@ def render_search_mode(safe_generate_gpt_response):
                         == "company"
                     ]
                 st.session_state["results"] = results
+                if not results:
+                    log_zero_hit_query(query)
             else:
                 st.session_state["results"] = []
                 st.warning("検索可能なナレッジベースがありません。")

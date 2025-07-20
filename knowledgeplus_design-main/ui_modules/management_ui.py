@@ -11,6 +11,7 @@ from shared.file_processor import FileProcessor
 from shared.kb_builder import KnowledgeBuilder
 from shared.openai_utils import get_openai_client
 from shared.thesaurus import load_synonyms, update_synonyms
+from shared.zero_hit_logger import load_zero_hit_queries
 from ui_modules.thumbnail_editor import display_thumbnail_grid
 
 logger = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 def render_management_mode():
     """Render the management interface including FAQ generation."""
     st.subheader("管理")
-    tabs = st.tabs(["ナレッジベース構築", "FAQ自動生成", "同義語管理"])
+    tabs = st.tabs(["ナレッジベース構築", "FAQ自動生成", "同義語管理", "ゼロヒットクエリ"])
 
     with tabs[0]:
         st.divider()
@@ -377,3 +378,24 @@ def render_management_mode():
             if engine is not None:
                 engine.synonyms = updated
             st.toast("同義語を更新しました")
+
+    with tabs[3]:
+        st.divider()
+        st.subheader("未ヒット検索クエリ")
+        queries = load_zero_hit_queries()
+        if queries:
+            unique = sorted(set(queries))
+            st.write("記録されたクエリ:")
+            for q in unique:
+                st.markdown(f"- {q}")
+            selected = st.selectbox("クエリを選択", unique)
+            words = st.text_input("同義語 (カンマ区切り)", key="zero_syn_words")
+            if st.button("同義語追加", key="zero_syn_save"):
+                new_words = [w.strip() for w in words.split(",") if w.strip()]
+                update_synonyms(selected.strip(), new_words)
+                engine = get_search_engine(DEFAULT_KB_NAME)
+                if engine is not None:
+                    engine.synonyms = load_synonyms()
+                st.toast("同義語を更新しました")
+        else:
+            st.info("記録されたゼロヒットクエリはありません。")
