@@ -4,7 +4,9 @@ import uuid
 from datetime import datetime
 
 import streamlit as st
-from shared.chat_controller import get_persona_list
+from config import DEFAULT_KB_NAME
+from knowledge_gpt_app.app import get_search_engine
+from shared.chat_controller import ChatController, get_persona_list
 from shared.chat_history_utils import (
     create_history,
     delete_history,
@@ -82,6 +84,12 @@ def safe_generate_gpt_response(
 ):
     """Return a response generator or ``None`` on failure."""
     try:
+        if "chat_controller" not in st.session_state:
+            engine = get_search_engine(DEFAULT_KB_NAME)
+            if engine is None:
+                raise RuntimeError("Search engine initialization failed")
+            st.session_state.chat_controller = ChatController(engine)
+
         gen = st.session_state.chat_controller.generate_gpt_response(
             user_input,
             conversation_history=conversation_history,
