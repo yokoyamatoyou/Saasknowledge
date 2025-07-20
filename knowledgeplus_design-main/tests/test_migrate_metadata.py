@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(1, str(Path(__file__).resolve().parents[2]))
 
-from migrate_metadata import migrate_metadata_file, migrate_knowledge_base  # noqa: E402
+from migrate_metadata import migrate_knowledge_base, migrate_metadata_file  # noqa: E402
 
 
 def test_migrate_metadata_file_adds_keys(tmp_path):
@@ -34,7 +34,9 @@ def test_migrate_knowledge_base_logs_counts(tmp_path, caplog):
     chunks_dir.mkdir()
 
     valid_meta = {"filename": "file.txt", "created_at": "2024-01-01"}
-    (metadata_dir / "1.json").write_text(json.dumps(valid_meta, ensure_ascii=False), encoding="utf-8")
+    (metadata_dir / "1.json").write_text(
+        json.dumps(valid_meta, ensure_ascii=False), encoding="utf-8"
+    )
     (chunks_dir / "1.txt").write_text("text", encoding="utf-8")
 
     (metadata_dir / "bad.json").write_text("{", encoding="utf-8")
