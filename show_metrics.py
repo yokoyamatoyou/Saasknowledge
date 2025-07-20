@@ -5,8 +5,8 @@ from pathlib import Path
 # Ensure shared package is importable when running from repo root
 sys.path.insert(0, str(Path(__file__).resolve().parent / "knowledgeplus_design-main"))
 
-from shared.metrics import get_report  # noqa: E402
 from shared.logging_utils import configure_logging  # noqa: E402
+from shared.metrics import get_report  # noqa: E402
 
 
 def main() -> None:
