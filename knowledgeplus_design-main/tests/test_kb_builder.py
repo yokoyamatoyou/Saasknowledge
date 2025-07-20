@@ -138,3 +138,14 @@ def test_build_from_file_image(kb_builder_instance, temp_kb_dir, monkeypatch):
 
     # Verify refresh_search_engine was called
     kb_builder_instance.refresh_search_engine.assert_called_once_with(temp_kb_dir.name)
+
+
+def test_metadata_rule_extraction(kb_builder_instance, monkeypatch):
+    monkeypatch.setattr(
+        "shared.rule_extractor.extract_rules",
+        lambda text, client=None: [{"rule_id": "x", "rule_type": "A"}],
+    )
+    meta = kb_builder_instance._create_structured_metadata(
+        {"text_content": "foo"}, {}, "file.txt"
+    )
+    assert meta["rule_info"]["extracted_rules"][0]["rule_id"] == "x"
