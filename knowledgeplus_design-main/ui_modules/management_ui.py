@@ -6,7 +6,7 @@ import streamlit as st
 from config import DEFAULT_KB_NAME
 from core.faq_utils import generate_faq
 from core.mm_builder_utils import analyze_image_with_gpt4o
-from knowledge_gpt_app.app import refresh_search_engine
+from knowledge_gpt_app.app import get_search_engine, refresh_search_engine
 from shared.file_processor import FileProcessor
 from shared.kb_builder import KnowledgeBuilder
 from shared.openai_utils import get_openai_client
@@ -223,19 +223,87 @@ def render_management_mode():
                                 )
                                 st.json(preview_meta)
 
-                            if st.button("ナレッジベースに登録", key=f"register_{idx}"):
-                                buf = io.BytesIO(item["bytes"])
-                                buf.name = item["filename"]
-                                kb_builder.build_from_file(
-                                    buf,
-                                    analysis=item["analysis"],
-                                    image_base64=item["image_base64"],
-                                    user_additions=user_additions,
-                                    cad_metadata=item.get("cad_metadata"),
+                            conflict_key = f"conflict_state_{idx}"
+                            if conflict_key in st.session_state:
+                                conf = st.session_state[conflict_key]["conflicts"]
+                                st.warning("ルールの矛盾が検出されました。内容を確認してください。")
+                                st.json(conf)
+                                col1, col2 = st.columns(2)
+                                if col1.button("登録を続ける", key=f"confirm_{idx}"):
+                                    buf = io.BytesIO(item["bytes"])
+                                    buf.name = item["filename"]
+                                    kb_builder.build_from_file(
+                                        buf,
+                                        analysis=item["analysis"],
+                                        image_base64=item["image_base64"],
+                                        user_additions=st.session_state[conflict_key][
+                                            "user_additions"
+                                        ],
+                                        cad_metadata=item.get("cad_metadata"),
+                                    )
+                                    st.success(f"✓ ナレッジを追加しました: {item['filename']}")
+                                    st.session_state.pending_uploads.remove(item)
+                                    del st.session_state[conflict_key]
+                                    st.rerun()
+                                elif col2.button("キャンセル", key=f"cancel_{idx}"):
+                                    del st.session_state[conflict_key]
+                                    st.info("登録をキャンセルしました")
+                            elif st.button("ナレッジベースに登録", key=f"register_{idx}"):
+                                preview_chunk = (
+                                    kb_builder._create_comprehensive_search_chunk(
+                                        item["analysis"], user_additions
+                                    )
                                 )
-                                st.success(f"✓ ナレッジを追加しました: {item['filename']}")
-                                st.session_state.pending_uploads.remove(item)
-                                st.rerun()
+                                preview_meta = kb_builder._create_structured_metadata(
+                                    item["analysis"], user_additions, item["filename"]
+                                )
+                                engine = get_search_engine(DEFAULT_KB_NAME)
+                                conflicts: list[dict] = []
+                                if engine is not None:
+                                    rtypes = preview_meta.get("rule_info", {}).get(
+                                        "rule_types", []
+                                    )
+                                    if rtypes:
+                                        existing = [
+                                            ch
+                                            for ch in engine.chunks
+                                            if any(
+                                                rt
+                                                in ch.get("metadata", {})
+                                                .get("rule_info", {})
+                                                .get("rule_types", [])
+                                                for rt in rtypes
+                                            )
+                                        ]
+                                        conflicts = engine.detect_rule_conflicts(
+                                            existing
+                                            + [
+                                                {
+                                                    "id": "new",
+                                                    "text": preview_chunk,
+                                                    "metadata": preview_meta,
+                                                }
+                                            ]
+                                        )
+                                if conflicts:
+                                    st.session_state[conflict_key] = {
+                                        "conflicts": conflicts,
+                                        "user_additions": user_additions,
+                                    }
+                                    st.warning("ルールの矛盾が検出されました。再度ボタンを押して確定してください。")
+                                else:
+                                    buf = io.BytesIO(item["bytes"])
+                                    buf.name = item["filename"]
+                                    kb_builder.build_from_file(
+                                        buf,
+                                        analysis=item["analysis"],
+                                        image_base64=item["image_base64"],
+                                        user_additions=user_additions,
+                                        cad_metadata=item.get("cad_metadata"),
+                                    )
+                                    st.success(f"✓ ナレッジを追加しました: {item['filename']}")
+                                    st.session_state.pending_uploads.remove(item)
+                                    st.rerun()
 
             if index_mode == "手動":
                 if st.button("検索インデックス更新"):
