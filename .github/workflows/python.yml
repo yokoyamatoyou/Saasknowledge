@@ -31,6 +31,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r knowledgeplus_design-main/requirements-light.txt
+          pip install -r knowledgeplus_design-main/requirements-tests.txt
           pip install pre-commit
 
       - name: Run pre-commit
