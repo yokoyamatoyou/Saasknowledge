@@ -22,6 +22,7 @@ sys.modules.setdefault(
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 pytest.importorskip("streamlit")
+import shared.thesaurus as thesaurus  # noqa: E402
 import streamlit as st  # noqa: E402
 from config import EMBEDDING_DIM  # noqa: E402
 from core import mm_builder_utils  # noqa: E402
@@ -78,6 +79,9 @@ def _setup_streamlit(monkeypatch, files):
 
 def test_render_management_mode_embeddings_and_index(tmp_path, monkeypatch):
     st.session_state.clear()
+    syn = tmp_path / "synonyms.json"
+    syn.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(thesaurus, "_DEFAULT_PATH", syn)
     monkeypatch.setattr(upload_utils, "BASE_KNOWLEDGE_DIR", tmp_path)
     monkeypatch.setattr(management_ui, "display_thumbnail_grid", lambda *a, **k: None)
     monkeypatch.setattr(management_ui, "analyze_image_with_gpt4o", lambda *a, **k: {})

@@ -13,6 +13,7 @@ from shared.chat_history_utils import (
     load_chat_histories,
 )
 from shared.env import load_env
+from shared.errors import OpenAIClientError
 from shared.experiment_manager import ExperimentManager
 from shared.upload_utils import ensure_openai_key
 from ui_modules.chat_ui import render_chat_mode
@@ -20,7 +21,6 @@ from ui_modules.management_ui import render_management_mode
 from ui_modules.search_ui import render_search_mode
 from ui_modules.sidebar_toggle import render_sidebar_toggle
 from ui_modules.theme import apply_intel_theme
-from shared.errors import OpenAIClientError
 
 logger = logging.getLogger(__name__)
 
