@@ -1,4 +1,5 @@
 import io
+import base64
 import logging
 import time
 
@@ -158,11 +159,19 @@ def render_management_mode():
                         for idx, item in enumerate(
                             list(st.session_state.pending_uploads)
                         ):
-                            st.image(
-                                item["image_base64"],
-                                caption=item["filename"],
-                                use_container_width=True,
-                            )
+                            try:
+                                image_bytes = base64.b64decode(item["image_base64"])
+                                st.image(
+                                    image_bytes,
+                                    caption=item["filename"],
+                                    use_container_width=True,
+                                )
+                            except Exception:
+                                st.image(
+                                    item["image_base64"],
+                                    caption=item["filename"],
+                                    use_container_width=True,
+                                )
                             with st.popover("AI解析結果", key=f"analysis_{idx}"):
                                 st.json(item["analysis"])
 
