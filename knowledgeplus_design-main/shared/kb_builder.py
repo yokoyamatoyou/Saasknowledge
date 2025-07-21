@@ -38,8 +38,7 @@ class KnowledgeBuilder:
                 self.clip_model,
                 self.clip_processor,
             ) = mm_builder_utils.load_model_and_processor()
-        except Exception as e:  # pragma: no cover - heavy deps may be missing
-            logger.error("CLIPモデル読み込みエラー: %s", e)
+        except Exception:  # pragma: no cover - heavy deps may be missing
             self.clip_model = None
             self.clip_processor = None
 

@@ -165,8 +165,7 @@ def load_model_and_processor() -> Tuple[object, object]:
 
             _clip_model = CLIPModel.from_pretrained(config.MULTIMODAL_MODEL)
             _clip_processor = CLIPProcessor.from_pretrained(config.MULTIMODAL_MODEL)
-        except Exception as e:  # pragma: no cover - heavy deps may be missing
-            logger.error("CLIPモデル読み込みエラー: %s", e)
+        except Exception:  # pragma: no cover - heavy deps may be missing
             _clip_model = None
             _clip_processor = None
     return _clip_model, _clip_processor

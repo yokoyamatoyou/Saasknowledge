@@ -2,6 +2,8 @@ import sys
 import types
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 from core import mm_builder_utils  # noqa: E402
@@ -53,6 +55,7 @@ def test_get_embedding_handles_timeout(monkeypatch):
 
 
 def test_load_model_and_processor_caches(monkeypatch):
+    pytest.importorskip("transformers")
     calls = {"model": 0, "processor": 0}
 
     class DummyModel:

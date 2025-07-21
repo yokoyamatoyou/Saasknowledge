@@ -326,16 +326,12 @@ class HybridSearchEngine:
             logger.info("SentenceTransformer が利用できないためバックアップモデルを読み込みません")
             self.model = None
 
-        try:
-            (
-                self.clip_model,
-                self.clip_processor,
-            ) = mm_builder_utils.load_model_and_processor()
+        (
+            self.clip_model,
+            self.clip_processor,
+        ) = mm_builder_utils.load_model_and_processor()
+        if self.clip_model is not None:
             logger.info("CLIPモデルを読み込みました")
-        except Exception as e_clip:
-            logger.error(f"CLIPモデル読み込みエラー: {e_clip}")
-            self.clip_model = None
-            self.clip_processor = None
 
     def reindex(self) -> None:
         """Reload all chunks and embeddings and rebuild the BM25 index."""
