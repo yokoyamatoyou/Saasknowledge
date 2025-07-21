@@ -88,8 +88,12 @@ def safe_generate_gpt_response(
         if "chat_controller" not in st.session_state:
             engine = get_search_engine(DEFAULT_KB_NAME)
             if engine is None:
-                raise RuntimeError("Search engine initialization failed")
-            st.session_state.chat_controller = ChatController(engine)
+                logger.warning(
+                    "Search engine unavailable - continuing without knowledge base"
+                )
+                st.session_state.chat_controller = ChatController(None)  # type: ignore[arg-type]
+            else:
+                st.session_state.chat_controller = ChatController(engine)
 
         gen = st.session_state.chat_controller.generate_gpt_response(
             user_input,

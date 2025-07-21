@@ -84,6 +84,11 @@ You can override the default knowledge base name by setting
   export DEFAULT_KB_NAME=my_kb
   ```
 
+If the specified knowledge base does not exist, the chat interface will
+still launch and provide answers using only the OpenAI API. Search and
+FAQ generation features require a valid knowledge base, but plain GPT
+responses work without one.
+
 You can tune the default blend between vector similarity and keyword search by
 setting `HYBRID_VECTOR_WEIGHT` and `HYBRID_BM25_WEIGHT` before launching the
 app.  The values should sum to 1.0:
