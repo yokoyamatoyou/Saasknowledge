@@ -2116,7 +2116,9 @@ elif app_mode == "chatGPT":
     )
 
     if user_chat_input_val:
-        # 1. ユーザーメッセージをセッションに追加
+        # ユーザーメッセージを即座に表示して履歴にも追加
+        with st.chat_message("user"):
+            st.markdown(user_chat_input_val)
         st.session_state.gpt_messages.append(
             {"role": "user", "content": user_chat_input_val}
         )
