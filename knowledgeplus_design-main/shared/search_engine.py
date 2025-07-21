@@ -1,5 +1,6 @@
 import hashlib
 import json
+import math
 
 # from sklearn.feature_extraction.text import TfidfVectorizer # BM25には不要
 import pickle
@@ -1004,7 +1005,7 @@ class EnhancedHybridSearchEngine(HybridSearchEngine):
                 effective_date = eff
             days_old = (query_date - effective_date).days
             decay_rate = 0.001
-            score = float(np.exp(-decay_rate * days_old))
+            score = math.exp(-decay_rate * days_old)
             expiry = version_info.get("expiry_date")
             if expiry:
                 expiry_d = datetime.strptime(expiry, "%Y-%m-%d")
