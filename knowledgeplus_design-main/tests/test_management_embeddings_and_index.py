@@ -22,13 +22,13 @@ sys.modules.setdefault(
 sys.path.insert(1, str(Path(__file__).resolve().parents[1]))
 
 pytest.importorskip("streamlit")
+import shared.thesaurus as thesaurus  # noqa: E402
 import streamlit as st  # noqa: E402
 from config import EMBEDDING_DIM  # noqa: E402
 from core import mm_builder_utils  # noqa: E402
 from shared import upload_utils  # noqa: E402
 from shared.search_engine import HybridSearchEngine  # noqa: E402
 from ui_modules import management_ui  # noqa: E402
-import shared.thesaurus as thesaurus  # noqa: E402
 
 
 def _make_png():
