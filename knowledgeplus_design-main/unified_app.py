@@ -169,7 +169,9 @@ selected_mode_display = st.sidebar.radio(
 # reset when switching to the search screen.
 previous_mode = st.session_state.get("current_mode")
 if selected_mode_display in mode_options.values():
-    new_mode = list(mode_options.keys())[list(mode_options.values()).index(selected_mode_display)]
+    new_mode = list(mode_options.keys())[
+        list(mode_options.values()).index(selected_mode_display)
+    ]
     st.session_state["current_mode"] = new_mode
 else:
     logger.warning("Invalid mode selection: %s", selected_mode_display)
