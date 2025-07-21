@@ -23,6 +23,10 @@ class _DummyCtx:
 def __getattr__(name):
     if name in {"spinner", "expander", "popover"}:
         return lambda *a, **k: _DummyCtx()
+    if name == "number_input":
+        def _number_input(label, min_value=None, max_value=None, value=0, step=1, *a, **k):
+            return value
+        return _number_input
     if name == "sidebar":
         return SimpleNamespace(
             radio=lambda *a, **k: None,
