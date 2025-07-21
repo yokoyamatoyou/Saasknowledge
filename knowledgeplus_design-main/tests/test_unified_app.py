@@ -116,7 +116,6 @@ def test_safe_generate_handles_error(monkeypatch):
         lambda *a, **k: (
             types.SimpleNamespace(button=lambda *a, **k: False),
             types.SimpleNamespace(button=lambda *a, **k: False),
-            None,
         ),
     )
     sidebar = types.SimpleNamespace(radio=lambda *a, **k: "FAQ")
@@ -186,7 +185,6 @@ def test_safe_generate_missing_client(monkeypatch):
         lambda *a, **k: (
             types.SimpleNamespace(button=lambda *a, **k: False),
             types.SimpleNamespace(button=lambda *a, **k: False),
-            None,
         ),
     )
     sidebar = types.SimpleNamespace(radio=lambda *a, **k: "FAQ")
