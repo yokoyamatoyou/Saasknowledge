@@ -20,6 +20,7 @@ from ui_modules.management_ui import render_management_mode
 from ui_modules.search_ui import render_search_mode
 from ui_modules.sidebar_toggle import render_sidebar_toggle
 from ui_modules.theme import apply_intel_theme
+from shared.errors import OpenAIClientError
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +100,9 @@ def safe_generate_gpt_response(
             client=client,
         )
         return gen
+    except OpenAIClientError:
+        logger.error("GPT response generation error", exc_info=True)
+        raise
     except Exception as e:
         st.error(f"GPT応答生成エラー: {e}")
         logger.error("GPT response generation error", exc_info=True)
