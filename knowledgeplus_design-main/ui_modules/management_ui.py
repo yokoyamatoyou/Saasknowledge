@@ -172,7 +172,7 @@ def render_management_mode():
                                     caption=item["filename"],
                                     use_container_width=True,
                                 )
-                            with st.popover("AI解析結果", key=f"analysis_{idx}"):
+                            with st.popover("AI解析結果"):
                                 st.json(item["analysis"])
 
                             title = st.text_input("タイトル", key=f"title_{idx}")
