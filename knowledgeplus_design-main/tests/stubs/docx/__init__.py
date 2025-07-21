@@ -12,7 +12,7 @@ import base64
 import json
 from pathlib import Path
 from types import SimpleNamespace
-from typing import IO, Iterable, Optional
+from typing import IO, Optional
 
 
 class Document:
