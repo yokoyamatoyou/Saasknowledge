@@ -165,13 +165,21 @@ selected_mode_display = st.sidebar.radio(
 )
 # Convert the selected display label back to the internal key. If the label is
 # not recognized (e.g. in tests that monkeypatch the sidebar), keep the
-# existing mode to avoid errors.
+# existing mode to avoid errors. Track previous mode so search state can be
+# reset when switching to the search screen.
+previous_mode = st.session_state.get("current_mode")
 if selected_mode_display in mode_options.values():
-    st.session_state["current_mode"] = list(mode_options.keys())[
-        list(mode_options.values()).index(selected_mode_display)
-    ]
+    new_mode = list(mode_options.keys())[list(mode_options.values()).index(selected_mode_display)]
+    st.session_state["current_mode"] = new_mode
 else:
     logger.warning("Invalid mode selection: %s", selected_mode_display)
+    new_mode = previous_mode
+
+# Clear previous search results when navigating to the search screen
+if new_mode == "検索" and previous_mode != "検索":
+    st.session_state["search_executed"] = False
+    st.session_state["results"] = []
+    st.session_state["last_query"] = ""
 
 # Chat related sidebar controls. Some unit tests monkeypatch `st.sidebar` with a
 # simple object that only provides `radio()`. Guard these calls so the app can
