@@ -3,16 +3,25 @@ import logging
 
 try:
     nltk = importlib.import_module("nltk")
+    _USING_STUB = False
 except ModuleNotFoundError:  # pragma: no cover - fallback for minimal installs
     nltk = importlib.import_module("nltk_stub")
+    _USING_STUB = True
 
 logger = logging.getLogger(__name__)
 
 
 def ensure_nltk_resources() -> bool:
-    """Ensure required NLTK resources are available."""
+    """Ensure required NLTK resources are available.
+
+    When ``nltk`` is not installed, a minimal stopword list from the bundled
+    stub is used and no downloads are attempted.
+    """
     try:
         logger.info("Checking NLTK resources...")
+        if _USING_STUB:  # pragma: no cover - simple environment
+            logger.info("NLTK not available; using bundled stopwords only")
+            return True
         resources = [
             "punkt",
             "stopwords",
